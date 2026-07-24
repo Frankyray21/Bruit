@@ -1,0 +1,42 @@
+{
+  "source": "Formation sur le bruit MRI 2025, diapos 7, 8 et 9 — dosimétries effectuées par la mine",
+  "avertissement": "Valeurs de référence issues de mesures antérieures sur des postes types. Ne remplacent pas une dosimétrie individuelle.",
+  "note_dureePermise": "dureePermise_h calculée par T(L) = 8 / 2^((L - 85) / 3), sans protection auditive.",
+
+  "metiers": [
+    { "id": "mineur-jackleg",        "nom": "Mineur conventionnel (jackleg)",   "niveau_dBA": 114.9, "dureePermise_h": 0.008,  "secteur": "souterrain" },
+    { "id": "cableur",               "nom": "Câbleur",                          "niveau_dBA": 100.1, "dureePermise_h": 0.244,  "secteur": "souterrain" },
+    { "id": "chargeuse-navette",     "nom": "Opérateur de chargeuse-navette",   "niveau_dBA": 99.5,  "dureePermise_h": 0.281,  "secteur": "souterrain" },
+    { "id": "prepose-transfert",     "nom": "Préposé au transfert",             "niveau_dBA": 98.0,  "dureePermise_h": 0.397,  "secteur": "souterrain" },
+    { "id": "foreur-long-trou",      "nom": "Foreur long trou",                 "niveau_dBA": 97.8,  "dureePermise_h": 0.416,  "secteur": "souterrain" },
+    { "id": "boulonneuse",           "nom": "Opérateur de boulonneuse",         "niveau_dBA": 96.5,  "dureePermise_h": 0.561,  "secteur": "souterrain" },
+    { "id": "foreur-diamant",        "nom": "Foreur au diamant",                "niveau_dBA": 95.5,  "dureePermise_h": 0.707,  "secteur": "souterrain" },
+    { "id": "camion-service",        "nom": "Préposé au camion de service",     "niveau_dBA": 94.8,  "dureePermise_h": 0.831,  "secteur": "souterrain" },
+    { "id": "mecanicien-soudeur",    "nom": "Mécanicien-soudeur atelier MRI",   "niveau_dBA": 92.5,  "dureePermise_h": 1.414,  "secteur": "atelier" },
+    { "id": "mecanicien-st",         "nom": "Mécanicien S/T",                   "niveau_dBA": 90.9,  "dureePermise_h": 2.047,  "secteur": "souterrain" },
+    { "id": "operateur-marteau",     "nom": "Opérateur de marteau",             "niveau_dBA": 90.7,  "dureePermise_h": 2.144,  "secteur": "souterrain" },
+    { "id": "superviseur",           "nom": "Superviseur",                      "niveau_dBA": 89.3,  "dureePermise_h": 2.962,  "secteur": "souterrain" },
+    { "id": "electricien-st",        "nom": "Électricien S/T",                  "niveau_dBA": 87.3,  "dureePermise_h": 4.702,  "secteur": "souterrain" }
+  ],
+
+  "taches": [
+    { "id": "drill-air-vissage",     "nom": "Drill à air (vissage)",      "niveau_dBA": 103 },
+    { "id": "drill-batterie",        "nom": "Drill à batterie (vissage)", "niveau_dBA": 100 },
+    { "id": "impact-drill",          "nom": "Impact drill",               "niveau_dBA": 98 },
+    { "id": "meulage",               "nom": "Meulage",                    "niveau_dBA": 95 },
+    { "id": "marteau-aiguille",      "nom": "Marteau aiguille",           "niveau_dBA": 92 },
+    { "id": "jet-air",               "nom": "Jet d'air",                  "niveau_dBA": 91 },
+    { "id": "cabine-sunblast",       "nom": "Cabine à Sunblast",          "niveau_dBA": 88 },
+    { "id": "fraisage",              "nom": "Fraisage",                   "niveau_dBA": 85 },
+    { "id": "ambiant-pause",         "nom": "Ambiant en pause",           "niveau_dBA": 66 }
+  ],
+
+  "postesAtelier": [
+    { "id": "soudeur-1",             "nom": "Soudeur 1",                  "leq8h_dBA": 91, "remarque": "Meulage – marteau aiguille – soudage. Nettoyage de l'environnement de travail en après-midi." },
+    { "id": "soudeur-2",             "nom": "Soudeur 2",                  "leq8h_dBA": 88, "remarque": "Tâches variées en atelier. Nettoyage en après-midi." },
+    { "id": "mecanicien-1-atelier",  "nom": "Mécanicien 1 atelier",       "leq8h_dBA": 84, "remarque": "Soudage – meulage – assemblage. Nettoyage en après-midi." },
+    { "id": "mecanicien-2-atelier",  "nom": "Mécanicien 2 atelier",       "leq8h_dBA": 96, "remarque": "Impact drill – intérieur panier du 416. Nettoyage en après-midi." },
+    { "id": "mecanicien-composantes","nom": "Mécanicien aux composantes", "leq8h_dBA": 90, "remarque": "Marteau – meulage – sablage. Nettoyage en après-midi." },
+    { "id": "electricien-atelier",   "nom": "Électricien",                "leq8h_dBA": 82, "remarque": "En salle électrique avec radio (69 dBA). Moins d'une heure en avant-midi dans l'atelier mécanique, même chose en après-midi." }
+  ]
+}

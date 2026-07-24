@@ -1,0 +1,29 @@
+{
+  "$schema": "./schema/rsst-art137.schema.json",
+  "source": "Règlement sur la santé et la sécurité du travail (RSST), article 137 — reproduit à la diapo 6 de la formation MRI 2025",
+  "norme": {
+    "niveauReference_dBA": 85,
+    "dureeReference_h": 8,
+    "facteurBissection_dB": 3,
+    "commentaire": "Chaque tranche de 3 dBA double l'énergie reçue et divise par deux la durée permise."
+  },
+  "formule": {
+    "dureePermise": "T(L) = 8 / 2^((L - 85) / 3)",
+    "dose": "D = 100 * somme(Ci / T(Li))",
+    "niveauEquivalent8h": "Lex8h = 85 + 10 * log10(D / 100)",
+    "regle": "Lorsqu'un niveau figure dans le tableau réglementaire, la valeur du tableau prime sur la formule."
+  },
+  "tableau": [
+    { "niveau_dBA": 82, "dureeMaximale_h": 16, "dureeCalculee_h": 16.0 },
+    { "niveau_dBA": 83, "dureeMaximale_h": 12, "dureeCalculee_h": 12.7 },
+    { "niveau_dBA": 85, "dureeMaximale_h": 8, "dureeCalculee_h": 8.0 },
+    { "niveau_dBA": 88, "dureeMaximale_h": 4, "dureeCalculee_h": 4.0 },
+    { "niveau_dBA": 91, "dureeMaximale_h": 2, "dureeCalculee_h": 2.0 },
+    { "niveau_dBA": 94, "dureeMaximale_h": 1, "dureeCalculee_h": 1.0 }
+  ],
+  "seuils": {
+    "doubleProtectionRecommandee_dBA": 105,
+    "bonusDoubleProtection_dB": 5,
+    "sourceSeuil": "Diapo 14 (sources ODYO et CCHST)"
+  }
+}

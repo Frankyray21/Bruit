@@ -1,0 +1,60 @@
+{
+  "source": "Formation sur le bruit MRI 2025, diapos 13, 14, 15 et 16",
+
+  "derating": {
+    "commentaire": "Le NRR est une valeur de laboratoire. La formation applique un pourcentage d'efficacité pour approcher la performance réelle sur le terrain.",
+    "facteurParDefaut": {
+      "bouchons": 0.60,
+      "coquilles": 0.75
+    },
+    "incoherenceSource": "La diapo 13 annonce 70 % pour les bouchons, mais l'exemple chiffré de la diapo 14 utilise 60 % (32 × 0,60 = 19 dBA). Le défaut retenu est 60 % — la valeur la plus conservatrice, et celle qui reproduit l'exemple enseigné. À confirmer avec le formateur.",
+    "formule": "attenuationReelle = NRR × facteurEfficacite"
+  },
+
+  "doubleProtection": {
+    "seuilRecommande_dBA": 105,
+    "bonus_dB": 5,
+    "formule": "attenuation = max(NRR_bouchon, NRR_coquille) × facteurEfficacite + 5",
+    "avertissement": "Les atténuations ne s'additionnent PAS. Bouchons NRR 32 + coquilles NRR 25 ne donnent pas 57 dB, mais environ 24 dB.",
+    "exempleFormation": {
+      "nrr": 32,
+      "facteur": 0.60,
+      "attenuationSimple_dB": 19,
+      "attenuationDouble_dB": 24
+    }
+  },
+
+  "tempsDePort": {
+    "commentaire": "L'énergie sonore reçue pendant les périodes sans protection domine le bilan du quart.",
+    "formule": "A_eff(t) = -10 × log10((1 - t) + t × 10^(-A/10))",
+    "tableFormation_A30dB": [
+      { "pourcentage": 100, "temps": "8 h 00", "attenuation_dB": 30 },
+      { "pourcentage": 98,  "temps": "7 h 50", "attenuation_dB": 17 },
+      { "pourcentage": 95,  "temps": "7 h 36", "attenuation_dB": 13 },
+      { "pourcentage": 90,  "temps": "7 h 12", "attenuation_dB": 10 },
+      { "pourcentage": 50,  "temps": "4 h 00", "attenuation_dB": 3 }
+    ]
+  },
+
+  "protecteurs": [
+    { "id": "howard-leight-max",  "nom": "Howard Leight MAX",              "type": "bouchons",  "sousType": "mousse",  "nrr": 33 },
+    { "id": "ear-taperfit-2",     "nom": "3M E-A-R TaperFit 2",            "type": "bouchons",  "sousType": "mousse",  "nrr": 32 },
+    { "id": "laser-lite",         "nom": "Howard Leight Laser Lite",       "type": "bouchons",  "sousType": "mousse",  "nrr": 32 },
+    { "id": "arceau-bleu",        "nom": "Bouchons sur arceau (bleu)",     "type": "bouchons",  "sousType": "arceau",  "nrr": 20 },
+    { "id": "arceau-noir",        "nom": "Bouchons sur arceau (noir)",     "type": "bouchons",  "sousType": "arceau",  "nrr": 17 },
+    { "id": "coquilles-serretete","nom": "Coquilles serre-tête",           "type": "coquilles", "sousType": "serre-tête", "nrr": 25 },
+    { "id": "msa-sound-control",  "nom": "MSA Sound Control SH (sur casque)", "type": "coquilles", "sousType": "sur casque", "nrr": 25 }
+  ],
+
+  "installation": {
+    "bouchons": [
+      "Roulez le bouchon entre l'index et le pouce jusqu'à ce qu'il soit comprimé.",
+      "Tirez l'oreille vers le haut avec le bras opposé, puis insérez le bouchon dans le canal auditif.",
+      "Attendez quelques secondes et laissez le bouchon se gonfler dans l'oreille. Le bout du bouchon ne doit pas être visible de face."
+    ],
+    "coquilles": [
+      "Vérifiez le serrage de l'arceau.",
+      "Vérifiez l'état et la propreté des coussins."
+    ]
+  }
+}

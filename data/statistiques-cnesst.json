@@ -1,0 +1,46 @@
+{
+  "source": "Formation sur le bruit MRI 2025, diapos 2 et 3 (source citée : INSPQ / CNESST)",
+  "avertissement": "Les valeurs annuelles ont été relevées visuellement sur un graphique de faible résolution (diapo 2). À revalider auprès de l'INSPQ ou de la CNESST avant tout affichage dans l'application.",
+
+  "coutsReclamations": {
+    "periode": "1997-2010",
+    "nombreCas": 36188,
+    "coutMoyenParCas_CAD": 5660,
+    "totalAnnonce_CAD": 204813300,
+    "totalRecalcule_CAD": 204824080,
+    "noteEcart": "36 188 × 5 660 $ = 204 824 080 $, soit ~10 800 $ de plus que le total affiché sur la diapo. Écart sans portée pédagogique, mais à corriger si le chiffre est repris.",
+    "constat": "Les réclamations viennent de travailleurs de plus en plus jeunes."
+  },
+
+  "nouveauxCasAcceptes": {
+    "fiabilite": "faible — relevé sur image, à revalider",
+    "unite": "nombre de nouveaux cas de surdité professionnelle acceptés par la CNESST",
+    "series": [
+      { "annee": 1997, "cas": 1540 },
+      { "annee": 1998, "cas": 1722 },
+      { "annee": 1999, "cas": 1753 },
+      { "annee": 2000, "cas": 1994 },
+      { "annee": 2001, "cas": 2261 },
+      { "annee": 2002, "cas": 2397 },
+      { "annee": 2003, "cas": 2524 },
+      { "annee": 2004, "cas": 2364 },
+      { "annee": 2005, "cas": 2415 },
+      { "annee": 2006, "cas": 2674 },
+      { "annee": 2007, "cas": 2964 },
+      { "annee": 2008, "cas": 3363 },
+      { "annee": 2009, "cas": 3810 },
+      { "annee": 2010, "cas": 4341 },
+      { "annee": 2011, "cas": 4321 },
+      { "annee": 2012, "cas": 4612 },
+      { "annee": 2013, "cas": 5609 },
+      { "annee": 2014, "cas": 6662 },
+      { "annee": 2015, "cas": 7843 },
+      { "annee": 2016, "cas": 8412 },
+      { "annee": 2017, "cas": 9341 },
+      { "annee": 2018, "cas": 12007 },
+      { "annee": 2019, "cas": 13712 },
+      { "annee": 2020, "cas": 10550 },
+      { "annee": 2021, "cas": 12506 }
+    ]
+  }
+}
