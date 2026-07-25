@@ -36,6 +36,11 @@ export default defineConfig({
       workbox: {
         // Tout doit être disponible hors-ligne : il n'y a pas de réseau sous terre.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Sans ça, les précaches des versions précédentes s'accumulent et
+        // peuvent servir des fichiers qui n'existent plus — d'où une page vide.
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
       },
     }),
   ],

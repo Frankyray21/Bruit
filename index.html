@@ -48,7 +48,9 @@
         margin: 0;
       }
       #secours button {
-        margin-top: 22px;
+        display: block;
+        width: 100%;
+        margin-top: 14px;
         min-height: 56px;
         padding: 0 26px;
         border: none;
@@ -58,6 +60,25 @@
         font: inherit;
         font-weight: 700;
       }
+      #secours button.secondaire {
+        background: #1c2333;
+        border: 1px solid #30363d;
+        color: #e6edf3;
+      }
+      #details {
+        display: none;
+        margin-top: 22px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #161b22;
+        border: 1px solid #30363d;
+        color: #9198a1;
+        font-family: ui-monospace, monospace;
+        font-size: 12px;
+        text-align: left;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
     </style>
   </head>
   <body>
@@ -66,22 +87,91 @@
     <div id="secours">
       <h1>Le site n'a pas fini de charger</h1>
       <p>
-        La connexion a probablement coupé en cours de route. Recharge la page —
-        une fois l'application installée sur ton téléphone, elle fonctionne sans
-        réseau.
+        Souvent, c'est une vieille version restée en mémoire. Le bouton
+        ci-dessous vide le cache du site et repart à neuf.
       </p>
-      <button type="button" onclick="location.reload()">Recharger</button>
+      <button type="button" id="reinitialiser">Vider le cache et recharger</button>
+      <button type="button" class="secondaire" onclick="location.reload()">
+        Simplement recharger
+      </button>
+      <pre id="details"></pre>
     </div>
 
     <script>
-      // Si rien n'est monté après 8 secondes, on dit pourquoi plutôt que de
-      // laisser une page vide : au fond, personne ne peut ouvrir la console.
-      setTimeout(function () {
-        var racine = document.getElementById('root');
-        if (racine && racine.childElementCount === 0) {
-          document.getElementById('secours').style.display = 'block';
+      // Diagnostic embarqué. Personne, au fond d'une mine, ne va ouvrir une
+      // console de développeur : la page doit dire elle-même ce qui a échoué.
+      (function () {
+        var incidents = [];
+
+        function noter(texte) {
+          incidents.push(texte);
+          var details = document.getElementById('details');
+          if (details) {
+            details.textContent = incidents.join('\n');
+            details.style.display = 'block';
+          }
         }
-      }, 8000);
+
+        // capture:true — indispensable pour voir aussi les fichiers qui ne se
+        // chargent pas (un script ou une feuille de style en échec ne remonte
+        // pas jusqu'à window en phase de bouillonnement).
+        window.addEventListener(
+          'error',
+          function (e) {
+            if (e.target && e.target !== window && e.target.src) {
+              noter('Fichier non chargé : ' + e.target.src);
+            } else {
+              noter('Erreur : ' + (e.message || e.type));
+            }
+            montrer();
+          },
+          true,
+        );
+
+        window.addEventListener('unhandledrejection', function (e) {
+          noter('Promesse rejetée : ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
+          montrer();
+        });
+
+        function montrer() {
+          var racine = document.getElementById('root');
+          if (racine && racine.childElementCount === 0) {
+            document.getElementById('secours').style.display = 'block';
+          }
+        }
+
+        // Si l'application n'a rien monté après 5 secondes, on affiche le
+        // message plutôt qu'une page vide.
+        setTimeout(montrer, 5000);
+
+        // Réinitialisation complète : désinscription du service worker,
+        // suppression de tous les caches, puis rechargement. C'est la sortie de
+        // secours quand une ancienne version reste coincée.
+        document.getElementById('reinitialiser').addEventListener('click', function () {
+          var etapes = [];
+
+          if ('serviceWorker' in navigator) {
+            etapes.push(
+              navigator.serviceWorker.getRegistrations().then(function (liste) {
+                return Promise.all(liste.map(function (r) { return r.unregister(); }));
+              }),
+            );
+          }
+          if (window.caches && caches.keys) {
+            etapes.push(
+              caches.keys().then(function (cles) {
+                return Promise.all(cles.map(function (c) { return caches.delete(c); }));
+              }),
+            );
+          }
+
+          Promise.all(etapes)
+            .catch(function () {})
+            .then(function () {
+              location.replace(location.pathname + '?neuf=' + Date.now());
+            });
+        });
+      })();
     </script>
 
     <script type="module" src="/src/main.tsx"></script>
