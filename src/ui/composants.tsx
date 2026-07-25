@@ -3,7 +3,7 @@
  * texte libre dans le parcours principal.
  */
 
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import type { NiveauVerdict } from '../domain/verdict.js';
 
 export function Carte({
@@ -31,6 +31,13 @@ export function Carte({
   );
 }
 
+/**
+ * Un champ et son étiquette.
+ *
+ * Le groupe porte `aria-labelledby` plutôt qu'un `<label for>` : plusieurs
+ * champs contiennent deux contrôles (un sélecteur et un curseur), et un label
+ * ne peut en désigner qu'un seul.
+ */
 export function Champ({
   etiquette,
   children,
@@ -38,9 +45,12 @@ export function Champ({
   etiquette: string;
   children: ReactNode;
 }) {
+  const id = useId();
   return (
-    <div className="champ">
-      <span className="champ__etiquette">{etiquette}</span>
+    <div className="champ" role="group" aria-labelledby={id}>
+      <span className="champ__etiquette" id={id}>
+        {etiquette}
+      </span>
       {children}
     </div>
   );

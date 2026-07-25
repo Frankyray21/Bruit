@@ -61,7 +61,9 @@ export function Quiz() {
               <input
                 className="choix__select"
                 style={{ marginTop: 18, textAlign: 'center' }}
+                aria-label="Ton nom, pour l'attestation"
                 placeholder="Ton nom, pour l'attestation"
+                autoComplete="name"
                 value={nom}
                 onChange={(e) => setNom(e.target.value)}
               />

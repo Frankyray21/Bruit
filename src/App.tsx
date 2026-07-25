@@ -39,6 +39,10 @@ export default function App() {
   return (
     <FournisseurConfig>
       <div className={`app${presentation ? ' app--presentation' : ''}`}>
+        <a className="lien-evitement" href="#contenu">
+          Aller au contenu
+        </a>
+
         <header className="entete">
           <span className="entete__marque" aria-hidden="true" />
           <span className="entete__titre">
@@ -54,7 +58,7 @@ export default function App() {
           </button>
         </header>
 
-        <main className="contenu">
+        <main className="contenu" id="contenu">
           {zone === 'parcours' &&
             (module ? (
               <>

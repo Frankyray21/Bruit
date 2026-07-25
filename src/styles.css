@@ -121,7 +121,8 @@ button {
   margin-left: auto;
   color: var(--texte-doux);
   font-size: 0.85rem;
-  padding: 8px 12px;
+  min-height: 46px;
+  padding: 8px 14px;
   border-radius: 8px;
   border: 1px solid var(--bordure);
 }
@@ -383,7 +384,10 @@ input[type='range'] {
   grid-template-columns: 1fr auto;
   gap: 10px;
   align-items: center;
-  padding: 9px 12px;
+  /* Ces lignes sont cliquables dans l'échelle des métiers : elles doivent
+     rester atteignables avec des gants. */
+  min-height: 56px;
+  padding: 12px;
   border-radius: 8px;
   background: var(--fond-carte-haut);
   font-size: 0.9rem;
@@ -740,5 +744,81 @@ input[type='range'] {
 @media (prefers-reduced-motion: no-preference) {
   .resultat__valeur {
     transition: color 160ms ease;
+  }
+}
+
+/* ---------- Accessibilité ---------- */
+
+/* Anneau de focus visible : le site s'utilise aussi au clavier, en salle. */
+:focus-visible {
+  outline: 3px solid var(--bleu);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.lien-evitement {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--rouge);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 0 0 8px 0;
+  z-index: 100;
+}
+
+.lien-evitement:focus {
+  left: 0;
+}
+
+/* ---------- Impression de l'attestation ---------- */
+
+@media print {
+  /* Sur papier : fond blanc, encre noire, et rien d'autre que l'attestation. */
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .entete,
+  .nav,
+  .pied,
+  .avertissement,
+  .barre-boutons,
+  .bouton {
+    display: none !important;
+  }
+
+  .contenu {
+    padding: 0;
+    max-width: none;
+  }
+
+  .carte {
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .attestation {
+    border: 2px solid #000;
+    padding: 32px;
+    page-break-inside: avoid;
+  }
+
+  .attestation__score {
+    color: #000;
+  }
+
+  /* Mention obligatoire au bas de la feuille : l'attestation est déclarative. */
+  .attestation::after {
+    content: 'Attestation déclarative générée sur l’appareil du travailleur. Ne constitue pas un registre de formation opposable.';
+    display: block;
+    margin-top: 28px;
+    padding-top: 12px;
+    border-top: 1px solid #999;
+    font-size: 10pt;
+    color: #444;
   }
 }
