@@ -13,9 +13,77 @@
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Bruit — Protection auditive</title>
+    <style>
+      /*
+       * Style de secours, en ligne dans la page.
+       *
+       * Il s'applique avant même que la feuille principale soit chargée : si
+       * elle ne l'est jamais, la page reste sombre et lisible au lieu de
+       * devenir un rectangle blanc muet.
+       */
+      html {
+        background: #0d1117;
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+        background: #0d1117;
+        color: #e6edf3;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      }
+      #secours {
+        display: none;
+        padding: 40px 22px;
+        text-align: center;
+        line-height: 1.6;
+        max-width: 480px;
+        margin: 0 auto;
+      }
+      #secours h1 {
+        font-size: 1.25rem;
+        margin: 0 0 12px;
+      }
+      #secours p {
+        color: #9198a1;
+        margin: 0;
+      }
+      #secours button {
+        margin-top: 22px;
+        min-height: 56px;
+        padding: 0 26px;
+        border: none;
+        border-radius: 12px;
+        background: #c8102e;
+        color: #fff;
+        font: inherit;
+        font-weight: 700;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+
+    <div id="secours">
+      <h1>Le site n'a pas fini de charger</h1>
+      <p>
+        La connexion a probablement coupé en cours de route. Recharge la page —
+        une fois l'application installée sur ton téléphone, elle fonctionne sans
+        réseau.
+      </p>
+      <button type="button" onclick="location.reload()">Recharger</button>
+    </div>
+
+    <script>
+      // Si rien n'est monté après 8 secondes, on dit pourquoi plutôt que de
+      // laisser une page vide : au fond, personne ne peut ouvrir la console.
+      setTimeout(function () {
+        var racine = document.getElementById('root');
+        if (racine && racine.childElementCount === 0) {
+          document.getElementById('secours').style.display = 'block';
+        }
+      }, 8000);
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
