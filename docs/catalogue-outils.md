@@ -90,16 +90,14 @@ Ces outils dépassent le contenu enseigné et doivent être étiquetés comme te
 | 27 | **Hiérarchie des mesures + substitution** | ✅ | Prouvé par les données de la mine : drill à air 103 → batterie 100 dBA divise l'énergie par 2. La formation ne parle que d'ÉPI — angle inexploité |
 | 28 | Perte auditive de carrière (ISO 1999) | ⏸ | **Bloqué** : coefficients `u, v, L₀` à obtenir du texte de la norme. Voir limite n° 6 de `modele-de-calcul.md` |
 | 29 | Alerte de **surprotection** | ⏸ | L'électricien tombe à 67,5 dBA sous protecteur — on n'entend plus les alarmes ni les véhicules. **Absent de la formation, à valider avec le formateur** |
+| 30 | ⭐ **Cochlée 3D interactive** | ✅ | Vue 3D de la cochlée en spirale, rotative, avec les cellules ciliées qui se couchent et se cassent quand un curseur de bruit monte — **en commençant par la zone des aigus** (tonotopie, fait réel et documenté). Rend visible le mécanisme de la surdité progressive de la diapo 11. Three.js embarqué, chargé à la demande, hors-ligne. **Illustration schématique explicitement étiquetée comme telle, jamais un examen médical.** |
 
 ## Contenu assumé comme statique
 
-Diapo 1 (titre) · diapo 10 (les 3 modes de propagation, en texte) · diapo 11
-(schéma anatomique) · diapo 12a (taxonomie des dommages) · diapo 17 (conclusion).
+Diapo 1 (titre) · diapo 10 (les 3 modes de propagation, en texte) · diapo 12a
+(taxonomie des dommages) · diapo 17 (conclusion).
 
-Des points cliquables sur le schéma de l'oreille seraient de l'habillage, pas de
-la compréhension. La seule vraie piste — la **tonotopie cochléaire**, avec une
-simulation audio « voici une conversation avec un creux à 4 kHz » — demande des
-extraits sonores et du traitement audio. Hors périmètre.
+~~Diapo 11 (schéma anatomique)~~ — **désormais interactive**, voir #30 ci-dessous.
 
 ## À refuser
 

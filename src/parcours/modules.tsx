@@ -9,9 +9,14 @@
  * démontrable ; sans elle, tout le reste repose sur un axiome à croire.
  */
 
-import type { ReactNode } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import { statistiques } from '../data/index.js';
 import { Avertissement, Carte, Declic } from '../ui/composants.js';
+
+// La 3D (Three.js) n'est téléchargée qu'à l'ouverture du module 4 : elle ne
+// pèse pas sur le démarrage des calculateurs. Une fois chargée, elle est en
+// cache et fonctionne hors-ligne comme le reste.
+const OreilleInterne = lazy(() => import('../anim3d/OreilleInterne.js'));
 import { ComposeurQuart } from '../outils/ComposeurQuart.js';
 import { Comparateur } from '../outils/Comparateur.js';
 import { DureePermise, EchelleMetiers, PostesAtelier } from '../outils/DureePermise.js';
@@ -219,6 +224,14 @@ function ModuleDommages() {
           fatigue auditive, puis acouphènes, puis surdité.
         </p>
       </Carte>
+
+      <Suspense
+        fallback={
+          <div className="scene3d-chargement">Chargement de la vue 3D…</div>
+        }
+      >
+        <OreilleInterne />
+      </Suspense>
 
       <Carte titre="Les quatre atteintes" source="diapo 12">
         <ul className="liste-puces">

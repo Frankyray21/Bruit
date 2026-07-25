@@ -76,7 +76,15 @@ data/protecteurs.json         Protecteurs auditifs et leur NRR
 data/statistiques-cnesst.json Données de surdité professionnelle au Québec
 src/domain/                   Moteur de calcul, pur et sans dépendance UI
 src/domain/__tests__/         Un test par ligne des diapos 6, 14 et 16
+src/anim3d/                   Cochlée 3D interactive (Three.js, chargée à la demande)
 ```
+
+Le module « Ce que le bruit détruit » contient une **vue 3D de la cochlée** :
+on la tourne au doigt, et un curseur de bruit couche puis détruit les cellules
+ciliées — d'abord dans la zone des aigus, comme dans la réalité. Three.js est
+embarqué dans le bundle (aucun chargement externe) et n'est téléchargé qu'à
+l'ouverture du module, pour ne pas ralentir les calculateurs. C'est une
+illustration schématique, pas un examen médical.
 
 Le moteur `src/domain/` est **vérifiable sans démarrer le site**. C'est
 volontaire : les formules sont la valeur réelle du projet et le formateur doit

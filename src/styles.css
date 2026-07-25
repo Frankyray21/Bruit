@@ -496,6 +496,39 @@ input[type='range'] {
   margin-top: 14px;
 }
 
+/* ---------- Scène 3D ---------- */
+
+.scene3d {
+  width: 100%;
+  height: 340px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--fond);
+  border: 1px solid var(--bordure);
+  touch-action: none; /* le glissement tourne la cochlée, il ne défile pas */
+  cursor: grab;
+}
+
+.scene3d:active {
+  cursor: grabbing;
+}
+
+.scene3d canvas {
+  display: block;
+}
+
+.scene3d-chargement {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 340px;
+  border-radius: 12px;
+  background: var(--fond-carte-haut);
+  border: 1px solid var(--bordure);
+  color: var(--texte-doux);
+  font-size: 0.9rem;
+}
+
 /* ---------- Modules ---------- */
 
 .module-liste {
