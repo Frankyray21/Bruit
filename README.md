@@ -30,9 +30,20 @@ fonctionnement **hors-ligne** (réseau inexistant sous terre).
 
 **https://frankyray21.github.io/Bruit/**
 
-Publié automatiquement à chaque poussée, après passage des tests. Installable
-sur téléphone depuis le menu du navigateur (« Ajouter à l'écran d'accueil »), et
-fonctionnel **sans réseau** une fois installé.
+Installable sur téléphone depuis le menu du navigateur (« Ajouter à l'écran
+d'accueil »), et fonctionnel **sans réseau** une fois installé.
+
+Le workflow `.github/workflows/deploy.yml` rejoue les tests, construit le site et
+publie le résultat sur la branche `gh-pages` à chaque poussée.
+
+> **Une manipulation est requise une seule fois**, dans
+> **Réglages → Pages → Build and deployment** : choisir la source
+> **« Deploy from a branch »**, puis la branche **`gh-pages`** et le dossier
+> **`/ (root)`**.
+>
+> Cette étape ne peut pas être automatisée : le jeton dont dispose GitHub
+> Actions n'a pas le droit de créer un site Pages (`Resource not accessible by
+> integration`). Seul le propriétaire du dépôt peut le faire.
 
 ## État du projet
 
