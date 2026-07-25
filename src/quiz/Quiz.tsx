@@ -107,7 +107,7 @@ export function Quiz() {
     <Carte>
       <p className="quiz__progression">
         Question {index + 1} sur {QUESTIONS.length} · {bonnes} bonne
-        {bonnes > 1 ? 's' : ''} jusqu'ici
+        {bonnes > 1 ? 's' : ''} réponse{bonnes > 1 ? 's' : ''} jusqu'ici
       </p>
       <p className="quiz__question">{question.enonce}</p>
 
