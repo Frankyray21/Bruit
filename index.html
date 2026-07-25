@@ -120,6 +120,12 @@
           function (e) {
             if (e.target && e.target !== window && e.target.src) {
               noter('Fichier non chargé : ' + e.target.src);
+              // Un échec sur /src/ trahit une cause précise et fréquente :
+              // GitHub Pages publie la branche du code source au lieu de la
+              // branche gh-pages, qui seule contient le site construit.
+              if (e.target.src.indexOf('/src/') !== -1) {
+                mauvaiseBranche();
+              }
             } else {
               noter('Erreur : ' + (e.message || e.type));
             }
@@ -127,6 +133,17 @@
           },
           true,
         );
+
+        function mauvaiseBranche() {
+          var bloc = document.getElementById('secours');
+          bloc.querySelector('h1').textContent = 'Mauvaise branche publiée';
+          bloc.querySelector('p').innerHTML =
+            'GitHub Pages sert le code source au lieu du site construit. ' +
+            'Dans <strong>Réglages → Pages</strong>, choisis la branche ' +
+            '<strong>gh-pages</strong> et le dossier <strong>/ (root)</strong>. ' +
+            'Vider le cache ne changera rien tant que ce réglage est faux.';
+          document.getElementById('reinitialiser').style.display = 'none';
+        }
 
         window.addEventListener('unhandledrejection', function (e) {
           noter('Promesse rejetée : ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
