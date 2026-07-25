@@ -26,6 +26,7 @@ import { Carriere, Substitution } from '../outils/Carriere.js';
 import { FacteurDerating, Protection } from '../outils/Protection.js';
 import { PoseBouchons, Symptomes, VerifCoquilles } from '../outils/Pose.js';
 import { TempsDePort } from '../outils/TempsDePort.js';
+import { OreilleCoupe } from '../anim3d/OreilleCoupe.js';
 import { nb } from '../ui/format.js';
 
 export interface Module {
@@ -211,19 +212,7 @@ function ModuleExposition() {
 function ModuleDommages() {
   return (
     <>
-      <Carte titre="Comment l'oreille est détruite" source="diapo 11">
-        <p className="carte__intro">
-          Les ondes sonores traversent le canal auditif, font vibrer le tympan,
-          puis atteignent la cochlée. À l'intérieur, des{' '}
-          <strong>cellules ciliées</strong> transforment ces vibrations en
-          signal nerveux.
-        </p>
-        <p className="carte__intro" style={{ marginBottom: 0 }}>
-          Le bruit intense couche ces cellules et finit par les détruire. Elles{' '}
-          <strong>ne repoussent pas</strong>. La perte se fait par étapes :
-          fatigue auditive, puis acouphènes, puis surdité.
-        </p>
-      </Carte>
+      <OreilleCoupe />
 
       <Suspense
         fallback={

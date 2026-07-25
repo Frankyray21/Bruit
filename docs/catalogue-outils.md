@@ -91,6 +91,15 @@ Ces outils dépassent le contenu enseigné et doivent être étiquetés comme te
 | 28 | Perte auditive de carrière (ISO 1999) | ⏸ | **Bloqué** : coefficients `u, v, L₀` à obtenir du texte de la norme. Voir limite n° 6 de `modele-de-calcul.md` |
 | 29 | Alerte de **surprotection** | ⏸ | L'électricien tombe à 67,5 dBA sous protecteur — on n'entend plus les alarmes ni les véhicules. **Absent de la formation, à valider avec le formateur** |
 | 30 | ⭐ **Cochlée 3D interactive** | ✅ | Vue 3D de la cochlée en spirale, rotative, avec les cellules ciliées qui se couchent et se cassent quand un curseur de bruit monte — **en commençant par la zone des aigus** (tonotopie, fait réel et documenté). Rend visible le mécanisme de la surdité progressive de la diapo 11. Three.js embarqué, chargé à la demande, hors-ligne. **Illustration schématique explicitement étiquetée comme telle, jamais un examen médical.** |
+| 31 | **Coupe animée de l'oreille** | ✅ | Coupe SVG animée : l'onde sonore entre par le conduit, le tympan vibre, le signal parcourt la cochlée jusqu'au nerf. Étiquettes françaises (corrige l'annotation anglaise « Auditory cortex » de la diapo 11). Ouvre le module 4, avant la vue 3D. **Dessinée en code — libre de droit, hors-ligne, sans dépendance.** Animations sous `prefers-reduced-motion`. |
+
+> **Note sur les animations « toutes faites ».** Une animation téléchargée d'une
+> banque (Wikimedia, IconScout, Getty…) posait deux problèmes rédhibitoires :
+> le hors-ligne (un asset hébergé ailleurs ne s'affiche pas au fond) et la
+> licence (payante chez Getty/iStock, attribution obligatoire chez
+> IconScout/Vecteezy). Seules les animations **dessinées en code** sont à la
+> fois libres de droit sans ambiguïté, hors-ligne et sans dépendance — d'où
+> les outils #30 et #31.
 
 ## Contenu assumé comme statique
 
