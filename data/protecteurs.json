@@ -42,9 +42,11 @@
     { "id": "laser-lite",         "nom": "Howard Leight Laser Lite",       "type": "bouchons",  "sousType": "mousse",  "nrr": 32 },
     { "id": "arceau-bleu",        "nom": "Bouchons sur arceau (bleu)",     "type": "bouchons",  "sousType": "arceau",  "nrr": 20 },
     { "id": "arceau-noir",        "nom": "Bouchons sur arceau (noir)",     "type": "bouchons",  "sousType": "arceau",  "nrr": 17 },
-    { "id": "coquilles-serretete","nom": "Coquilles serre-tête",           "type": "coquilles", "sousType": "serre-tête", "nrr": 25 },
+    { "id": "coquilles-casque",   "nom": "Coquilles montées sur casque",   "type": "coquilles", "sousType": "sur casque", "nrr": 25 },
     { "id": "msa-sound-control",  "nom": "MSA Sound Control SH (sur casque)", "type": "coquilles", "sousType": "sur casque", "nrr": 25 }
   ],
+
+  "correctionAppliquee": "L'entrée 'coquilles-serretete' listait un modèle serre-tête absent de la diapo 13 : sur l'image, les DEUX coquilles sont montées sur casque (attaches latérales). Renommée en 'coquilles-casque'. À faire confirmer par le formateur — si un modèle serre-tête est réellement distribué, il faut l'ajouter avec son propre NRR.",
 
   "installation": {
     "bouchons": [

@@ -2,6 +2,7 @@
   "source": "Formation sur le bruit MRI 2025, diapos 7, 8 et 9 — dosimétries effectuées par la mine",
   "avertissement": "Valeurs de référence issues de mesures antérieures sur des postes types. Ne remplacent pas une dosimétrie individuelle.",
   "note_dureePermise": "dureePermise_h calculée par T(L) = 8 / 2^((L - 85) / 3), sans protection auditive.",
+  "note_affichage": "Sous la minute, afficher en SECONDES. Le jackleg à 0.008 h vaut 29 secondes — « 0,008 h » ne veut rien dire pour un travailleur, et c'est précisément ce chiffre qui produit le choc pédagogique.",
 
   "metiers": [
     { "id": "mineur-jackleg",        "nom": "Mineur conventionnel (jackleg)",   "niveau_dBA": 114.9, "dureePermise_h": 0.008,  "secteur": "souterrain" },

@@ -28,20 +28,37 @@ fonctionnement **hors-ligne** (réseau inexistant sous terre).
 
 ## État du projet
 
-Phase de planification. Voir **[PLAN.md](PLAN.md)** pour le plan de réalisation
-complet, et **[docs/](docs/)** pour le contenu source et le modèle de calcul.
+Le **moteur de calcul est construit et testé** : 76 tests reproduisent chaque
+ligne des tableaux de la formation. L'interface reste à bâtir.
+
+```bash
+npm install
+npm test        # 76 tests
+npm run typecheck
+```
+
+Voir **[PLAN.md](PLAN.md)** pour le plan par phases et
+**[docs/catalogue-outils.md](docs/catalogue-outils.md)** pour l'inventaire des
+29 outils interactifs et la sélection retenue pour la v1.
 
 ## Structure du dépôt
 
 ```
 PLAN.md                       Plan de réalisation par phases
 docs/formation-source.md      Contenu intégral de la formation, diapo par diapo
-docs/modele-de-calcul.md      Formules, validation et limites du calculateur
+docs/modele-de-calcul.md      Les 8 formules, leur validation et leurs limites
+docs/catalogue-outils.md      Les 29 outils interactifs, priorisés
 data/rsst-art137.json         Table réglementaire des durées permises
 data/metiers.json             Niveaux mesurés par métier et par tâche
 data/protecteurs.json         Protecteurs auditifs et leur NRR
 data/statistiques-cnesst.json Données de surdité professionnelle au Québec
+src/domain/                   Moteur de calcul, pur et sans dépendance UI
+src/domain/__tests__/         Un test par ligne des diapos 6, 14 et 16
 ```
+
+Le moteur `src/domain/` est **vérifiable sans démarrer le site**. C'est
+volontaire : les formules sont la valeur réelle du projet et le formateur doit
+pouvoir les auditer ligne par ligne contre sa formation.
 
 ## Avertissement
 

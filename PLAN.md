@@ -217,13 +217,34 @@ production, pas le développement.
    (32 × 0,60 = 19 dBA). Les deux sont incompatibles. Défaut provisoire : 60 %.
    → *À trancher avec le formateur.*
 
-2. **Statistiques CNESST par année.**
-   Relevées sur un graphique en basse résolution. À revalider auprès de l'INSPQ
-   avant affichage, ou à remplacer par le seul message qualitatif (« les cas ont
-   été multipliés par 8 entre 1997 et 2019 »).
+   **Ce n'est pas un détail cosmétique** : pour le mineur au jackleg en double
+   protection, le facteur fait passer la durée permise de **2 h 28 (à 60 %) à
+   5 h 17 (à 70 %)**. Le facteur doit donc être exposé dans l'interface de
+   configuration, pas seulement dans un fichier.
+
+2. ~~**Statistiques CNESST par année.**~~ **Déclassé — corroboré.**
+   La somme des cas 1997-2010 relevés sur le graphique de la diapo 2 donne
+   **36 122**, contre **36 188** annoncés à la diapo 3 (source textuelle
+   indépendante) : **0,18 % d'écart**. Le relevé visuel est fiable. Reste une
+   vérification de courtoisie auprès de l'INSPQ, plus un point bloquant.
+
+   Subsiste en revanche une **exigence de formulation** : une part de la hausse
+   est administrative et non épidémiologique. Écrire « les cas **reconnus** ont
+   été multipliés par 9 » (facteur exact : ×8,90, et non ×8).
 
 3. **Total des coûts.** 36 188 × 5 660 $ = 204 824 080 $, la diapo affiche
    204 813 300 $. Écart mineur, à corriger si le chiffre est repris.
+
+3 bis. **Le « 30 dB » de la diapo 16 est orphelin.** Il ne correspond à aucun NRR
+   de la diapo 13 ni à aucune valeur dératée. La diapo 16 raisonne en atténuation
+   **nominale**, la diapo 14 en atténuation **dératée** — deux conventions dans la
+   même formation. Quelle convention le site doit-il retenir ?
+   → *Conséquence déjà appliquée : `A` est un paramètre d'entrée, jamais 30.*
+
+3 ter. **Coquilles serre-tête ou sur casque ?** `data/protecteurs.json` listait un
+   modèle serre-tête ; sur la diapo 13, les deux coquilles photographiées sont
+   montées sur casque. L'entrée a été renommée `coquilles-casque`. Si un serre-tête
+   est réellement distribué, il faut l'ajouter avec son propre NRR.
 
 4. **Vidéo « destruction des cellules ciliées »** (diapo 11) : média externe non
    fourni. À retrouver, à obtenir sous licence, ou à remplacer par une animation

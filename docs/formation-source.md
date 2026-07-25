@@ -15,11 +15,30 @@ visuellement et est transcrit ci-dessous.
 
 ## Diapo 2 — Graphique : cas de surdité professionnelle acceptés par la CNESST
 
-Histogramme des nouveaux cas acceptés, 1997 à 2021. Progression de ~1 540 cas
-en 1997 à un sommet de ~13 712 en 2019, puis ~10 550 (2020) et ~12 506 (2021).
+Titre exact porté par l'image : **« Les nouveaux cas de surdité professionnelle
+acceptés par la CNESST »**. Histogramme jaune à sommets arrondis, étiquettes
+rouges, **sans axe Y ni échelle** — chaque barre porte sa valeur.
 
-> ⚠️ Valeurs relevées sur une image de faible résolution — **à revalider** auprès
-> de la source INSPQ/CNESST avant affichage dans l'application.
+| Année | Cas | Année | Cas | Année | Cas | Année | Cas | Année | Cas |
+|---|---|---|---|---|---|---|---|---|---|
+| 1997 | 1 540 | 2002 | 2 397 | 2007 | 2 964 | 2012 | 4 612 | 2017 | 9 341 |
+| 1998 | 1 722 | 2003 | 2 524 | 2008 | 3 363 | 2013 | 5 609 | 2018 | 12 007 |
+| 1999 | 1 753 | 2004 | 2 364 | 2009 | 3 810 | 2014 | 6 662 | 2019 | **13 712** |
+| 2000 | 1 994 | 2005 | 2 415 | 2010 | 4 341 | 2015 | 7 843 | 2020 | 10 550 |
+| 2001 | 2 261 | 2006 | 2 674 | 2011 | 4 321 | 2016 | 8 412 | 2021 | 12 506 |
+
+Sommet historique en 2019, creux en 2020 (−23,1 %, effet probable de la COVID sur
+le dépôt des réclamations), rebond en 2021. Facteur 1997 → 2019 : **×8,90**.
+
+> ✅ **Ces valeurs sont corroborées.** La somme des cas 1997-2010 relevés sur ce
+> graphique donne **36 122**, contre **36 188** annoncés à la diapo 3 — une source
+> textuelle indépendante. Écart de 66 cas, soit **0,18 %**. Le relevé visuel est
+> donc fiable ; la réserve initiale sur la basse résolution est levée.
+>
+> ⚠️ En revanche, une part de cette hausse est **administrative** (meilleure
+> reconnaissance des réclamations, campagnes de dépistage) et non
+> épidémiologique. Écrire « les cas **reconnus** ont été multipliés par 9 ».
+>
 > Données complètes dans `data/statistiques-cnesst.json`.
 
 ## Diapo 3 — Effets sur les coûts CNESST
@@ -116,11 +135,27 @@ en 1997 à un sommet de ~13 712 en 2019, puis ~10 550 (2020) et ~12 506 (2021).
 > - **Réverbération** : le bruit rebondit selon le type de matériaux
 >   (ex. : tôle vs panneau absorbant poreux).
 
+**Illustration** (absente de la première transcription) : vue isométrique d'un
+local souterrain. Une machine rouge (compresseur ou pompe, avec deux conduites
+grises) repose sur un plancher ondulé rouge ; un travailleur stylisé se tient la
+tête à deux mains ; des ondes rouges rebondissent sur le mur du fond. Trois
+repères numérotés **①②③** placés dans la scène rattachent chaque mode de
+propagation à un trajet physique — ① au niveau de la machine, ② dans l'air vers
+le travailleur, ③ au sol.
+
+C'est le seul support visuel de la diapo et il porte l'essentiel du message : les
+trois modes sont simultanés. À recréer si la diapo devient un module.
+
 ## Diapo 11 — Système auditif : impact du bruit
 
 Schéma de l'oreille (ondes sonores → canal auditif → tympan → cochlée → nerf
 auditif → cortex auditif), avec comparaison **cellules ciliées saines** vs
-**cellules ciliées endommagées**.
+**cellules ciliées endommagées** (rangées droites vs rangées couchées).
+
+> ⚠️ L'annotation du cerveau sur l'image d'origine est **en anglais** :
+> « Auditory cortex ». Toutes les autres étiquettes sont en français. Le schéma
+> n'a donc pas été entièrement francisé — à refaire si l'illustration est
+> reprise, la v1 du site excluant explicitement l'anglais.
 
 > - Fatigue auditive
 > - Acouphène
