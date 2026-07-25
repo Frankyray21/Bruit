@@ -1,0 +1,656 @@
+/*
+ * Système visuel « terrain ».
+ *
+ * Contraintes : lisible sous une lampe frontale, manipulable avec des gants
+ * (cibles ≥ 64 px), thème sombre par défaut parce que le site s'utilise sous
+ * terre. Le rouge vient du gabarit de la formation d'origine.
+ */
+
+:root {
+  --fond: #0d1117;
+  --fond-carte: #161b22;
+  --fond-carte-haut: #1c2333;
+  --bordure: #30363d;
+  --texte: #e6edf3;
+  --texte-doux: #9198a1;
+
+  --rouge: #c8102e;
+  --rouge-clair: #ff5c73;
+  --vert: #2ea043;
+  --jaune: #d29922;
+  --orange: #db6d28;
+  --bleu: #4493f8;
+
+  --rayon: 14px;
+  --cible: 64px;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--fond);
+  color: var(--texte);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  font-size: 17px;
+  line-height: 1.55;
+  overscroll-behavior-y: none;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: 1.7rem;
+}
+h2 {
+  font-size: 1.3rem;
+}
+h3 {
+  font-size: 1.05rem;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* ---------- Structure ---------- */
+
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.contenu {
+  flex: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px 16px 110px;
+}
+
+.entete {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--bordure);
+  background: var(--fond);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.entete__marque {
+  width: 6px;
+  height: 26px;
+  border-radius: 3px;
+  background: var(--rouge);
+}
+
+.entete__titre {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.entete__action {
+  margin-left: auto;
+  color: var(--texte-doux);
+  font-size: 0.85rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--bordure);
+}
+
+/* ---------- Navigation ---------- */
+
+.nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--fond-carte);
+  border-top: 1px solid var(--bordure);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 20;
+}
+
+.nav__item {
+  min-height: var(--cible);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 0.75rem;
+  color: var(--texte-doux);
+  border-top: 3px solid transparent;
+}
+
+.nav__item--actif {
+  color: var(--texte);
+  border-top-color: var(--rouge);
+}
+
+.nav__icone {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+/* ---------- Cartes ---------- */
+
+.carte {
+  background: var(--fond-carte);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.carte__titre {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.carte__source {
+  font-size: 0.75rem;
+  color: var(--texte-doux);
+  white-space: nowrap;
+}
+
+.carte__intro {
+  color: var(--texte-doux);
+  font-size: 0.92rem;
+  margin-bottom: 16px;
+}
+
+/* ---------- Contrôles ---------- */
+
+.champ {
+  margin-bottom: 18px;
+}
+
+.champ__etiquette {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--texte-doux);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.choix {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.choix__option {
+  min-height: 52px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--bordure);
+  background: var(--fond-carte-haut);
+  font-size: 0.95rem;
+  flex: 1 1 auto;
+}
+
+.choix__option--actif {
+  border-color: var(--rouge);
+  background: color-mix(in srgb, var(--rouge) 22%, var(--fond-carte-haut));
+  font-weight: 600;
+}
+
+select.choix__select {
+  width: 100%;
+  min-height: var(--cible);
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--bordure);
+  background: var(--fond-carte-haut);
+  color: var(--texte);
+  font-size: 1rem;
+}
+
+input[type='range'] {
+  width: 100%;
+  height: var(--cible);
+  accent-color: var(--rouge);
+  background: transparent;
+}
+
+.curseur__valeur {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+}
+
+.curseur__nombre {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* ---------- Résultats ---------- */
+
+.resultat {
+  background: var(--fond-carte-haut);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 4px;
+}
+
+.resultat + .resultat {
+  margin-top: 10px;
+}
+
+.resultat__etiquette {
+  font-size: 0.78rem;
+  color: var(--texte-doux);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.resultat__valeur {
+  font-size: 2.1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  margin-top: 2px;
+}
+
+.resultat__note {
+  font-size: 0.88rem;
+  color: var(--texte-doux);
+  margin-top: 6px;
+}
+
+.resultat--vert .resultat__valeur {
+  color: var(--vert);
+}
+.resultat--jaune .resultat__valeur {
+  color: var(--jaune);
+}
+.resultat--rouge .resultat__valeur {
+  color: var(--rouge-clair);
+}
+.resultat--critique .resultat__valeur {
+  color: var(--rouge-clair);
+}
+
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-top: 12px;
+  font-weight: 650;
+  border: 1px solid;
+}
+
+.verdict--vert {
+  border-color: var(--vert);
+  background: color-mix(in srgb, var(--vert) 15%, transparent);
+}
+.verdict--jaune {
+  border-color: var(--jaune);
+  background: color-mix(in srgb, var(--jaune) 15%, transparent);
+}
+.verdict--rouge {
+  border-color: var(--rouge-clair);
+  background: color-mix(in srgb, var(--rouge-clair) 15%, transparent);
+}
+.verdict--critique {
+  border-color: var(--rouge-clair);
+  background: color-mix(in srgb, var(--rouge-clair) 26%, transparent);
+}
+
+.verdict__pastille {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+/* ---------- Avertissements ---------- */
+
+.avertissement {
+  border-left: 3px solid var(--orange);
+  background: color-mix(in srgb, var(--orange) 10%, transparent);
+  padding: 12px 14px;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.88rem;
+  color: var(--texte-doux);
+  margin-top: 14px;
+}
+
+.avertissement strong {
+  color: var(--texte);
+}
+
+.declic {
+  border-left: 3px solid var(--bleu);
+  background: color-mix(in srgb, var(--bleu) 10%, transparent);
+  padding: 12px 14px;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.92rem;
+  margin-top: 14px;
+}
+
+/* ---------- Barres et tableaux ---------- */
+
+.barres {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.barre {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--fond-carte-haut);
+  font-size: 0.9rem;
+  border-left: 4px solid var(--bordure);
+  text-align: left;
+  width: 100%;
+}
+
+.barre--danger {
+  border-left-color: var(--rouge);
+}
+.barre--attention {
+  border-left-color: var(--jaune);
+}
+.barre--ok {
+  border-left-color: var(--vert);
+}
+.barre--actif {
+  outline: 2px solid var(--rouge);
+}
+
+.barre__valeur {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.barre__note {
+  grid-column: 1 / -1;
+  font-size: 0.8rem;
+  color: var(--texte-doux);
+}
+
+/* ---------- Modules ---------- */
+
+.module-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.module-carte {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: center;
+  text-align: left;
+  padding: 18px;
+  background: var(--fond-carte);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  min-height: 84px;
+  width: 100%;
+}
+
+.module-carte__numero {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--fond-carte-haut);
+  border: 1px solid var(--bordure);
+  font-weight: 700;
+}
+
+.module-carte--fait .module-carte__numero {
+  background: var(--vert);
+  border-color: var(--vert);
+  color: #06210c;
+}
+
+.module-carte__titre {
+  font-weight: 650;
+}
+
+.module-carte__sous {
+  font-size: 0.82rem;
+  color: var(--texte-doux);
+}
+
+.module-carte__chevron {
+  color: var(--texte-doux);
+  font-size: 1.3rem;
+}
+
+/* ---------- Boutons ---------- */
+
+.bouton {
+  min-height: var(--cible);
+  width: 100%;
+  border-radius: 12px;
+  background: var(--rouge);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0 20px;
+  margin-top: 8px;
+}
+
+.bouton--secondaire {
+  background: var(--fond-carte-haut);
+  border: 1px solid var(--bordure);
+  color: var(--texte);
+}
+
+.bouton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.barre-boutons {
+  display: flex;
+  gap: 10px;
+}
+
+/* ---------- Quiz ---------- */
+
+.quiz__question {
+  font-size: 1.15rem;
+  font-weight: 650;
+  margin-bottom: 16px;
+}
+
+.quiz__option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  min-height: var(--cible);
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--bordure);
+  background: var(--fond-carte-haut);
+  margin-bottom: 10px;
+}
+
+.quiz__option--juste {
+  border-color: var(--vert);
+  background: color-mix(in srgb, var(--vert) 18%, transparent);
+}
+
+.quiz__option--faux {
+  border-color: var(--rouge-clair);
+  background: color-mix(in srgb, var(--rouge-clair) 18%, transparent);
+}
+
+.quiz__progression {
+  font-size: 0.82rem;
+  color: var(--texte-doux);
+  margin-bottom: 10px;
+}
+
+.attestation {
+  border: 2px solid var(--vert);
+  border-radius: var(--rayon);
+  padding: 22px;
+  text-align: center;
+}
+
+.attestation__score {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--vert);
+}
+
+/* ---------- Étapes guidées ---------- */
+
+.etape {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--fond-carte-haut);
+  margin-bottom: 10px;
+  opacity: 0.45;
+}
+
+.etape--active {
+  opacity: 1;
+  outline: 1px solid var(--rouge);
+}
+
+.etape--faite {
+  opacity: 1;
+}
+
+.etape__numero {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--fond-carte);
+  border: 1px solid var(--bordure);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.etape--faite .etape__numero {
+  background: var(--vert);
+  border-color: var(--vert);
+  color: #06210c;
+}
+
+.chrono {
+  font-size: 2.4rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  margin: 10px 0;
+}
+
+/* ---------- Divers ---------- */
+
+.liste-puces {
+  padding-left: 20px;
+  color: var(--texte-doux);
+  font-size: 0.92rem;
+}
+
+.liste-puces li {
+  margin-bottom: 6px;
+}
+
+.liste-puces strong {
+  color: var(--texte);
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--fond-carte-haut);
+  border: 1px solid var(--bordure);
+  color: var(--texte-doux);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pied {
+  font-size: 0.78rem;
+  color: var(--texte-doux);
+  text-align: center;
+  padding: 24px 8px 8px;
+  line-height: 1.5;
+}
+
+/* ---------- Mode présentation ---------- */
+
+.app--presentation {
+  font-size: 21px;
+}
+
+.app--presentation .contenu {
+  max-width: 1000px;
+}
+
+.app--presentation .resultat__valeur {
+  font-size: 3.4rem;
+}
+
+.app--presentation h1 {
+  font-size: 2.4rem;
+}
+
+.app--presentation h2 {
+  font-size: 1.8rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .resultat__valeur {
+    transition: color 160ms ease;
+  }
+}

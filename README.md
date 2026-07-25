@@ -26,15 +26,26 @@ Travailleurs de terrain : mineurs, foreurs, câbleurs, mécaniciens, soudeurs,
 électriciens. Interface en français, gros contrôles utilisables avec des gants,
 fonctionnement **hors-ligne** (réseau inexistant sous terre).
 
+## Le site
+
+**https://frankyray21.github.io/Bruit/**
+
+Publié automatiquement à chaque poussée, après passage des tests. Installable
+sur téléphone depuis le menu du navigateur (« Ajouter à l'écran d'accueil »), et
+fonctionnel **sans réseau** une fois installé.
+
 ## État du projet
 
-Le **moteur de calcul est construit et testé** : 76 tests reproduisent chaque
-ligne des tableaux de la formation. L'interface reste à bâtir.
+Site fonctionnel : 6 modules de formation, une boîte à outils, un quiz de
+14 questions avec attestation, un mode présentation pour le formateur. Le moteur
+de calcul est couvert par 76 tests qui reproduisent chaque ligne des tableaux de
+la formation.
 
 ```bash
 npm install
-npm test        # 76 tests
-npm run typecheck
+npm run dev      # développement
+npm test         # 76 tests du moteur de calcul
+npm run build    # typecheck + build de production
 ```
 
 Voir **[PLAN.md](PLAN.md)** pour le plan par phases et

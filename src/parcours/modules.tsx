@@ -1,0 +1,296 @@
+/**
+ * Les 6 modules du parcours.
+ *
+ * Les 17 diapos de la formation réorganisées : chaque diapo devient soit un
+ * outil manipulable, soit du contenu assumé comme statique. Rien entre les deux.
+ *
+ * Ordre pédagogique important : la sommation de sources (module 2) doit
+ * précéder tout calcul de dose. C'est elle qui rend la règle des 3 dBA
+ * démontrable ; sans elle, tout le reste repose sur un axiome à croire.
+ */
+
+import type { ReactNode } from 'react';
+import { statistiques } from '../data/index.js';
+import { Avertissement, Carte, Declic } from '../ui/composants.js';
+import { ComposeurQuart } from '../outils/ComposeurQuart.js';
+import { Comparateur } from '../outils/Comparateur.js';
+import { DureePermise, EchelleMetiers, PostesAtelier } from '../outils/DureePermise.js';
+import { EchelleEnergie, SommationSources } from '../outils/SommationSources.js';
+import { BudgetRetrait } from '../outils/BudgetRetrait.js';
+import { Carriere, Substitution } from '../outils/Carriere.js';
+import { FacteurDerating, Protection } from '../outils/Protection.js';
+import { PoseBouchons, Symptomes, VerifCoquilles } from '../outils/Pose.js';
+import { TempsDePort } from '../outils/TempsDePort.js';
+
+export interface Module {
+  readonly id: string;
+  readonly titre: string;
+  readonly sousTitre: string;
+  readonly diapos: string;
+  readonly contenu: () => ReactNode;
+}
+
+export const MODULES: readonly Module[] = [
+  {
+    id: 'pourquoi',
+    titre: 'Pourquoi ça compte',
+    sousTitre: 'Les chiffres de la CNESST',
+    diapos: 'diapos 2 et 3',
+    contenu: () => <ModulePourquoi />,
+  },
+  {
+    id: 'decibel',
+    titre: 'Comprendre le décibel',
+    sousTitre: 'La règle des 3 dBA, démontrée',
+    diapos: 'diapos 4 à 6 et 10',
+    contenu: () => <ModuleDecibel />,
+  },
+  {
+    id: 'exposition',
+    titre: 'Mon métier, mon exposition',
+    sousTitre: 'Ce que la mine a mesuré',
+    diapos: 'diapos 7 à 9',
+    contenu: () => <ModuleExposition />,
+  },
+  {
+    id: 'dommages',
+    titre: 'Ce que le bruit détruit',
+    sousTitre: 'Irréversible',
+    diapos: 'diapos 11 et 12',
+    contenu: () => <ModuleDommages />,
+  },
+  {
+    id: 'choisir',
+    titre: 'Choisir sa protection',
+    sousTitre: 'NRR, dérating, double protection',
+    diapos: 'diapos 13 et 14',
+    contenu: () => <ModuleChoisir />,
+  },
+  {
+    id: 'porter',
+    titre: 'La porter correctement',
+    sousTitre: 'Le geste, et le temps de port',
+    diapos: 'diapos 15 à 17',
+    contenu: () => <ModulePorter />,
+  },
+];
+
+function ModulePourquoi() {
+  const { coutsReclamations: couts, nouveauxCasAcceptes: cas } = statistiques;
+  const serie = cas.series;
+  const premier = serie[0]!;
+  const sommet = serie.reduce((max, p) => (p.cas > max.cas ? p : max), premier);
+
+  return (
+    <>
+      <Carte titre="La surdité professionnelle au Québec" source="diapo 2">
+        <div className="barres">
+          {serie
+            .filter((p) => p.annee % 4 === 1 || p.annee === sommet.annee)
+            .map((p) => (
+              <div
+                key={p.annee}
+                className="barre barre--attention"
+                style={{
+                  borderLeftWidth: `${Math.max(4, (p.cas / sommet.cas) * 26)}px`,
+                }}
+              >
+                <span>{p.annee}</span>
+                <span className="barre__valeur">
+                  {p.cas.toLocaleString('fr-CA')} cas
+                </span>
+              </div>
+            ))}
+        </div>
+
+        <Declic>
+          Les cas <strong>reconnus</strong> par la CNESST ont été multipliés par{' '}
+          <strong>{(sommet.cas / premier.cas).toFixed(1)}</strong> entre{' '}
+          {premier.annee} et {sommet.annee}.
+        </Declic>
+
+        <Avertissement>
+          Une partie de cette hausse vient d'une meilleure reconnaissance des
+          réclamations, pas seulement d'une aggravation réelle. Le constat le
+          plus solide de la formation est ailleurs :{' '}
+          <strong>les réclamants sont de plus en plus jeunes</strong>.
+        </Avertissement>
+      </Carte>
+
+      <Carte titre="Ce que ça coûte" source="diapo 3">
+        <div className="resultat">
+          <div className="resultat__etiquette">
+            {couts.nombreCas.toLocaleString('fr-CA')} cas entre{' '}
+            {couts.periode}
+          </div>
+          <div className="resultat__valeur">
+            {(couts.totalRecalcule_CAD / 1e6).toFixed(1)} M$
+          </div>
+          <div className="resultat__note">
+            à {couts.coutMoyenParCas_CAD.toLocaleString('fr-CA')} $ par
+            réclamation
+          </div>
+        </div>
+        <p className="carte__intro" style={{ marginTop: 14, marginBottom: 0 }}>
+          Mais un chèque ne rend pas l'audition. C'est tout l'objet de ce qui
+          suit.
+        </p>
+      </Carte>
+    </>
+  );
+}
+
+function ModuleDecibel() {
+  return (
+    <>
+      <Carte titre="Deux instruments, deux unités" source="diapo 4">
+        <ul className="liste-puces">
+          <li>
+            Le <strong>sonomètre</strong> mesure le bruit à l'instant même, en{' '}
+            <strong>décibels (dB)</strong>.
+          </li>
+          <li>
+            Le <strong>dosimètre</strong> mesure ce que l'oreille encaisse sur
+            une période, en <strong>décibels corrigés (dBA)</strong>. Ce sont
+            les mesures effectuées par la mine.
+          </li>
+          <li>
+            <strong>À chaque 3 dBA, l'impact sur l'oreille est doublé.</strong>
+          </li>
+        </ul>
+      </Carte>
+
+      <SommationSources />
+      <EchelleEnergie />
+      <DureePermise />
+
+      <Carte titre="Comment le son se propage" source="diapo 10">
+        <ul className="liste-puces">
+          <li>
+            <strong>Aérienne</strong> : le son se propage dans l'air.
+          </li>
+          <li>
+            <strong>Solidienne</strong> : il se transmet dans les éléments
+            solides — plancher, murs, plafond.
+          </li>
+          <li>
+            <strong>Réverbération</strong> : il rebondit selon les matériaux.
+            Une galerie en tôle nue renvoie tout ; un panneau absorbant poreux
+            l'avale.
+          </li>
+        </ul>
+        <Avertissement>
+          Dans une galerie réverbérante, <strong>reculer ne sert presque à
+          rien</strong> : le niveau reste quasi constant. L'intuition « je
+          m'éloigne un peu » vient de l'extérieur, où elle est vraie. Le site
+          n'affiche pas de chiffres ici — aucune mesure de la mine ne permet de
+          les valider.
+        </Avertissement>
+      </Carte>
+    </>
+  );
+}
+
+function ModuleExposition() {
+  return (
+    <>
+      <EchelleMetiers />
+      <ComposeurQuart />
+      <PostesAtelier />
+      <Carriere />
+    </>
+  );
+}
+
+function ModuleDommages() {
+  return (
+    <>
+      <Carte titre="Comment l'oreille est détruite" source="diapo 11">
+        <p className="carte__intro">
+          Les ondes sonores traversent le canal auditif, font vibrer le tympan,
+          puis atteignent la cochlée. À l'intérieur, des{' '}
+          <strong>cellules ciliées</strong> transforment ces vibrations en
+          signal nerveux.
+        </p>
+        <p className="carte__intro" style={{ marginBottom: 0 }}>
+          Le bruit intense couche ces cellules et finit par les détruire. Elles{' '}
+          <strong>ne repoussent pas</strong>. La perte se fait par étapes :
+          fatigue auditive, puis acouphènes, puis surdité.
+        </p>
+      </Carte>
+
+      <Carte titre="Les quatre atteintes" source="diapo 12">
+        <ul className="liste-puces">
+          <li>
+            <strong>Surdité brutale</strong> — un bruit soudain et intense, une
+            déflagration : lésions immédiates et définitives, parfois déchirure
+            du tympan.
+          </li>
+          <li>
+            <strong>Surdité progressive</strong> — fréquente chez les foreurs.
+            Exposition continue, destruction des cellules ciliées, perte{' '}
+            <strong>irréversible</strong>.
+          </li>
+          <li>
+            <strong>Acouphènes</strong> — bourdonnements ou sifflements
+            permanents, même dans le silence.
+          </li>
+          <li>
+            <strong>Hyperacousie</strong> — hypersensibilité anormale aux sons.
+          </li>
+        </ul>
+      </Carte>
+
+      <Carte titre="Et le reste du corps" source="diapo 12">
+        <ul className="liste-puces">
+          <li>Stress et fatigue</li>
+          <li>Perturbation du sommeil</li>
+          <li>
+            Risque accru de maladies cardiovasculaires, dont l'hypertension
+            artérielle
+          </li>
+          <li>Baisse de concentration, donc de qualité de travail</li>
+        </ul>
+      </Carte>
+
+      <Symptomes />
+    </>
+  );
+}
+
+function ModuleChoisir() {
+  return (
+    <>
+      <Protection />
+      <Comparateur />
+      <FacteurDerating />
+      <Substitution />
+    </>
+  );
+}
+
+function ModulePorter() {
+  return (
+    <>
+      <PoseBouchons />
+      <VerifCoquilles />
+      <TempsDePort />
+      <BudgetRetrait />
+
+      <Carte titre="Les trois gestes qui comptent" source="diapo 17">
+        <ul className="liste-puces">
+          <li>
+            <strong>Choisir</strong> le bon type de protection, adapté à sa
+            condition.
+          </li>
+          <li>
+            <strong>Installer</strong> la protection correctement.
+          </li>
+          <li>
+            <strong>Porter</strong> la protection en tout temps.
+          </li>
+        </ul>
+      </Carte>
+    </>
+  );
+}
