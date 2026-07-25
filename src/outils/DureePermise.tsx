@@ -18,6 +18,7 @@ import {
   Resultat,
   Selecteur,
 } from '../ui/composants.js';
+import { nb } from '../ui/format.js';
 
 export function DureePermise() {
   const [niveau, setNiveau] = useState(97.8);
@@ -36,7 +37,7 @@ export function DureePermise() {
           pas={0.1}
           valeur={niveau}
           onChange={setNiveau}
-          affichage={`${niveau.toFixed(1)} dBA`}
+          affichage={`${nb(niveau, 1)} dBA`}
           legende="norme : 85 dBA / 8 h"
         />
       </Champ>
@@ -76,7 +77,7 @@ export function EchelleMetiers() {
           <Barre
             key={m.id}
             nom={m.nom}
-            valeur={`${m.niveau_dBA.toFixed(1)} dBA`}
+            valeur={`${nb(m.niveau_dBA, 1)} dBA`}
             niveauDBA={m.niveau_dBA}
             actif={selection === m.id}
             note={

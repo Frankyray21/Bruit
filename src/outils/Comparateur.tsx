@@ -21,6 +21,7 @@ import {
   Selecteur,
 } from '../ui/composants.js';
 import { formatMinutes } from './TempsDePort.js';
+import { nb } from '../ui/format.js';
 
 const QUART_MIN = 8 * 60;
 
@@ -63,7 +64,7 @@ export function Comparateur() {
       <Resultat
         etiquette="Le mieux protégé"
         valeur={gagnant.nom}
-        note={`${gagnant.effective.toFixed(1)} dB contre ${perdant.effective.toFixed(1)} dB — un écart de ${Math.abs(a.effective - b.effective).toFixed(1)} dB`}
+        note={`${nb(gagnant.effective, 1)} dB contre ${nb(perdant.effective, 1)} dB — un écart de ${nb(Math.abs(a.effective - b.effective), 1)} dB`}
         ton={renversement ? 'jaune' : 'vert'}
       />
 
@@ -107,7 +108,7 @@ function Ligne({
   effective: number;
 }) {
   return (
-    <Champ etiquette={`${titre} — ${effective.toFixed(1)} dB effectifs`}>
+    <Champ etiquette={`${titre} — ${nb(effective, 1)} dB effectifs`}>
       <Selecteur
         options={protecteurs}
         valeur={id}

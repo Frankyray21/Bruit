@@ -176,8 +176,14 @@ button {
 .carte__titre {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 6px;
+}
+
+.carte__titre h2 {
+  flex: 1;
+  min-width: 0;
 }
 
 .carte__source {
@@ -411,6 +417,81 @@ input[type='range'] {
   color: var(--texte-doux);
 }
 
+/* ---------- Lignes éditables (sources, tâches du quart) ---------- */
+
+.ligne {
+  background: var(--fond-carte-haut);
+  border-radius: 10px;
+  border-left: 4px solid var(--bordure);
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.ligne--danger {
+  border-left-color: var(--rouge);
+}
+.ligne--attention {
+  border-left-color: var(--jaune);
+}
+.ligne--ok {
+  border-left-color: var(--vert);
+}
+
+.ligne__haut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ligne__valeur {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ligne__note {
+  font-size: 0.8rem;
+  color: var(--texte-doux);
+  margin-top: 4px;
+}
+
+.ligne__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.ligne__bouton {
+  min-height: 48px;
+  flex: 1;
+  border-radius: 8px;
+  border: 1px solid var(--bordure);
+  background: var(--fond-carte);
+  font-size: 0.9rem;
+}
+
+.ligne__bouton--retirer {
+  flex: 0 0 56px;
+  color: var(--rouge-clair);
+  font-size: 1.2rem;
+}
+
+.ligne__duree {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+
+.ajouts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
 /* ---------- Modules ---------- */
 
 .module-liste {
@@ -421,7 +502,7 @@ input[type='range'] {
 
 .module-carte {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 14px;
   align-items: center;
   text-align: left;
@@ -431,6 +512,13 @@ input[type='range'] {
   border-radius: var(--rayon);
   min-height: 84px;
   width: 100%;
+}
+
+.module-carte__texte {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .module-carte__numero {

@@ -21,6 +21,7 @@ import { Carriere, Substitution } from '../outils/Carriere.js';
 import { FacteurDerating, Protection } from '../outils/Protection.js';
 import { PoseBouchons, Symptomes, VerifCoquilles } from '../outils/Pose.js';
 import { TempsDePort } from '../outils/TempsDePort.js';
+import { nb } from '../ui/format.js';
 
 export interface Module {
   readonly id: string;
@@ -105,7 +106,7 @@ function ModulePourquoi() {
 
         <Declic>
           Les cas <strong>reconnus</strong> par la CNESST ont été multipliés par{' '}
-          <strong>{(sommet.cas / premier.cas).toFixed(1)}</strong> entre{' '}
+          <strong>{nb((sommet.cas / premier.cas), 1)}</strong> entre{' '}
           {premier.annee} et {sommet.annee}.
         </Declic>
 
@@ -124,7 +125,7 @@ function ModulePourquoi() {
             {couts.periode}
           </div>
           <div className="resultat__valeur">
-            {(couts.totalRecalcule_CAD / 1e6).toFixed(1)} M$
+            {nb((couts.totalRecalcule_CAD / 1e6), 1)} M$
           </div>
           <div className="resultat__note">
             à {couts.coutMoyenParCas_CAD.toLocaleString('fr-CA')} $ par

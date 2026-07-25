@@ -13,6 +13,7 @@ import {
 import { bouchons, protecteurParId } from '../data/index.js';
 import { useConfig } from '../etat/config.js';
 import { Carte, Champ, Curseur, Declic, Resultat, Selecteur } from '../ui/composants.js';
+import { nb } from '../ui/format.js';
 
 const QUART_MIN = 8 * 60;
 
@@ -52,22 +53,22 @@ export function TempsDePort() {
           valeur={minutesRetrait}
           onChange={setMinutesRetrait}
           affichage={formatMinutes(minutesRetrait)}
-          legende={`porté ${(tempsDePort * 100).toFixed(1)} % du quart`}
+          legende={`porté ${nb((tempsDePort * 100), 1)} % du quart`}
         />
       </Champ>
 
       <Resultat
         etiquette="Protection réellement obtenue"
-        valeur={`${effective.toFixed(1)} dB`}
-        note={`au lieu de ${nominale.toFixed(1)} dB si le protecteur est porté en tout temps`}
+        valeur={`${nb(effective, 1)} dB`}
+        note={`au lieu de ${nb(nominale, 1)} dB si le protecteur est porté en tout temps`}
         ton={partPerdue > 50 ? 'rouge' : partPerdue > 25 ? 'jaune' : 'vert'}
       />
 
       {minutesRetrait > 0 && (
         <Resultat
           etiquette="Protection perdue"
-          valeur={`${partPerdue.toFixed(0)} %`}
-          note={`${perdu.toFixed(1)} dB envolés pour ${formatMinutes(minutesRetrait)} sans protection`}
+          valeur={`${nb(partPerdue, 0)} %`}
+          note={`${nb(perdu, 1)} dB envolés pour ${formatMinutes(minutesRetrait)} sans protection`}
         />
       )}
 

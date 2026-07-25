@@ -30,6 +30,7 @@ import {
   Selecteur,
   Verdict,
 } from '../ui/composants.js';
+import { nb } from '../ui/format.js';
 
 export function Protection() {
   const { facteurBouchons, facteurCoquilles } = useConfig();
@@ -115,17 +116,17 @@ export function Protection() {
 
       <Resultat
         etiquette="Atténuation réelle"
-        valeur={`${attenuation.toFixed(1)} dB`}
+        valeur={`${nb(attenuation, 1)} dB`}
         note={
           double
-            ? `le meilleur NRR (${Math.max(bouchon.nrr, coquille.nrr)}) dératé à ${(facteurBouchons * 100).toFixed(0)} %, plus 5 dB`
-            : `NRR ${bouchon.nrr} dératé à ${(facteurBouchons * 100).toFixed(0)} %`
+            ? `le meilleur NRR (${Math.max(bouchon.nrr, coquille.nrr)}) dératé à ${nb((facteurBouchons * 100), 0)} %, plus 5 dB`
+            : `NRR ${bouchon.nrr} dératé à ${nb((facteurBouchons * 100), 0)} %`
         }
       />
 
       <Resultat
         etiquette="Niveau perçu sous la protection"
-        valeur={`${restant.toFixed(1)} dBA`}
+        valeur={`${nb(restant, 1)} dBA`}
         note={`durée permise : ${formaterDuree(dureePermise(restant))}`}
         ton={restant > 85 ? 'rouge' : restant < 70 ? 'jaune' : 'vert'}
       />
@@ -136,7 +137,7 @@ export function Protection() {
         <Declic>
           <strong>Les atténuations ne s'additionnent pas.</strong> NRR{' '}
           {bouchon.nrr} + NRR {coquille.nrr} ne donnent pas {additionNaive} dB
-          de réduction mais <strong>{doubleAtt.toFixed(0)} dB</strong>. On part
+          de réduction mais <strong>{nb(doubleAtt, 0)} dB</strong>. On part
           du meilleur des deux et on ajoute environ 5 dB.
         </Declic>
       )}
@@ -160,7 +161,7 @@ export function Protection() {
 
       {restant < 70 && verdict.niveau !== 'critique' && (
         <Avertissement>
-          À <strong>{restant.toFixed(0)} dBA</strong> sous la protection, tu
+          À <strong>{nb(restant, 0)} dBA</strong> sous la protection, tu
           risques de ne plus entendre les alarmes, les véhicules ni tes
           collègues. Ce point ne figure pas dans la formation — à valider avec
           ton formateur avant d'en tirer une conclusion.
@@ -193,7 +194,7 @@ export function FacteurDerating() {
               className={`choix__option${Math.abs(facteurBouchons - f) < 0.001 ? ' choix__option--actif' : ''}`}
               onClick={() => setFacteurBouchons(f)}
             >
-              {(f * 100).toFixed(0)} %
+              {nb((f * 100), 0)} %
             </button>
           ))}
         </div>

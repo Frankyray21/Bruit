@@ -16,29 +16,26 @@ import {
 } from '../domain/rsst.js';
 import { verdictDose } from '../domain/verdict.js';
 import { taches } from '../data/index.js';
-import {
-  Barre,
-  Carte,
-  Declic,
-  Resultat,
-  Verdict,
-} from '../ui/composants.js';
+import { Carte, Declic, Ligne, Resultat, Verdict } from '../ui/composants.js';
+import { nb, pourcent } from '../ui/format.js';
 
-interface Ligne extends TacheDomaine {
-  readonly id: string;
+interface LigneQuart extends TacheDomaine {
+  readonly cle: number;
   readonly nom: string;
 }
 
 const QUART_DEBUT_H = 7;
 
-const DEPART: Ligne[] = [
-  { id: 'meulage', nom: 'Meulage', niveauDBA: 95, dureeH: 2 },
-  { id: 'marteau-aiguille', nom: 'Marteau aiguille', niveauDBA: 92, dureeH: 1.5 },
-  { id: 'ambiant-pause', nom: 'Ambiant en pause', niveauDBA: 66, dureeH: 2 },
+let prochaineCle = 0;
+
+const DEPART: LigneQuart[] = [
+  { cle: prochaineCle++, nom: 'Meulage', niveauDBA: 95, dureeH: 2 },
+  { cle: prochaineCle++, nom: 'Marteau aiguille', niveauDBA: 92, dureeH: 1.5 },
+  { cle: prochaineCle++, nom: 'Ambiant en pause', niveauDBA: 66, dureeH: 2 },
 ];
 
 export function ComposeurQuart() {
-  const [lignes, setLignes] = useState<Ligne[]>(DEPART);
+  const [lignes, setLignes] = useState<LigneQuart[]>(DEPART);
 
   const total = dose(lignes);
   const lex = niveauEquivalent8h(total);
@@ -51,7 +48,12 @@ export function ComposeurQuart() {
     if (!tache) return;
     setLignes([
       ...lignes,
-      { id: `${id}-${lignes.length}`, nom: tache.nom, niveauDBA: tache.niveau_dBA, dureeH: 1 },
+      {
+        cle: prochaineCle++,
+        nom: tache.nom,
+        niveauDBA: tache.niveau_dBA,
+        dureeH: 1,
+      },
     ]);
   }
 
@@ -69,47 +71,38 @@ export function ComposeurQuart() {
       source="diapos 7 et 8"
       intro="Empile tes tâches de la journée. La dose se cumule : 100 %, c'est la limite réglementaire du quart."
     >
-      <div className="barres">
-        {lignes.map((l, i) => (
-          <div key={l.id} className="barre barre--attention" style={{ display: 'block' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-              <span>
-                {l.nom} — {l.niveauDBA} dBA
-              </span>
-              <span className="barre__valeur">{dose([l]).toFixed(0)} %</span>
-            </div>
-            <div className="barre-boutons" style={{ marginTop: 8 }}>
+      {lignes.map((l, i) => (
+        <Ligne
+          key={l.cle}
+          nom={`${l.nom} — ${l.niveauDBA} dBA`}
+          valeur={pourcent(dose([l]))}
+          niveauDBA={l.niveauDBA}
+          onRetirer={() => setLignes(lignes.filter((_, j) => j !== i))}
+          actions={
+            <>
               <button
                 type="button"
-                className="choix__option"
+                className="ligne__bouton"
                 onClick={() => ajusterDuree(i, -0.5)}
+                aria-label={`Réduire la durée de ${l.nom}`}
               >
-                −30 min
+                − 30 min
               </button>
-              <span className="choix__option" style={{ textAlign: 'center' }}>
-                {formaterDuree(l.dureeH)}
-              </span>
+              <span className="ligne__duree">{formaterDuree(l.dureeH)}</span>
               <button
                 type="button"
-                className="choix__option"
+                className="ligne__bouton"
                 onClick={() => ajusterDuree(i, 0.5)}
+                aria-label={`Allonger la durée de ${l.nom}`}
               >
-                +30 min
+                + 30 min
               </button>
-              <button
-                type="button"
-                className="choix__option"
-                onClick={() => setLignes(lignes.filter((_, j) => j !== i))}
-                aria-label={`Retirer ${l.nom}`}
-              >
-                ×
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+            </>
+          }
+        />
+      ))}
 
-      <div className="choix" style={{ marginTop: 12 }}>
+      <div className="ajouts">
         {taches.map((t) => (
           <button
             key={t.id}
@@ -124,8 +117,8 @@ export function ComposeurQuart() {
 
       <Resultat
         etiquette={`Dose du quart — ${formaterDuree(heures)} de travail`}
-        valeur={`${total.toFixed(0)} %`}
-        note={`niveau équivalent sur 8 h : ${lex.toFixed(1)} dBA`}
+        valeur={pourcent(total)}
+        note={`niveau équivalent sur 8 h : ${nb(lex, 1)} dBA`}
         ton={verdict.niveau}
       />
 

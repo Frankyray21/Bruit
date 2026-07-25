@@ -9,18 +9,26 @@
 import { useState } from 'react';
 import { energieRelative, gainSiEteinte, sommeSources } from '../domain/sources.js';
 import { taches } from '../data/index.js';
-import {
-  Barre,
-  Carte,
-  Declic,
-  Resultat,
-} from '../ui/composants.js';
+import { Carte, Declic, Ligne, Resultat } from '../ui/composants.js';
+import { nb } from '../ui/format.js';
+
+interface Source {
+  readonly cle: number;
+  readonly nom: string;
+  readonly niveauDBA: number;
+}
+
+let prochaineCle = 0;
 
 export function SommationSources() {
-  const [machines, setMachines] = useState<number[]>([95, 95]);
+  const [sources, setSources] = useState<Source[]>([
+    { cle: prochaineCle++, nom: 'Machine 1', niveauDBA: 95 },
+    { cle: prochaineCle++, nom: 'Machine 2', niveauDBA: 95 },
+  ]);
 
-  const total = sommeSources(machines);
-  const naif = machines.reduce((s, n) => s + n, 0);
+  const niveaux = sources.map((s) => s.niveauDBA);
+  const total = sommeSources(niveaux);
+  const naif = niveaux.reduce((s, n) => s + n, 0);
 
   return (
     <Carte
@@ -28,40 +36,43 @@ export function SommationSources() {
       source="diapo 4"
       intro="Ajoute des équipements dans la galerie et regarde le niveau résultant. Ce n'est pas une addition."
     >
-      <div className="barres">
-        {machines.map((niveau, i) => (
-          <Barre
-            key={i}
-            nom={`Source ${i + 1} — ${niveau} dBA`}
-            valeur={`retirer  ×`}
-            niveauDBA={niveau}
-            note={
-              machines.length > 1
-                ? `l'éteindre ferait gagner ${gainSiEteinte(machines, i).toFixed(2)} dB`
-                : undefined
-            }
-            onClick={() => setMachines(machines.filter((_, j) => j !== i))}
-          />
-        ))}
-      </div>
+      {sources.map((s, i) => (
+        <Ligne
+          key={s.cle}
+          nom={s.nom}
+          valeur={`${s.niveauDBA} dBA`}
+          niveauDBA={s.niveauDBA}
+          note={
+            sources.length > 1
+              ? `l'éteindre ferait gagner ${nb(gainSiEteinte(niveaux, i), 2)} dB`
+              : undefined
+          }
+          onRetirer={() => setSources(sources.filter((_, j) => j !== i))}
+        />
+      ))}
 
-      <div className="choix" style={{ marginTop: 12 }}>
+      <div className="ajouts">
         {taches.slice(0, 5).map((t) => (
           <button
             key={t.id}
             type="button"
             className="choix__option"
-            onClick={() => setMachines([...machines, t.niveau_dBA])}
+            onClick={() =>
+              setSources([
+                ...sources,
+                { cle: prochaineCle++, nom: t.nom, niveauDBA: t.niveau_dBA },
+              ])
+            }
           >
             + {t.nom} ({t.niveau_dBA})
           </button>
         ))}
       </div>
 
-      {machines.length > 0 && (
+      {sources.length > 0 && (
         <Resultat
           etiquette="Niveau résultant"
-          valeur={`${total.toFixed(1)} dBA`}
+          valeur={`${nb(total, 1)} dBA`}
           note={`l'addition naïve donnerait ${naif} dBA — ce qui n'a aucun sens physique`}
           ton={total > 100 ? 'rouge' : total > 85 ? 'jaune' : 'vert'}
         />
@@ -89,7 +100,7 @@ export function EchelleEnergie() {
       intro="Le décibel est une échelle logarithmique : quelques dBA de plus, et l'énergie reçue explose."
     >
       <div className="curseur__valeur">
-        <span className="curseur__nombre">{niveau.toFixed(1)} dBA</span>
+        <span className="curseur__nombre">{nb(niveau, 1)} dBA</span>
         <span className="carte__source">norme : 85 dBA</span>
       </div>
       <input
@@ -103,8 +114,8 @@ export function EchelleEnergie() {
 
       <Resultat
         etiquette="Énergie reçue, comparée à la norme"
-        valeur={`× ${facteur < 10 ? facteur.toFixed(1) : Math.round(facteur).toLocaleString('fr-CA')}`}
-        note={`${(niveau - 85).toFixed(1)} dBA au-dessus de la limite des 8 heures`}
+        valeur={`× ${facteur < 10 ? nb(facteur, 1) : Math.round(facteur).toLocaleString('fr-CA')}`}
+        note={`${nb((niveau - 85), 1)} dBA au-dessus de la limite des 8 heures`}
         ton={facteur > 100 ? 'rouge' : facteur > 10 ? 'jaune' : 'vert'}
       />
 

@@ -185,6 +185,58 @@ export function Declic({ children }: { children: ReactNode }) {
   return <div className="declic">{children}</div>;
 }
 
+/** Le ton d'une ligne selon l'écart du niveau à la norme des 85 dBA. */
+export function tonNiveau(niveauDBA: number): 'danger' | 'attention' | 'ok' {
+  if (niveauDBA > 100) return 'danger';
+  if (niveauDBA > 85) return 'attention';
+  return 'ok';
+}
+
+/**
+ * Une ligne qu'on peut modifier ou retirer : une source de bruit, une tâche du
+ * quart. Les actions sont des vrais boutons de 48 px, pas du texte cliquable.
+ */
+export function Ligne({
+  nom,
+  valeur,
+  niveauDBA,
+  note,
+  onRetirer,
+  actions,
+}: {
+  nom: string;
+  valeur: string;
+  niveauDBA: number;
+  note?: string;
+  onRetirer?: () => void;
+  actions?: ReactNode;
+}) {
+  return (
+    <div className={`ligne ligne--${tonNiveau(niveauDBA)}`}>
+      <div className="ligne__haut">
+        <span>{nom}</span>
+        <span className="ligne__valeur">{valeur}</span>
+      </div>
+      {note && <div className="ligne__note">{note}</div>}
+      {(actions || onRetirer) && (
+        <div className="ligne__actions">
+          {actions}
+          {onRetirer && (
+            <button
+              type="button"
+              className="ligne__bouton ligne__bouton--retirer"
+              onClick={onRetirer}
+              aria-label={`Retirer ${nom}`}
+            >
+              ×
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Une ligne de l'échelle des niveaux, colorée selon l'écart à la norme. */
 export function Barre({
   nom,
@@ -201,14 +253,7 @@ export function Barre({
   actif?: boolean;
   onClick?: () => void;
 }) {
-  const ton =
-    niveauDBA > 100 ? 'danger' : niveauDBA > 85 ? 'attention' : 'ok';
-
-  const classes = [
-    'barre',
-    `barre--${ton}`,
-    actif ? 'barre--actif' : '',
-  ]
+  const classes = ['barre', `barre--${tonNiveau(niveauDBA)}`, actif ? 'barre--actif' : '']
     .filter(Boolean)
     .join(' ');
 

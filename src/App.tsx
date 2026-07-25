@@ -150,9 +150,8 @@ function Parcours({
             <span className="module-carte__numero">
               {faits.includes(m.id) ? '✓' : i + 1}
             </span>
-            <span>
+            <span className="module-carte__texte">
               <span className="module-carte__titre">{m.titre}</span>
-              <br />
               <span className="module-carte__sous">
                 {m.sousTitre} · {m.diapos}
               </span>

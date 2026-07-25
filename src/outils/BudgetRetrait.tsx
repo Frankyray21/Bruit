@@ -20,6 +20,7 @@ import {
   Verdict,
 } from '../ui/composants.js';
 import { formatMinutes } from './TempsDePort.js';
+import { nb } from '../ui/format.js';
 
 export function BudgetRetrait() {
   const { facteurBouchons } = useConfig();
@@ -60,7 +61,7 @@ export function BudgetRetrait() {
           <Resultat
             etiquette="Retrait toléré sur ton quart"
             valeur={formatMinutes(Math.floor(budget.minutesDeRetrait))}
-            note={`soit un port de ${(budget.tempsDePortMinimal * 100).toFixed(1)} % du temps`}
+            note={`soit un port de ${nb((budget.tempsDePortMinimal * 100), 1)} % du temps`}
             ton={budget.minutesDeRetrait < 30 ? 'jaune' : 'vert'}
           />
           <Verdict

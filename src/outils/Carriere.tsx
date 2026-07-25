@@ -19,6 +19,7 @@ import {
   Resultat,
   Selecteur,
 } from '../ui/composants.js';
+import { entier, nb } from '../ui/format.js';
 
 export function Carriere() {
   const [metierId, setMetierId] = useState('foreur-long-trou');
@@ -59,14 +60,14 @@ export function Carriere() {
 
       <Resultat
         etiquette="Doses permises consommées par jour"
-        valeur={`× ${cumul.dosesParJour.toFixed(1)}`}
+        valeur={`× ${nb(cumul.dosesParJour, 1)}`}
         note="1,0 = exactement la limite réglementaire d'une journée"
         ton={cumul.dosesParJour > 10 ? 'rouge' : cumul.dosesParJour > 1 ? 'jaune' : 'vert'}
       />
 
       <Resultat
         etiquette={`Cumul sur ${annees} ans`}
-        valeur={Math.round(cumul.dosesTotales).toLocaleString('fr-CA')}
+        valeur={entier(cumul.dosesTotales)}
         note="doses réglementaires, sans protection auditive"
       />
 
@@ -106,7 +107,7 @@ export function Substitution() {
             </div>
             <div className="resultat__valeur">− {gain} dBA</div>
             <div className="resultat__note">
-              énergie divisée par {facteur.toFixed(1)} · durée permise{' '}
+              énergie divisée par {nb(facteur, 1)} · durée permise{' '}
               {formaterDuree(dureePermise(a.niveau_dBA))} →{' '}
               {formaterDuree(dureePermise(b.niveau_dBA))}
             </div>
