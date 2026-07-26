@@ -1,55 +1,47 @@
 /**
- * « Le voyage du son » — animation officielle de la NIDCD (NIH).
+ * Animation « Le voyage du son » — intégrée en lecture dans le module 4.
  *
- * Ressource du domaine public (production d'une agence fédérale américaine) :
- * réutilisable sans redevance, l'attribution étant appréciée mais non exigée.
- * On la crédite quand même, c'est correct.
+ * La vidéo est hébergée localement (`public/videos/videoplayback.mp4`), donc
+ * elle fonctionne hors-ligne comme le reste du site. Elle démarre en boucle,
+ * muette (politique des navigateurs), avec les contrôles pour activer le son.
  *
- * Deux contraintes gérées ici :
- *  - le site est hors-ligne : le lien vers la NIDCD n'est qu'un « pour aller
- *    plus loin », le cœur anatomique reste couvert par la coupe SVG et la 3D ;
- *  - la vidéo peut être hébergée localement : si le fichier
- *    `public/videos/voyage-du-son.mp4` est présent, la carte le joue au lieu
- *    d'afficher le lien. Sinon, elle affiche le lien, sans player cassé.
+ * Source : animation de la NIDCD (NIH), du domaine public — attribution
+ * appréciée, on la crédite.
  */
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Carte } from '../ui/composants.js';
 
 const PAGE_NIDCD =
   'https://www.nidcd.nih.gov/news/multimedia/journey-of-sound-video';
 
-// Chemin de la vidéo si tu la déposes toi-même (voir README). BASE_URL gère
-// le préfixe /Bruit/ du déploiement.
-const VIDEO_LOCALE = `${import.meta.env.BASE_URL}videos/voyage-du-son.mp4`;
+const VIDEO_LOCALE = `${import.meta.env.BASE_URL}videos/videoplayback.mp4`;
 
 export function AnimationSon() {
-  // On démarre sur le lien ; on ne bascule sur la vidéo que si elle se charge
-  // vraiment. Pas de player cassé quand le fichier est absent.
-  const [aVideo, setAVideo] = useState(false);
-  const video = useRef<HTMLVideoElement>(null);
+  // Repli sur le lien si le fichier est absent ou illisible : jamais de player
+  // cassé.
+  const [erreur, setErreur] = useState(false);
 
   return (
     <Carte
-      titre="Pour aller plus loin : le voyage du son"
+      titre="Le voyage du son"
       source="NIDCD · NIH"
-      intro="Une animation officielle qui suit le son de l'oreille jusqu'au cerveau, cellules ciliées comprises."
+      intro="Le son de l'oreille jusqu'au cerveau, cellules ciliées comprises. Touche le son pour l'activer."
     >
-      {/* Sonde discrète : si le fichier local existe, on passe en mode vidéo. */}
-      <video
-        ref={video}
-        className="video-son"
-        style={{ display: aVideo ? 'block' : 'none' }}
-        controls={aVideo}
-        preload="metadata"
-        playsInline
-        onCanPlay={() => setAVideo(true)}
-        onError={() => setAVideo(false)}
-      >
-        <source src={VIDEO_LOCALE} type="video/mp4" />
-      </video>
-
-      {!aVideo && (
+      {!erreur ? (
+        <video
+          className="video-son"
+          controls
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          onError={() => setErreur(true)}
+        >
+          <source src={VIDEO_LOCALE} type="video/mp4" />
+        </video>
+      ) : (
         <a
           className="bouton"
           href={PAGE_NIDCD}
@@ -66,8 +58,7 @@ export function AnimationSon() {
         <a href={PAGE_NIDCD} target="_blank" rel="noopener noreferrer">
           NIDCD, National Institutes of Health
         </a>{' '}
-        — domaine public. Ce lien s'ouvre en ligne ; le reste du site fonctionne
-        sans réseau.
+        — domaine public.
       </p>
     </Carte>
   );

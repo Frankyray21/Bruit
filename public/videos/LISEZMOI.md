@@ -11,7 +11,7 @@ NIDCD (fonctionne uniquement en ligne).
 1. Télécharge la vidéo depuis une source officielle :
    - Page NIDCD : https://www.nidcd.nih.gov/news/multimedia/journey-of-sound-video
    - Version YouTube : https://www.youtube.com/watch?v=Ew7VXZ3sH2o
-2. Renomme le fichier **`voyage-du-son.mp4`** et dépose-le dans ce dossier
+2. Renomme le fichier **`videoplayback.mp4`** et dépose-le dans ce dossier
    (`public/videos/`).
 3. Reconstruis le site (`npm run build`). La carte détecte le fichier et joue
    la vidéo à la place du lien, automatiquement.

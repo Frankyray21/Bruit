@@ -35,7 +35,12 @@ export default defineConfig({
       },
       workbox: {
         // Tout doit être disponible hors-ligne : il n'y a pas de réseau sous terre.
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // La vidéo (mp4) est incluse pour que l'animation joue au fond.
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2,mp4}'],
+        // La vidéo dépasse la limite de précache par défaut (2 Mo) ; on la relève
+        // pour qu'elle soit bien mise en cache. Coût : une installation plus
+        // lourde, assumé puisqu'on veut l'animation hors-ligne.
+        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         // Sans ça, les précaches des versions précédentes s'accumulent et
         // peuvent servir des fichiers qui n'existent plus — d'où une page vide.
         cleanupOutdatedCaches: true,
