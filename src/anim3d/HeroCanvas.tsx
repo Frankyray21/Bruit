@@ -1,15 +1,16 @@
 /**
- * Canvas 3D du hero — un vrai modèle GLB d'oreille en rotation lente.
+ * Canvas 3D du hero.
  *
- * Comme le hero de TMS charge un vrai modèle de corps (et non une forme générée
- * par code), le hero de Bruit charge un vrai modèle d'oreille déposé dans
- * `public/models/oreille.glb`. S'il est absent, le composant ne rend rien : le
- * fond propre (ondes sonores + dégradé) de HeroOreille reste visible.
+ * Préfère un VRAI modèle d'oreille si tu en déposes un
+ * (`public/models/oreille.glb`) — comme le hero de TMS. Sinon, il montre une
+ * cochlée nacrée générée en code, propre et reconnaissable.
  *
- * Décoratif (aria-hidden), rotation lente, démonté hors écran.
+ * Décoratif (aria-hidden), chargé en différé, démonté hors écran, pose fixe si
+ * prefers-reduced-motion.
  */
 
 import { useEffect, useRef, useState } from 'react';
+import { creerHeroCochlee, type PoigneeHero } from './heroCochlee.js';
 import { creerVisionneuse, type VisionneuseGlb } from './sceneGlb.js';
 
 const URL_MODELE = `${import.meta.env.BASE_URL}models/oreille.glb`;
@@ -25,27 +26,34 @@ export default function HeroCanvas() {
   useEffect(() => {
     const el = conteneur.current;
     if (!el) return;
-    let visionneuse: VisionneuseGlb | null = null;
+    let procedural: PoigneeHero | null = null;
+    let modele: VisionneuseGlb | null = null;
     let annule = false;
 
+    const monter = () => {
+      if (procedural || modele) return;
+      // On tente d'abord le vrai modèle ; s'il n'existe pas, la cochlée générée.
+      creerVisionneuse(el, URL_MODELE, !REDUIT)
+        .then((v) => {
+          if (annule) return v.detruire();
+          modele = v;
+          setPret(true);
+        })
+        .catch(() => {
+          if (annule) return;
+          procedural = creerHeroCochlee(el, !REDUIT);
+          setPret(true);
+        });
+    };
+    const demonter = () => {
+      procedural?.detruire();
+      modele?.detruire();
+      procedural = null;
+      modele = null;
+    };
+
     const io = new IntersectionObserver(
-      ([e]) => {
-        if (e && e.isIntersecting && !visionneuse) {
-          creerVisionneuse(el, URL_MODELE, !REDUIT)
-            .then((v) => {
-              if (annule) {
-                v.detruire();
-                return;
-              }
-              visionneuse = v;
-              setPret(true);
-            })
-            .catch(() => setPret(false)); // pas de modèle : le fond reste visible
-        } else if ((!e || !e.isIntersecting) && visionneuse) {
-          visionneuse.detruire();
-          visionneuse = null;
-        }
-      },
+      ([e]) => (e && e.isIntersecting ? monter() : demonter()),
       { threshold: 0.05 },
     );
     io.observe(el);
@@ -53,7 +61,7 @@ export default function HeroCanvas() {
     return () => {
       annule = true;
       io.disconnect();
-      visionneuse?.detruire();
+      demonter();
     };
   }, []);
 
