@@ -1,17 +1,20 @@
 /**
- * Carte « modèle 3D anatomique » — optionnelle.
+ * Carte « modèle 3D anatomique » — optionnelle et paramétrable.
  *
- * Si tu déposes un fichier `public/models/oreille.glb` (voir
- * `public/models/LISEZMOI.md`), la carte l'affiche dans une visionneuse qu'on
- * tourne au doigt. Sinon, elle montre un repli propre avec un lien vers NIH 3D,
- * où trouver des modèles anatomiques du domaine public.
+ * Dépose un fichier `.glb` dans `public/models/` (voir `LISEZMOI.md`) et cette
+ * carte l'affiche dans une visionneuse qu'on tourne au doigt. Deux emplacements
+ * sont prévus dans le module 4 :
+ *   • `oreille.glb`  — l'oreille complète (externe + interne)
+ *   • `cellules.glb` — les cellules ciliées / l'organe de Corti
+ *
+ * Si le fichier est absent, la carte montre un repli propre avec un lien vers
+ * NIH 3D (domaine public), jamais une scène vide ni une erreur bruyante.
  */
 
 import { useEffect, useRef, useState } from 'react';
 import { creerVisionneuse, type VisionneuseGlb } from './sceneGlb.js';
 import { Carte } from '../ui/composants.js';
 
-const URL_MODELE = `${import.meta.env.BASE_URL}models/oreille.glb`;
 const NIH_3D = 'https://3d.nih.gov/';
 
 const REDUIT =
@@ -20,7 +23,29 @@ const REDUIT =
 
 type Etat = 'chargement' | 'pret' | 'absent';
 
-export default function ModeleGlb() {
+export interface ModeleGlbProps {
+  /** Nom du fichier dans `public/models/` (ex. `oreille.glb`). */
+  readonly fichier: string;
+  /** Titre de la carte quand le modèle est présent. */
+  readonly titre: string;
+  /** Phrase d'intro sous le titre quand le modèle est présent. */
+  readonly intro: string;
+  /** Ce qu'on cherche, pour le texte du repli (ex. « de l'oreille »). */
+  readonly sujet: string;
+  /** Étiquette d'accessibilité de la visionneuse. */
+  readonly aria: string;
+  /** Terme à chercher sur NIH 3D dans le repli (ex. « ear », « cochlea »). */
+  readonly recherche: string;
+}
+
+export default function ModeleGlb({
+  fichier,
+  titre,
+  intro,
+  sujet,
+  aria,
+  recherche,
+}: ModeleGlbProps) {
   const conteneur = useRef<HTMLDivElement>(null);
   const [etat, setEtat] = useState<Etat>('chargement');
 
@@ -28,7 +53,8 @@ export default function ModeleGlb() {
     let visionneuse: VisionneuseGlb | null = null;
     let annule = false;
 
-    creerVisionneuse(conteneur.current!, URL_MODELE, !REDUIT)
+    const url = `${import.meta.env.BASE_URL}models/${fichier}`;
+    creerVisionneuse(conteneur.current!, url, !REDUIT)
       .then((v) => {
         if (annule) {
           v.detruire();
@@ -61,19 +87,20 @@ export default function ModeleGlb() {
       annule = true;
       visionneuse?.detruire();
     };
-  }, []);
+  }, [fichier]);
 
   if (etat === 'absent') {
     return (
-      <Carte titre="Un modèle 3D anatomique" source="optionnel">
+      <Carte titre={titre} source="optionnel">
         <p className="carte__intro" style={{ marginBottom: 12 }}>
-          Tu peux afficher ici un vrai modèle 3D de l'oreille. Récupère un
-          fichier <strong>.glb</strong> du domaine public sur NIH 3D et dépose-le
-          dans le site (voir le fichier LISEZMOI du dépôt).
+          Tu peux afficher ici un vrai modèle 3D {sujet}. Récupère un fichier{' '}
+          <strong>.glb</strong> du domaine public sur NIH 3D et dépose-le dans le
+          site sous le nom <code>{fichier}</code> (voir le fichier LISEZMOI du
+          dépôt).
         </p>
         <a
           className="bouton"
-          href={NIH_3D}
+          href={`${NIH_3D}search?q=${encodeURIComponent(recherche)}`}
           target="_blank"
           rel="noopener noreferrer"
           style={{ display: 'grid', placeItems: 'center', textDecoration: 'none' }}
@@ -89,16 +116,12 @@ export default function ModeleGlb() {
   }
 
   return (
-    <Carte
-      titre="Modèle 3D de l'oreille"
-      source="glb local"
-      intro="Fais glisser pour tourner le modèle."
-    >
+    <Carte titre={titre} source="glb local" intro={intro}>
       <div
         ref={conteneur}
         className="scene3d"
         role="img"
-        aria-label="Modèle 3D anatomique de l'oreille, manipulable"
+        aria-label={aria}
         style={{ visibility: etat === 'pret' ? 'visible' : 'hidden' }}
       />
     </Carte>

@@ -262,8 +262,27 @@ function ModuleDommages() {
 
       <Symptomes />
       <AnimationSon />
+
       <Suspense fallback={<div className="scene3d-chargement">Chargement…</div>}>
-        <ModeleGlb />
+        <ModeleGlb
+          fichier="oreille.glb"
+          titre="Modèle 3D de l'oreille"
+          intro="Oreille externe et interne — fais glisser pour tourner le modèle."
+          sujet="de l'oreille complète (externe et interne)"
+          aria="Modèle 3D anatomique de l'oreille, manipulable"
+          recherche="ear anatomy"
+        />
+      </Suspense>
+
+      <Suspense fallback={<div className="scene3d-chargement">Chargement…</div>}>
+        <ModeleGlb
+          fichier="cellules.glb"
+          titre="Les cellules ciliées, de près"
+          intro="L'organe de Corti — ces cellules détruites par le bruit ne repoussent pas. Fais glisser pour tourner."
+          sujet="des cellules ciliées (organe de Corti)"
+          aria="Modèle 3D des cellules ciliées de la cochlée, manipulable"
+          recherche="cochlea hair cells organ of Corti"
+        />
       </Suspense>
     </>
   );
