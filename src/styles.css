@@ -496,6 +496,15 @@ input[type='range'] {
   margin-top: 14px;
 }
 
+/* ---------- Vidéo « pour aller plus loin » ---------- */
+
+.video-son {
+  width: 100%;
+  border-radius: 12px;
+  background: #000;
+  border: 1px solid var(--bordure);
+}
+
 /* ---------- Coupe anatomique animée (SVG) ---------- */
 
 .oreille-svg {

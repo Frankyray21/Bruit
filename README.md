@@ -86,6 +86,11 @@ embarqué dans le bundle (aucun chargement externe) et n'est téléchargé qu'à
 l'ouverture du module, pour ne pas ralentir les calculateurs. C'est une
 illustration schématique, pas un examen médical.
 
+Le même module renvoie à l'animation **« Le voyage du son »** de la NIDCD
+(NIH), du **domaine public**. Par défaut, c'est un lien (en ligne). Pour
+l'avoir hors-ligne, dépose le fichier vidéo dans `public/videos/` — voir
+`public/videos/LISEZMOI.md`.
+
 Le moteur `src/domain/` est **vérifiable sans démarrer le site**. C'est
 volontaire : les formules sont la valeur réelle du projet et le formateur doit
 pouvoir les auditer ligne par ligne contre sa formation.

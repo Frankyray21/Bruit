@@ -27,6 +27,7 @@ import { FacteurDerating, Protection } from '../outils/Protection.js';
 import { PoseBouchons, Symptomes, VerifCoquilles } from '../outils/Pose.js';
 import { TempsDePort } from '../outils/TempsDePort.js';
 import { OreilleCoupe } from '../anim3d/OreilleCoupe.js';
+import { AnimationSon } from '../anim3d/AnimationSon.js';
 import { nb } from '../ui/format.js';
 
 export interface Module {
@@ -257,6 +258,7 @@ function ModuleDommages() {
       </Carte>
 
       <Symptomes />
+      <AnimationSon />
     </>
   );
 }
