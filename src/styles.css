@@ -758,15 +758,51 @@ input[type='range'] {
   inset: 0;
 }
 
-.hero__gl {
+.hero__ondes {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
+}
+
+.hero__gl {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.6s var(--ease);
 }
 
 .hero__gl canvas {
   display: block;
   width: 100% !important;
   height: 100% !important;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero__onde {
+    transform-box: view-box;
+    transform-origin: 288px 132px;
+    animation: hero-pulse 4s var(--ease) infinite;
+  }
+  .ho2 {
+    animation-delay: 0.5s;
+  }
+  .ho3 {
+    animation-delay: 1s;
+  }
+  .ho4 {
+    animation-delay: 1.5s;
+  }
+  @keyframes hero-pulse {
+    0%,
+    100% {
+      opacity: 0.15;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
 }
 
 /* Voile : sombre en bas et à gauche pour que le titre reste lisible. */

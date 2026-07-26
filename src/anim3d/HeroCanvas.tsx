@@ -1,15 +1,18 @@
 /**
- * Canvas 3D décoratif du hero — la cochlée en rotation lente derrière le titre.
+ * Canvas 3D du hero — un vrai modèle GLB d'oreille en rotation lente.
  *
- * Reprend l'idée du hero 3D de TMS (corps en rotation), avec l'oreille interne.
- * Décoratif : aucun contrôle, aria-hidden. Chargé en différé (Three.js), et
- * démonté quand le hero sort de l'écran pour ménager la batterie. La cochlée
- * reste « saine » (niveau bas) — c'est une image d'accueil, pas la démo de
- * destruction.
+ * Comme le hero de TMS charge un vrai modèle de corps (et non une forme générée
+ * par code), le hero de Bruit charge un vrai modèle d'oreille déposé dans
+ * `public/models/oreille.glb`. S'il est absent, le composant ne rend rien : le
+ * fond propre (ondes sonores + dégradé) de HeroOreille reste visible.
+ *
+ * Décoratif (aria-hidden), rotation lente, démonté hors écran.
  */
 
-import { useEffect, useRef } from 'react';
-import { creerScene, type PoigneeScene } from './scene.js';
+import { useEffect, useRef, useState } from 'react';
+import { creerVisionneuse, type VisionneuseGlb } from './sceneGlb.js';
+
+const URL_MODELE = `${import.meta.env.BASE_URL}models/oreille.glb`;
 
 const REDUIT =
   typeof matchMedia === 'function' &&
@@ -17,34 +20,49 @@ const REDUIT =
 
 export default function HeroCanvas() {
   const conteneur = useRef<HTMLDivElement>(null);
+  const [pret, setPret] = useState(false);
 
   useEffect(() => {
     const el = conteneur.current;
     if (!el) return;
-    let poignee: PoigneeScene | null = null;
+    let visionneuse: VisionneuseGlb | null = null;
+    let annule = false;
 
-    const monter = () => {
-      if (poignee) return;
-      poignee = creerScene(el, !REDUIT);
-      poignee.setNiveau(70); // cochlée saine
-    };
-    const demonter = () => {
-      poignee?.detruire();
-      poignee = null;
-    };
-
-    // Ne tourne que lorsque le hero est visible.
     const io = new IntersectionObserver(
-      ([e]) => (e && e.isIntersecting ? monter() : demonter()),
+      ([e]) => {
+        if (e && e.isIntersecting && !visionneuse) {
+          creerVisionneuse(el, URL_MODELE, !REDUIT)
+            .then((v) => {
+              if (annule) {
+                v.detruire();
+                return;
+              }
+              visionneuse = v;
+              setPret(true);
+            })
+            .catch(() => setPret(false)); // pas de modèle : le fond reste visible
+        } else if ((!e || !e.isIntersecting) && visionneuse) {
+          visionneuse.detruire();
+          visionneuse = null;
+        }
+      },
       { threshold: 0.05 },
     );
     io.observe(el);
 
     return () => {
+      annule = true;
       io.disconnect();
-      demonter();
+      visionneuse?.detruire();
     };
   }, []);
 
-  return <div ref={conteneur} className="hero__gl" aria-hidden="true" />;
+  return (
+    <div
+      ref={conteneur}
+      className="hero__gl"
+      aria-hidden="true"
+      style={{ opacity: pret ? 1 : 0 }}
+    />
+  );
 }
