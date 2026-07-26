@@ -261,7 +261,26 @@ function ModuleDommages() {
       </Carte>
 
       <Symptomes />
-      <AnimationSon />
+
+      <AnimationSon
+        fichier="videoplayback.mp4"
+        titre="Le voyage du son"
+        source="NIDCD · NIH"
+        intro="Le son de l'oreille jusqu'au cerveau, cellules ciliées comprises. Touche le son pour l'activer."
+        lien="https://www.nidcd.nih.gov/news/multimedia/journey-of-sound-video"
+        lienNom="le site de la NIDCD (NIH)"
+        note="domaine public"
+      />
+
+      <AnimationSon
+        fichier="cellules.mp4"
+        titre="Le bruit détruit la cellule ciliée"
+        source="animation · optionnelle"
+        intro="Les cils de la cellule ciliée pliés puis rompus par le bruit — la lésion ne se répare pas. Dépose un clip cellules.mp4 pour l'afficher ici (voir le LISEZMOI)."
+        lien="https://www.cochlea.eu/en/hair-cells/"
+        lienNom="cochlea.eu (NeurOreille)"
+        note="ressource pédagogique — vérifie la licence avant réutilisation"
+      />
 
       <Suspense fallback={<div className="scene3d-chargement">Chargement…</div>}>
         <ModeleGlb

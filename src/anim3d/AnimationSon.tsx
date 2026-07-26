@@ -1,36 +1,57 @@
 /**
- * Animation « Le voyage du son » — intégrée en lecture dans le module 4.
+ * Carte « animation vidéo » — hors-ligne et paramétrable.
  *
- * La vidéo est hébergée localement (`public/videos/videoplayback.mp4`), donc
- * elle fonctionne hors-ligne comme le reste du site. Elle démarre en boucle,
- * muette (politique des navigateurs), avec les contrôles pour activer le son.
+ * Dépose un fichier `.mp4` dans `public/videos/` (voir `LISEZMOI.md`) et la
+ * carte le joue en boucle, muet (politique des navigateurs), avec les contrôles.
+ * Deux emplacements sont prévus dans le module 4 :
+ *   • `videoplayback.mp4` — « Le voyage du son » (NIDCD/NIH, domaine public)
+ *   • `cellules.mp4`      — « Le bruit détruit la cellule ciliée »
  *
- * Source : animation de la NIDCD (NIH), du domaine public — attribution
- * appréciée, on la crédite.
+ * Si le fichier est absent ou illisible, la carte bascule sur un lien externe :
+ * jamais de lecteur cassé.
  */
 
 import { useState } from 'react';
 import { Carte } from '../ui/composants.js';
 
-const PAGE_NIDCD =
-  'https://www.nidcd.nih.gov/news/multimedia/journey-of-sound-video';
+export interface AnimationSonProps {
+  /** Nom du fichier dans `public/videos/` (ex. `videoplayback.mp4`). */
+  readonly fichier: string;
+  /** Titre de la carte. */
+  readonly titre: string;
+  /** Étiquette de source affichée en haut de la carte. */
+  readonly source: string;
+  /** Phrase d'intro sous le titre. */
+  readonly intro: string;
+  /** Lien externe de repli (et crédit de source). */
+  readonly lien: string;
+  /** Nom lisible de la source (bouton de repli + ligne de crédit). */
+  readonly lienNom: string;
+  /** Fin de la ligne de crédit (ex. « domaine public »). */
+  readonly note: string;
+}
 
-const VIDEO_LOCALE = `${import.meta.env.BASE_URL}videos/videoplayback.mp4`;
-
-export function AnimationSon() {
+export function AnimationSon({
+  fichier,
+  titre,
+  source,
+  intro,
+  lien,
+  lienNom,
+  note,
+}: AnimationSonProps) {
   // Repli sur le lien si le fichier est absent ou illisible : jamais de player
-  // cassé.
+  // cassé. On met la source directement sur <video> pour que `onError` se
+  // déclenche de façon fiable quand le fichier manque.
   const [erreur, setErreur] = useState(false);
+  const url = `${import.meta.env.BASE_URL}videos/${fichier}`;
 
   return (
-    <Carte
-      titre="Le voyage du son"
-      source="NIDCD · NIH"
-      intro="Le son de l'oreille jusqu'au cerveau, cellules ciliées comprises. Touche le son pour l'activer."
-    >
+    <Carte titre={titre} source={source} intro={intro}>
       {!erreur ? (
         <video
           className="video-son"
+          src={url}
           controls
           autoPlay
           muted
@@ -38,27 +59,25 @@ export function AnimationSon() {
           playsInline
           preload="auto"
           onError={() => setErreur(true)}
-        >
-          <source src={VIDEO_LOCALE} type="video/mp4" />
-        </video>
+        />
       ) : (
         <a
           className="bouton"
-          href={PAGE_NIDCD}
+          href={lien}
           target="_blank"
           rel="noopener noreferrer"
           style={{ display: 'grid', placeItems: 'center', textDecoration: 'none' }}
         >
-          Voir l'animation sur le site de la NIDCD ↗
+          Voir l'animation sur {lienNom} ↗
         </a>
       )}
 
       <p className="carte__source" style={{ marginTop: 12, display: 'block' }}>
         Source :{' '}
-        <a href={PAGE_NIDCD} target="_blank" rel="noopener noreferrer">
-          NIDCD, National Institutes of Health
+        <a href={lien} target="_blank" rel="noopener noreferrer">
+          {lienNom}
         </a>{' '}
-        — domaine public.
+        — {note}.
       </p>
     </Carte>
   );
