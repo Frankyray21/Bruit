@@ -9,8 +9,9 @@
 import { useState } from 'react';
 import { energieRelative, gainSiEteinte, sommeSources } from '../domain/sources.js';
 import { taches } from '../data/index.js';
-import { Carte, Declic, Ligne, Resultat } from '../ui/composants.js';
-import { nb } from '../ui/format.js';
+import { Carte, Champ, Curseur, Declic, Ligne, Resultat } from '../ui/composants.js';
+import { CourbeNiveau } from '../ui/Graphe.js';
+import { entier, nb } from '../ui/format.js';
 
 interface Source {
   readonly cle: number;
@@ -92,6 +93,8 @@ export function SommationSources() {
 export function EchelleEnergie() {
   const [niveau, setNiveau] = useState(114.9);
   const facteur = energieRelative(niveau);
+  const ton = facteur > 100 ? 'rouge' : facteur > 10 ? 'jaune' : 'vert';
+  const facteurTexte = facteur < 10 ? nb(facteur, 1) : entier(facteur);
 
   return (
     <Carte
@@ -99,24 +102,47 @@ export function EchelleEnergie() {
       source="diapo 4"
       intro="Le décibel est une échelle logarithmique : quelques dBA de plus, et l'énergie reçue explose."
     >
-      <div className="curseur__valeur">
-        <span className="curseur__nombre">{nb(niveau, 1)} dBA</span>
-        <span className="carte__source">norme : 85 dBA</span>
-      </div>
-      <input
-        type="range"
+      <Champ etiquette="Niveau de bruit">
+        <Curseur
+          min={85}
+          max={115}
+          pas={0.1}
+          valeur={niveau}
+          onChange={setNiveau}
+          affichage={`${nb(niveau, 1)} dBA`}
+          legende="norme : 85 dBA"
+        />
+      </Champ>
+
+      <CourbeNiveau
         min={85}
         max={115}
-        step={0.1}
-        value={niveau}
-        onChange={(e) => setNiveau(Number(e.target.value))}
+        valeur={niveau}
+        f={(l) => energieRelative(l)}
+        echelleY="log"
+        reperesX={[
+          { dBA: 85, label: '85' },
+          { dBA: 95, label: '95' },
+          { dBA: 105, label: '105' },
+          { dBA: 115, label: '115' },
+        ]}
+        graduationsY={[
+          { valeur: 1, label: '×1' },
+          { valeur: 10, label: '×10' },
+          { valeur: 100, label: '×100' },
+          { valeur: 1000, label: '×1000' },
+        ]}
+        etiquetteValeur={`× ${facteurTexte}`}
+        ton={ton}
+        onChange={setNiveau}
+        aria={`Courbe : sur une échelle logarithmique, l'énergie reçue monte en ligne droite. À ${nb(niveau, 1)} dBA, elle vaut ${facteurTexte} fois la norme.`}
       />
 
       <Resultat
         etiquette="Énergie reçue, comparée à la norme"
-        valeur={`× ${facteur < 10 ? nb(facteur, 1) : Math.round(facteur).toLocaleString('fr-CA')}`}
+        valeur={`× ${facteurTexte}`}
         note={`${nb((niveau - 85), 1)} dBA au-dessus de la limite des 8 heures`}
-        ton={facteur > 100 ? 'rouge' : facteur > 10 ? 'jaune' : 'vert'}
+        ton={ton}
       />
 
       <Declic>

@@ -669,6 +669,81 @@ input[type='range'] {
   border: 1px solid var(--bordure);
 }
 
+/* ---------- Graphique de courbe (SVG) ---------- */
+
+.graphe {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 4px 0 2px;
+  padding: 6px 6px 2px;
+  background: var(--fond-2);
+  border: 1px solid var(--bordure);
+  border-radius: 12px;
+}
+
+/* On peut aussi régler le niveau en glissant sur la courbe : cible large,
+   utilisable avec des gants ; le glissement ne fait pas défiler la page. */
+.graphe--interactif {
+  touch-action: none;
+  cursor: pointer;
+}
+
+.graphe__grille {
+  stroke: var(--bordure);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.graphe__gradY,
+.graphe__gradX {
+  fill: var(--texte-faible);
+  font-family: system-ui, sans-serif;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.graphe__ligne {
+  fill: none;
+  stroke: var(--rouge-clair);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Ligne de rappel verticale : discrète, elle relie le point au bas du cadre. */
+.graphe__rappel {
+  stroke: var(--texte-faible);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+  opacity: 0.5;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Anneau de surface sous la pastille : la garde lisible sur la courbe. */
+.graphe__halo {
+  fill: var(--fond-2);
+}
+
+.graphe__point--vert {
+  fill: var(--vert);
+}
+.graphe__point--jaune {
+  fill: var(--jaune);
+}
+.graphe__point--rouge {
+  fill: var(--rouge-clair);
+}
+
+.graphe__valeur {
+  fill: var(--texte);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- Coupe anatomique animée (SVG) ---------- */
 
 .oreille-svg {

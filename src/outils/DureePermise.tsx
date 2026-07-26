@@ -18,11 +18,13 @@ import {
   Resultat,
   Selecteur,
 } from '../ui/composants.js';
+import { CourbeNiveau } from '../ui/Graphe.js';
 import { nb } from '../ui/format.js';
 
 export function DureePermise() {
   const [niveau, setNiveau] = useState(97.8);
   const duree = dureePermise(niveau);
+  const ton = duree < 1 ? 'rouge' : duree < 8 ? 'jaune' : 'vert';
 
   return (
     <Carte
@@ -42,6 +44,29 @@ export function DureePermise() {
         />
       </Champ>
 
+      <CourbeNiveau
+        min={80}
+        max={116}
+        valeur={niveau}
+        f={dureePermise}
+        reperesX={[
+          { dBA: 85, label: '85' },
+          { dBA: 94, label: '94' },
+          { dBA: 105, label: '105' },
+          { dBA: 116, label: '116' },
+        ]}
+        graduationsY={[
+          { valeur: 0, label: '0' },
+          { valeur: 8, label: '8 h' },
+          { valeur: 16, label: '16 h' },
+          { valeur: 24, label: '24 h' },
+        ]}
+        etiquetteValeur={formaterDuree(duree)}
+        ton={ton}
+        onChange={setNiveau}
+        aria={`Courbe : la durée permise s'effondre quand le niveau monte. À ${nb(niveau, 1)} dBA, la durée permise est de ${formaterDuree(duree)}.`}
+      />
+
       <Resultat
         etiquette="Durée maximale permise par jour"
         valeur={formaterDuree(duree)}
@@ -50,7 +75,7 @@ export function DureePermise() {
             ? 'valeur inscrite au règlement'
             : 'extrapolée par la règle des 3 dBA'
         }
-        ton={duree < 1 ? 'rouge' : duree < 8 ? 'jaune' : 'vert'}
+        ton={ton}
       />
 
       <Declic>
