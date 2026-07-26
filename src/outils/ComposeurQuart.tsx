@@ -17,6 +17,7 @@ import {
 import { verdictDose } from '../domain/verdict.js';
 import { taches } from '../data/index.js';
 import { Carte, Declic, Ligne, Resultat, Verdict } from '../ui/composants.js';
+import { HorlogeDose, type SommetDose } from '../ui/Graphe.js';
 import { nb, pourcent } from '../ui/format.js';
 
 interface LigneQuart extends TacheDomaine {
@@ -42,6 +43,19 @@ export function ComposeurQuart() {
   const moment = momentLimiteAtteinte(lignes);
   const heures = lignes.reduce((s, l) => s + l.dureeH, 0);
   const verdict = verdictDose(total);
+
+  // Sommets de la dose cumulée, un par frontière de tâche : la pente d'un
+  // segment = la vitesse d'accumulation de la tâche (constante à niveau fixe).
+  const sommets: SommetDose[] = [{ h: 0, dose: 0 }];
+  {
+    let cumul = 0;
+    let ecoule = 0;
+    for (const l of lignes) {
+      cumul += dose([l]);
+      ecoule += l.dureeH;
+      sommets.push({ h: ecoule, dose: cumul });
+    }
+  }
 
   function ajouter(id: string) {
     const tache = taches.find((t) => t.id === id);
@@ -114,6 +128,18 @@ export function ComposeurQuart() {
           </button>
         ))}
       </div>
+
+      {total > 0 && (
+        <HorlogeDose
+          sommets={sommets}
+          momentLimite={moment}
+          momentLabel={moment !== null ? formaterDuree(moment) : ''}
+          doseTotale={total}
+          aria={`Dose cumulée du quart en fonction des heures écoulées : elle franchit la limite des 100 %${
+            moment !== null ? ` après ${formaterDuree(moment)}` : ''
+          } et atteint ${Math.round(total)} % en fin de quart. La dose ne redescend jamais ; les heures sont comptées dans l'ordre des tâches, en partant de zéro.`}
+        />
+      )}
 
       <Resultat
         etiquette={`Dose du quart — ${formaterDuree(heures)} de travail`}

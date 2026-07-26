@@ -28,7 +28,8 @@ import { PoseBouchons, Symptomes, VerifCoquilles } from '../outils/Pose.js';
 import { TempsDePort } from '../outils/TempsDePort.js';
 import { OreilleCoupe } from '../anim3d/OreilleCoupe.js';
 import { AnimationSon } from '../anim3d/AnimationSon.js';
-import { nb } from '../ui/format.js';
+import { SerieAnnuelle } from '../ui/Graphe.js';
+import { entier, nb } from '../ui/format.js';
 
 // Modèle GLB optionnel : chargé à la demande comme la cochlée 3D.
 const ModeleGlb = lazy(() => import('../anim3d/ModeleGlb.js'));
@@ -94,25 +95,23 @@ function ModulePourquoi() {
 
   return (
     <>
-      <Carte titre="La surdité professionnelle au Québec" source="diapo 2">
-        <div className="barres">
-          {serie
-            .filter((p) => p.annee % 4 === 1 || p.annee === sommet.annee)
-            .map((p) => (
-              <div
-                key={p.annee}
-                className="barre barre--attention"
-                style={{
-                  borderLeftWidth: `${Math.max(4, (p.cas / sommet.cas) * 26)}px`,
-                }}
-              >
-                <span>{p.annee}</span>
-                <span className="barre__valeur">
-                  {p.cas.toLocaleString('fr-CA')} cas
-                </span>
-              </div>
-            ))}
-        </div>
+      <Carte
+        titre="La surdité professionnelle au Québec"
+        source="diapo 2"
+        intro="Nouveaux cas reconnus par la CNESST, chaque année. Le creux de 2020 reflète moins de réclamations déposées (COVID), pas une baisse du risque."
+      >
+        <SerieAnnuelle
+          points={serie.map((p) => ({ annee: p.annee, valeur: p.cas }))}
+          yMax={15000}
+          graduationsY={[0, 5000, 10000, 15000]}
+          reperesAnnees={[1997, 2003, 2009, 2015, 2021]}
+          marques={[
+            { annee: premier.annee, label: entier(premier.cas), cote: 'droite' },
+            { annee: sommet.annee, label: entier(sommet.cas), cote: 'haut' },
+            { annee: 2020, label: '', cote: 'haut', attenue: true },
+          ]}
+          aria={`Cas reconnus de surdité professionnelle par la CNESST, de ${entier(premier.cas)} en ${premier.annee} à un sommet de ${entier(sommet.cas)} en ${sommet.annee}, puis une baisse des réclamations déposées en 2020 (effet COVID sur le dépôt, non une baisse du risque) et un rebond en 2021. Cas reconnus, non l'incidence médicale ; relevé visuel, fiabilité faible.`}
+        />
 
         <Declic>
           Les cas <strong>reconnus</strong> par la CNESST ont été multipliés par{' '}

@@ -17,6 +17,7 @@ import {
   Declic,
   Resultat,
   Selecteur,
+  tonNiveau,
 } from '../ui/composants.js';
 import { CourbeNiveau } from '../ui/Graphe.js';
 import { nb } from '../ui/format.js';
@@ -99,6 +100,15 @@ export function DureePermise() {
   );
 }
 
+const ECHELLE_MIN = 80;
+const ECHELLE_MAX = 116;
+
+/** Position (0-100 %) d'un niveau sur l'échelle 80-116 dBA. */
+function positionEchelle(dBA: number): number {
+  const borne = Math.max(ECHELLE_MIN, Math.min(ECHELLE_MAX, dBA));
+  return ((borne - ECHELLE_MIN) / (ECHELLE_MAX - ECHELLE_MIN)) * 100;
+}
+
 export function EchelleMetiers() {
   const [selection, setSelection] = useState<string | null>(null);
   const tries = [...metiers].sort((a, b) => b.niveau_dBA - a.niveau_dBA);
@@ -107,24 +117,58 @@ export function EchelleMetiers() {
     <Carte
       titre="Mon métier sur l'échelle"
       source="diapo 7"
-      intro="Les 13 postes mesurés par la mine, du plus bruyant au moins bruyant. Touche un poste pour voir sa durée permise."
+      intro="Chaque poste mesuré, placé sur l'échelle des dBA. La ligne des 85 dBA, c'est la norme — les treize la dépassent. Touche un poste pour voir sa durée permise."
     >
-      <div className="barres">
-        {tries.map((m) => (
-          <Barre
-            key={m.id}
-            nom={m.nom}
-            valeur={`${nb(m.niveau_dBA, 1)} dBA`}
-            niveauDBA={m.niveau_dBA}
-            actif={selection === m.id}
-            note={
-              selection === m.id
-                ? `durée permise sans protection : ${formaterDuree(dureePermise(m.niveau_dBA))}`
-                : undefined
-            }
-            onClick={() => setSelection(selection === m.id ? null : m.id)}
-          />
-        ))}
+      <div className="echelle" role="group" aria-label="Les treize postes sur l'échelle des dBA, du plus bruyant au moins bruyant">
+        <div className="echelle__axe" aria-hidden="true">
+          <span
+            className="echelle__repere echelle__repere--norme"
+            style={{ left: `${positionEchelle(85)}%` }}
+          >
+            85 · norme
+          </span>
+          <span className="echelle__repere" style={{ left: `${positionEchelle(105)}%` }}>
+            105
+          </span>
+        </div>
+
+        {tries.map((m) => {
+          const ton = tonNiveau(m.niveau_dBA);
+          const actif = selection === m.id;
+          const dansTable = tableRsst.some(
+            (l) => l.niveau_dBA === Math.round(m.niveau_dBA * 10) / 10,
+          );
+          return (
+            <button
+              key={m.id}
+              type="button"
+              className={`echelle__ligne${actif ? ' echelle__ligne--actif' : ''}`}
+              aria-pressed={actif}
+              onClick={() => setSelection(actif ? null : m.id)}
+            >
+              <span className="echelle__nom">{m.nom}</span>
+              <span className="echelle__val">{nb(m.niveau_dBA, 1)} dBA</span>
+              <span className="echelle__piste" aria-hidden="true">
+                <span className="echelle__norme" style={{ left: `${positionEchelle(85)}%` }} />
+                <span
+                  className="echelle__norme echelle__norme--faible"
+                  style={{ left: `${positionEchelle(105)}%` }}
+                />
+                <span
+                  className={`echelle__point echelle__point--${ton}`}
+                  style={{ left: `${positionEchelle(m.niveau_dBA)}%` }}
+                />
+              </span>
+              {actif && (
+                <span className="echelle__note">
+                  durée permise sans protection :{' '}
+                  <strong>{formaterDuree(dureePermise(m.niveau_dBA))}</strong>
+                  {dansTable ? '' : ' (extrapolée)'}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       <Declic>
@@ -132,6 +176,11 @@ export function EchelleMetiers() {
         souterrain mesuré n'est sûr sans protection — pas même celui du
         superviseur.
       </Declic>
+
+      <p className="carte__intro" style={{ marginTop: 12, marginBottom: 0, fontSize: '0.8rem' }}>
+        Ces valeurs sont des dosimétries de postes types, à ± 1 à 2 dBA près :
+        deux postes proches (99,5 et 100,1) ne sont pas vraiment distinguables.
+      </p>
     </Carte>
   );
 }

@@ -812,6 +812,144 @@ input[type='range'] {
   font-variant-numeric: tabular-nums;
 }
 
+/* Ligne de seuil (ex. limite de dose à 100 %) et sa mention. */
+.graphe__seuil {
+  stroke: var(--rouge);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.graphe__seuil-lbl {
+  fill: var(--texte-doux);
+  font-family: system-ui, sans-serif;
+  font-size: 11px;
+}
+
+/* Valeur qui sort de l'échelle (dose réelle au-delà du plafond). */
+.graphe__hors {
+  fill: var(--rouge-clair);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+/* ---------- Échelle des métiers (dot plot HTML) ---------- */
+
+.echelle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Axe de référence au-dessus des rangs, aligné sur les pistes (mêmes insets). */
+.echelle__axe {
+  position: relative;
+  height: 18px;
+  margin: 0 12px 4px;
+}
+
+.echelle__repere {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 0.68rem;
+  color: var(--texte-faible);
+  white-space: nowrap;
+}
+
+.echelle__repere--norme {
+  color: var(--texte-doux);
+  font-weight: 600;
+}
+
+.echelle__ligne {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  min-height: 56px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--fond-carte-haut);
+  border-left: 4px solid var(--bordure);
+}
+
+.echelle__ligne--actif {
+  outline: 2px solid var(--rouge);
+}
+
+.echelle__ligne:hover {
+  background: color-mix(in srgb, var(--rouge) 6%, var(--fond-carte-haut));
+}
+
+.echelle__nom {
+  font-size: 0.9rem;
+}
+
+.echelle__val {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* La piste : le rail 80-116 dBA sur lequel se place le point. */
+.echelle__piste {
+  grid-column: 1 / -1;
+  position: relative;
+  height: 14px;
+  margin-top: 4px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--bordure) 55%, var(--fond-2));
+}
+
+/* Ligne de norme (85) et repère double protection (105), alignés d'un rang à
+   l'autre : lus verticalement, ils forment une référence continue. */
+.echelle__norme {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--texte-faible);
+  opacity: 0.6;
+}
+
+.echelle__norme--faible {
+  opacity: 0.3;
+}
+
+/* Le point encode la POSITION (dBA), pas une longueur : pas de faux ratio. */
+.echelle__point {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid var(--fond-2);
+}
+
+.echelle__point--danger {
+  background: var(--rouge-clair);
+}
+.echelle__point--attention {
+  background: var(--jaune);
+}
+.echelle__point--ok {
+  background: var(--vert);
+}
+
+.echelle__note {
+  grid-column: 1 / -1;
+  font-size: 0.82rem;
+  color: var(--texte-doux);
+}
+
+.echelle__note strong {
+  color: var(--texte);
+}
+
 /* ---------- Coupe anatomique animée (SVG) ---------- */
 
 .oreille-svg {
