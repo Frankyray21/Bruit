@@ -43,22 +43,58 @@ export default function App() {
           Aller au contenu
         </a>
 
-        <header className="entete">
-          <span className="entete__marque" aria-hidden="true" />
-          <span className="entete__titre">
-            {module ? module.titre : 'Protection auditive'}
-          </span>
-          <button
-            type="button"
-            className="entete__action"
-            onClick={() => setPresentation(!presentation)}
-            title="Agrandit tout pour la projection en salle"
-          >
-            {presentation ? 'Mode normal' : 'Projeter'}
-          </button>
-        </header>
+        {/* Sidebar Machines Roger — sur ordinateur ; masquée sur mobile où la
+            barre du bas prend le relais (ergonomie avec des gants). */}
+        <aside className="sidebar">
+          <div className="sidebar__marque">
+            <span className="sidebar__logo">
+              <span className="sidebar__barre" aria-hidden="true" />
+              Machines Roger
+            </span>
+            <span className="sidebar__sous">Protection auditive</span>
+          </div>
 
-        <main className="contenu" id="contenu">
+          <nav className="sidebar__nav" aria-label="Navigation principale">
+            {ZONES.map((z, i) => (
+              <button
+                key={z.id}
+                type="button"
+                className={`sidebar__item${zone === z.id ? ' sidebar__item--actif' : ''}`}
+                onClick={() => {
+                  setZone(z.id);
+                  setModuleOuvert(null);
+                }}
+              >
+                <span className="sidebar__num">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                {z.nom}
+              </button>
+            ))}
+          </nav>
+
+          <p className="sidebar__pied">
+            Formation SST — Machines Roger International
+          </p>
+        </aside>
+
+        <div className="stage">
+          <header className="entete">
+            <span className="entete__marque" aria-hidden="true" />
+            <span className="entete__titre">
+              {module ? module.titre : 'Protection auditive'}
+            </span>
+            <button
+              type="button"
+              className="entete__action"
+              onClick={() => setPresentation(!presentation)}
+              title="Agrandit tout pour la projection en salle"
+            >
+              {presentation ? 'Mode normal' : 'Projeter'}
+            </button>
+          </header>
+
+          <main className="contenu" id="contenu">
           {zone === 'parcours' &&
             (module ? (
               <>
@@ -103,7 +139,8 @@ export default function App() {
             d'un hygiéniste du travail, ni le programme de conservation de
             l'ouïe de l'employeur.
           </p>
-        </main>
+          </main>
+        </div>
 
         <nav className="nav">
           {ZONES.map((z) => (
