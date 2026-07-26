@@ -83,6 +83,18 @@ export function DureePermise() {
         deux. C'est pour cela qu'un mineur au jackleg, à 114,9 dBA, atteint sa
         limite quotidienne en <strong>29 secondes</strong>.
       </Declic>
+
+      {niveau >= 105 && (
+        <Avertissement>
+          <strong>Passé un certain niveau, ce n'est plus une question de
+          minutes.</strong>{' '}
+          Aucune norme n'autorise l'exposition continue au-delà d'environ{' '}
+          <strong>115 dBA</strong>, ni les bruits d'impact au-delà de{' '}
+          <strong>140 dB (crête)</strong> — quelle que soit la durée. À ces
+          niveaux, l'exposition doit être réduite à la source, pas seulement
+          chronométrée.
+        </Avertissement>
+      )}
     </Carte>
   );
 }

@@ -10,7 +10,7 @@
   "formule": {
     "dureePermise": "T(L) = 8 / 2^((L - 85) / 3)",
     "dose": "D = 100 * somme(Ci / T(Li))",
-    "niveauEquivalent8h": "Lex8h = 85 + 10 * log10(D / 100)",
+    "niveauEquivalent8h": "Lex8h = 85 + (3 / log10(2)) * log10(D / 100)  [3/log10(2) = 9,9658, et NON 10 : le coefficient 10 casse l'aller-retour dose->niveau, l'ecart croissant avec le niveau]",
     "regle": "Lorsqu'un niveau figure dans le tableau réglementaire, la valeur du tableau prime sur la formule."
   },
   "tableau": [

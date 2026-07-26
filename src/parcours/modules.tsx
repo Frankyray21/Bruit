@@ -169,6 +169,16 @@ function ModuleDecibel() {
             <strong>À chaque 3 dBA, l'impact sur l'oreille est doublé.</strong>
           </li>
         </ul>
+        <p
+          className="carte__intro"
+          style={{ marginTop: 12, marginBottom: 0, fontSize: '0.82rem' }}
+        >
+          <strong>Précision —</strong> le « A » de dBA est une{' '}
+          <strong>pondération en fréquence</strong> : elle atténue les graves,
+          comme le fait l'oreille. Les deux appareils mesurent en dBA ; la vraie
+          différence, c'est que le sonomètre lit l'<strong>instant</strong> et le
+          dosimètre <strong>cumule</strong> sur la durée du quart.
+        </p>
       </Carte>
 
       <SommationSources />
