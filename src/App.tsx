@@ -18,6 +18,7 @@ import { Comparateur } from './outils/Comparateur.js';
 import { DureePermise, EchelleMetiers } from './outils/DureePermise.js';
 import { Protection } from './outils/Protection.js';
 import { TempsDePort } from './outils/TempsDePort.js';
+import { HeroOreille } from './anim3d/HeroOreille.js';
 
 type Zone = 'parcours' | 'outils' | 'quiz' | 'moi';
 
@@ -174,11 +175,13 @@ function Parcours({
 }) {
   return (
     <>
-      <h1 style={{ marginBottom: 6 }}>Protection auditive</h1>
-      <p className="carte__intro">
-        Six modules, une quinzaine de minutes. Chaque notion se manipule plutôt
-        que de se lire.
-      </p>
+      <HeroOreille>
+        <h1 style={{ marginBottom: 6 }}>Protection auditive</h1>
+        <p className="carte__intro" style={{ marginBottom: 0 }}>
+          Six modules, une quinzaine de minutes. Chaque notion se manipule
+          plutôt que de se lire.
+        </p>
+      </HeroOreille>
 
       <div className="module-liste">
         {MODULES.map((m, i) => (

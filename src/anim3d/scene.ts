@@ -77,7 +77,7 @@ export function creerScene(
   const hauteur = conteneur.clientHeight || 320;
 
   const scene = new Scene();
-  scene.background = new Color('#0d1117');
+  scene.background = new Color('#0a0e17');
 
   const camera = new PerspectiveCamera(42, largeur / hauteur, 0.1, 100);
   camera.position.set(0, 1.2, 8.5);
