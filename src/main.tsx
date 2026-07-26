@@ -22,3 +22,15 @@ createRoot(racine).render(
     <App />
   </StrictMode>,
 );
+
+// Toujours à jour : quand un nouveau service worker prend le contrôle (nouveau
+// déploiement), on recharge une fois pour servir la dernière version. Combiné à
+// skipWaiting/clientsClaim, l'utilisateur n'a jamais une version périmée.
+if ('serviceWorker' in navigator) {
+  let dejaRecharge = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (dejaRecharge) return;
+    dejaRecharge = true;
+    location.reload();
+  });
+}

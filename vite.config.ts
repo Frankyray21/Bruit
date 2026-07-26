@@ -2,10 +2,26 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Estampille de version = moment du build (celui de la CI à chaque déploiement).
+// Affichée dans le site pour confirmer qu'on est sur la dernière version.
+const VERSION = new Date()
+  .toLocaleString('fr-CA', {
+    timeZone: 'America/Toronto',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+  .replace(',', '');
+
 // Le site est publié sur https://frankyray21.github.io/Bruit/ — d'où le base.
 // BASE_PATH=/ permet de servir la racine en local ou sur un autre hébergeur.
 export default defineConfig({
   base: process.env.BASE_PATH ?? '/Bruit/',
+  define: {
+    __VERSION__: JSON.stringify(VERSION),
+  },
   plugins: [
     react(),
     VitePWA({

@@ -76,6 +76,8 @@ export default function App() {
 
           <p className="sidebar__pied">
             Formation SST — Machines Roger International
+            <br />
+            Version {__VERSION__}
           </p>
         </aside>
 
@@ -283,6 +285,9 @@ function Moi({
           Rien ne quitte ton appareil : pas de compte, pas de serveur, aucune
           donnée transmise. Ta progression est stockée localement.
         </Avertissement>
+        <p className="carte__source" style={{ marginTop: 12, display: 'block' }}>
+          Version {__VERSION__} · se met à jour automatiquement
+        </p>
       </Carte>
     </>
   );
