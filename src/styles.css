@@ -669,6 +669,74 @@ input[type='range'] {
   border: 1px solid var(--bordure);
 }
 
+/* ---------- Bannière « installer l'app » ---------- */
+
+.installer-banniere {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--rouge-sombre);
+  background: color-mix(in srgb, var(--rouge) 12%, var(--fond-carte));
+  font-size: 0.9rem;
+}
+
+.installer-banniere__icone {
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--rouge-clair);
+}
+
+.installer-banniere__texte {
+  flex: 1;
+  min-width: 0;
+  color: var(--texte);
+}
+
+.installer-banniere__action {
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 9px;
+  background: var(--g-rouge);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.installer-banniere__ios {
+  color: var(--texte-doux);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.installer-banniere__fermer {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: var(--texte-doux);
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.installer-banniere__fermer:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--texte);
+}
+
+/* Sur petits écrans, la mention iOS passe sous le texte pour ne pas serrer. */
+@media (max-width: 420px) {
+  .installer-banniere__ios {
+    display: none;
+  }
+}
+
 /* ---------- Graphique de courbe (SVG) ---------- */
 
 .graphe {
@@ -1253,6 +1321,7 @@ input[type='range'] {
   .pied,
   .avertissement,
   .barre-boutons,
+  .installer-banniere,
   .bouton {
     display: none !important;
   }

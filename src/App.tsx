@@ -19,6 +19,7 @@ import { DureePermise, EchelleMetiers } from './outils/DureePermise.js';
 import { Protection } from './outils/Protection.js';
 import { TempsDePort } from './outils/TempsDePort.js';
 import { HeroOreille } from './anim3d/HeroOreille.js';
+import { BanniereInstall, CarteInstall } from './ui/InstallerApp.js';
 
 type Zone = 'parcours' | 'outils' | 'quiz' | 'moi';
 
@@ -98,6 +99,8 @@ export default function App() {
           </header>
 
           <main className="contenu" id="contenu">
+          <BanniereInstall />
+
           {zone === 'parcours' &&
             (module ? (
               <>
@@ -275,12 +278,12 @@ function Moi({
         </button>
       </Carte>
 
-      <Carte titre="Ce site fonctionne hors-ligne">
-        <p className="carte__intro" style={{ marginBottom: 0 }}>
-          Installe-le sur ton téléphone depuis le menu de ton navigateur
-          (« Ajouter à l'écran d'accueil »). Une fois installé, il fonctionne
-          sans réseau — au fond, comme en surface.
+      <Carte titre="Télécharger l'application">
+        <p className="carte__intro">
+          Installe le site comme une vraie app. Une fois installé, il fonctionne
+          <strong> sans réseau</strong> — au fond, comme en surface.
         </p>
+        <CarteInstall />
         <Avertissement>
           Rien ne quitte ton appareil : pas de compte, pas de serveur, aucune
           donnée transmise. Ta progression est stockée localement.
