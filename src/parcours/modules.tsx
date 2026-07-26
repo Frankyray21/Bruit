@@ -30,6 +30,9 @@ import { OreilleCoupe } from '../anim3d/OreilleCoupe.js';
 import { AnimationSon } from '../anim3d/AnimationSon.js';
 import { nb } from '../ui/format.js';
 
+// Modèle GLB optionnel : chargé à la demande comme la cochlée 3D.
+const ModeleGlb = lazy(() => import('../anim3d/ModeleGlb.js'));
+
 export interface Module {
   readonly id: string;
   readonly titre: string;
@@ -259,6 +262,9 @@ function ModuleDommages() {
 
       <Symptomes />
       <AnimationSon />
+      <Suspense fallback={<div className="scene3d-chargement">Chargement…</div>}>
+        <ModeleGlb />
+      </Suspense>
     </>
   );
 }

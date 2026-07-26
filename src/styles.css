@@ -7,19 +7,31 @@
  */
 
 :root {
-  --fond: #0d1117;
-  --fond-carte: #161b22;
-  --fond-carte-haut: #1c2333;
-  --bordure: #30363d;
-  --texte: #e6edf3;
-  --texte-doux: #9198a1;
+  /* Identité Machines Roger, reprise du système de design de TMS. */
+  --fond: #0a0e17;
+  --fond-carte: #111827;
+  --fond-carte-haut: #1a2332;
+  --fond-2: #0d1320;
+  --bordure: #1e293b;
+  --texte: #f1f5f9;
+  --texte-doux: #9aa7bd;
+  --texte-faible: #8694ad;
 
-  --rouge: #c8102e;
-  --rouge-clair: #ff5c73;
-  --vert: #2ea043;
-  --jaune: #d29922;
-  --orange: #db6d28;
-  --bleu: #4493f8;
+  --rouge: #d22325;
+  --rouge-sombre: #a81a1c;
+  --rouge-clair: #ef5a5c;
+  --vert: #10b981;
+  --jaune: #f59e0b;
+  --orange: #ef5a5c;
+  --bleu: #3b82f6;
+
+  --g-rouge: linear-gradient(135deg, #e23a3c, #a81a1c);
+
+  --font-display: 'Barlow Condensed', 'Barlow', system-ui, sans-serif;
+  --font-body: 'Barlow', system-ui, sans-serif;
+
+  /* Décélération franche « précision mécanique », sans rebond. */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   --rayon: 14px;
   --cible: 64px;
@@ -40,31 +52,32 @@ html {
 body {
   background: var(--fond);
   color: var(--texte);
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    sans-serif;
+  font-family: var(--font-body);
   font-size: 17px;
-  line-height: 1.55;
+  line-height: 1.6;
   overscroll-behavior-y: none;
 }
 
+/* Titres en Barlow Condensed, capitales — écho du mot-symbole ROGER. */
 h1,
 h2,
 h3 {
-  line-height: 1.2;
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1.06;
   text-wrap: balance;
 }
 
 h1 {
-  font-size: 1.7rem;
+  font-size: clamp(1.9rem, 6vw, 2.6rem);
 }
 h2 {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
 }
 h3 {
-  font-size: 1.05rem;
+  font-size: 1.15rem;
 }
 
 button {
@@ -112,9 +125,11 @@ button {
 }
 
 .entete__titre {
-  font-size: 1rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .entete__action {
@@ -179,17 +194,35 @@ button {
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 6px;
+  margin-bottom: 14px;
 }
 
+/* Barre rouge courte sous le titre — motif signature hérité du logo ROGER. */
 .carte__titre h2 {
   flex: 1;
   min-width: 0;
+  padding-bottom: 8px;
+  position: relative;
+}
+.carte__titre h2::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 34px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--g-rouge);
 }
 
+/* La source (« diapo 11 ») devient un kicker rouge en capitales. */
 .carte__source {
-  font-size: 0.75rem;
-  color: var(--texte-doux);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rouge-clair);
   white-space: nowrap;
 }
 
@@ -287,10 +320,11 @@ input[type='range'] {
 }
 
 .resultat__valeur {
-  font-size: 2.1rem;
+  font-family: var(--font-display);
+  font-size: 2.6rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  line-height: 1.1;
+  line-height: 1.05;
   margin-top: 2px;
 }
 
@@ -640,14 +674,17 @@ input[type='range'] {
 }
 
 .module-carte__numero {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: grid;
   place-items: center;
   background: var(--fond-carte-haut);
   border: 1px solid var(--bordure);
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--rouge-clair);
 }
 
 .module-carte--fait .module-carte__numero {
@@ -657,7 +694,11 @@ input[type='range'] {
 }
 
 .module-carte__titre {
-  font-weight: 650;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .module-carte__sous {
@@ -676,18 +717,33 @@ input[type='range'] {
   min-height: var(--cible);
   width: 100%;
   border-radius: 12px;
-  background: var(--rouge);
+  background: var(--g-rouge);
   color: #fff;
+  font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
   padding: 0 20px;
   margin-top: 8px;
+  transition:
+    transform 0.2s var(--ease),
+    box-shadow 0.2s var(--ease);
+}
+
+.bouton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(210, 35, 37, 0.35);
 }
 
 .bouton--secondaire {
   background: var(--fond-carte-haut);
   border: 1px solid var(--bordure);
   color: var(--texte);
+}
+
+.bouton--secondaire:hover {
+  box-shadow: none;
 }
 
 .bouton:disabled {
@@ -744,7 +800,8 @@ input[type='range'] {
 }
 
 .attestation__score {
-  font-size: 3rem;
+  font-family: var(--font-display);
+  font-size: 3.4rem;
   font-weight: 800;
   color: var(--vert);
 }
