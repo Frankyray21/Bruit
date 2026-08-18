@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="fr-CA">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0d1117" />
+    <meta
+      name="description"
+      content="Formation interactive sur la protection auditive en milieu minier"
+    />
+    <link rel="icon" type="image/svg+xml" href="/Bruit/favicon.svg" />
+    <title>Bruit — Protection auditive</title>
+    <style>
+      /*
+       * Style de secours, en ligne dans la page.
+       *
+       * Il s'applique avant même que la feuille principale soit chargée : si
+       * elle ne l'est jamais, la page reste sombre et lisible au lieu de
+       * devenir un rectangle blanc muet.
+       */
+      html {
+        background: #0d1117;
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+        background: #0d1117;
+        color: #e6edf3;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      }
+      #secours {
+        display: none;
+        padding: 40px 22px;
+        text-align: center;
+        line-height: 1.6;
+        max-width: 480px;
+        margin: 0 auto;
+      }
+      #secours h1 {
+        font-size: 1.25rem;
+        margin: 0 0 12px;
+      }
+      #secours p {
+        color: #9198a1;
+        margin: 0;
+      }
+      #secours button {
+        display: block;
+        width: 100%;
+        margin-top: 14px;
+        min-height: 56px;
+        padding: 0 26px;
+        border: none;
+        border-radius: 12px;
+        background: #c8102e;
+        color: #fff;
+        font: inherit;
+        font-weight: 700;
+      }
+      #secours button.secondaire {
+        background: #1c2333;
+        border: 1px solid #30363d;
+        color: #e6edf3;
+      }
+      #details {
+        display: none;
+        margin-top: 22px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #161b22;
+        border: 1px solid #30363d;
+        color: #9198a1;
+        font-family: ui-monospace, monospace;
+        font-size: 12px;
+        text-align: left;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+    </style>
+    <script type="module" crossorigin src="/Bruit/assets/index-DcVplICS.js"></script>
+    <link rel="stylesheet" crossorigin href="/Bruit/assets/index-CT_Om-NM.css">
+  <link rel="manifest" href="/Bruit/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Bruit/registerSW.js"></script></head>
+  <body>
+    <div id="root"></div>
+
+    <div id="secours">
+      <h1>Le site n'a pas fini de charger</h1>
+      <p>
+        Souvent, c'est une vieille version restée en mémoire. Le bouton
+        ci-dessous vide le cache du site et repart à neuf.
+      </p>
+      <button type="button" id="reinitialiser">Vider le cache et recharger</button>
+      <button type="button" class="secondaire" onclick="location.reload()">
+        Simplement recharger
+      </button>
+      <pre id="details"></pre>
+    </div>
+
+    <script>
+      // Diagnostic embarqué. Personne, au fond d'une mine, ne va ouvrir une
+      // console de développeur : la page doit dire elle-même ce qui a échoué.
+      (function () {
+        var incidents = [];
+
+        function noter(texte) {
+          incidents.push(texte);
+          var details = document.getElementById('details');
+          if (details) {
+            details.textContent = incidents.join('\n');
+            details.style.display = 'block';
+          }
+        }
+
+        // capture:true — indispensable pour voir aussi les fichiers qui ne se
+        // chargent pas (un script ou une feuille de style en échec ne remonte
+        // pas jusqu'à window en phase de bouillonnement).
+        window.addEventListener(
+          'error',
+          function (e) {
+            if (e.target && e.target !== window && e.target.src) {
+              noter('Fichier non chargé : ' + e.target.src);
+              // Un échec sur /src/ trahit une cause précise et fréquente :
+              // GitHub Pages publie la branche du code source au lieu de la
+              // branche gh-pages, qui seule contient le site construit.
+              if (e.target.src.indexOf('/src/') !== -1) {
+                mauvaiseBranche();
+              }
+            } else {
+              noter('Erreur : ' + (e.message || e.type));
+            }
+            montrer();
+          },
+          true,
+        );
+
+        function mauvaiseBranche() {
+          var bloc = document.getElementById('secours');
+          bloc.querySelector('h1').textContent = 'Mauvaise branche publiée';
+          bloc.querySelector('p').innerHTML =
+            'GitHub Pages sert le code source au lieu du site construit. ' +
+            'Dans <strong>Réglages → Pages</strong>, choisis la branche ' +
+            '<strong>gh-pages</strong> et le dossier <strong>/ (root)</strong>. ' +
+            'Vider le cache ne changera rien tant que ce réglage est faux.';
+          document.getElementById('reinitialiser').style.display = 'none';
+        }
+
+        window.addEventListener('unhandledrejection', function (e) {
+          noter('Promesse rejetée : ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
+          montrer();
+        });
+
+        function montrer() {
+          var racine = document.getElementById('root');
+          if (racine && racine.childElementCount === 0) {
+            document.getElementById('secours').style.display = 'block';
+          }
+        }
+
+        // Si l'application n'a rien monté après 5 secondes, on affiche le
+        // message plutôt qu'une page vide.
+        setTimeout(montrer, 5000);
+
+        // Réinitialisation complète : désinscription du service worker,
+        // suppression de tous les caches, puis rechargement. C'est la sortie de
+        // secours quand une ancienne version reste coincée.
+        document.getElementById('reinitialiser').addEventListener('click', function () {
+          var etapes = [];
+
+          if ('serviceWorker' in navigator) {
+            etapes.push(
+              navigator.serviceWorker.getRegistrations().then(function (liste) {
+                return Promise.all(liste.map(function (r) { return r.unregister(); }));
+              }),
+            );
+          }
+          if (window.caches && caches.keys) {
+            etapes.push(
+              caches.keys().then(function (cles) {
+                return Promise.all(cles.map(function (c) { return caches.delete(c); }));
+              }),
+            );
+          }
+
+          Promise.all(etapes)
+            .catch(function () {})
+            .then(function () {
+              location.replace(location.pathname + '?neuf=' + Date.now());
+            });
+        });
+      })();
+    </script>
+
+  </body>
+</html>
