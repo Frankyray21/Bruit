@@ -18,13 +18,19 @@ const MODELE = '4f5438fc9337454587ec4a2c30c8c42f';
  * `autostart=1` est le paramètre décisif : sans lui, Sketchfab affiche une
  * image fixe avec un bouton « play » et n'ouvre le lecteur qu'au clic — un
  * hero ne demande pas la permission de vivre. `autospin` fait ensuite tourner
- * le modèle, `annotation_cycle` déroule ses annotations, et
- * `animation_autoplay` lance l'animation intégrée s'il y en a une.
+ * le modèle tout seul.
+ *
+ * `transparent=1` retire le fond du lecteur : le modèle flotte au-dessus du
+ * motif d'ondes sonores du hero au lieu de poser un rectangle opaque dessus.
+ * `annotations_visible=0` masque les étiquettes — elles sont en anglais et
+ * elles encombraient une image d'accueil.
+ *
+ * `dnt=1` est le seul paramètre ajouté à ceux demandés : il demande à
+ * Sketchfab de ne pas pister le visiteur, et ne change rien à l'affichage.
  */
 export const SKETCHFAB_SRC =
   `https://sketchfab.com/models/${MODELE}/embed` +
-  '?autostart=1&autospin=1&animation_autoplay=1&annotations_visible=1' +
-  '&preload=1&annotation_cycle=5&ui_theme=dark&dnt=1';
+  '?autospin=1&autostart=1&annotations_visible=0&preload=1&transparent=1&dnt=1';
 
 export const SKETCHFAB_PAGE = `https://sketchfab.com/3d-models/ear-cross-section-${MODELE}`;
 
