@@ -15,12 +15,16 @@ import { useEffect, useState } from 'react';
 const MODELE = '4f5438fc9337454587ec4a2c30c8c42f';
 
 /**
- * `autospin` fait tourner le modèle tout seul et `annotation_cycle` déroule
- * ses annotations : le hero doit vivre sans que personne n'y touche.
+ * `autostart=1` est le paramètre décisif : sans lui, Sketchfab affiche une
+ * image fixe avec un bouton « play » et n'ouvre le lecteur qu'au clic — un
+ * hero ne demande pas la permission de vivre. `autospin` fait ensuite tourner
+ * le modèle, `annotation_cycle` déroule ses annotations, et
+ * `animation_autoplay` lance l'animation intégrée s'il y en a une.
  */
 export const SKETCHFAB_SRC =
   `https://sketchfab.com/models/${MODELE}/embed` +
-  '?autospin=1&annotations_visible=1&preload=1&annotation_cycle=5&ui_theme=dark&dnt=1';
+  '?autostart=1&autospin=1&animation_autoplay=1&annotations_visible=1' +
+  '&preload=1&annotation_cycle=5&ui_theme=dark&dnt=1';
 
 export const SKETCHFAB_PAGE = `https://sketchfab.com/3d-models/ear-cross-section-${MODELE}`;
 

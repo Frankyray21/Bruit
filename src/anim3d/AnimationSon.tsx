@@ -11,7 +11,7 @@
  * jamais de lecteur cassé.
  */
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Carte } from '../ui/composants.js';
 
 export interface AnimationSonProps {
@@ -44,12 +44,32 @@ export function AnimationSon({
   // cassé. On met la source directement sur <video> pour que `onError` se
   // déclenche de façon fiable quand le fichier manque.
   const [erreur, setErreur] = useState(false);
+  const video = useRef<HTMLVideoElement>(null);
   const url = `${import.meta.env.BASE_URL}videos/${fichier}`;
+
+  // `autoplay` seul ne suffit pas partout : plusieurs navigateurs diffèrent le
+  // démarrage tant que la vidéo est hors écran, et iOS l'oublie après un
+  // retour d'arrière-plan. On relance donc la lecture dès que la carte entre
+  // dans l'écran. Un refus (mode économie d'énergie, réglage du système) est
+  // sans conséquence : les contrôles restent là.
+  useEffect(() => {
+    const el = video.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e?.isIntersecting && el.paused) el.play().catch(() => {});
+      },
+      { threshold: 0.25 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [erreur]);
 
   return (
     <Carte titre={titre} source={source} intro={intro}>
       {!erreur ? (
         <video
+          ref={video}
           className="video-son"
           src={url}
           controls
