@@ -103,10 +103,10 @@ export default function App() {
 
           {zone === 'parcours' &&
             (module ? (
-              <>
+              <div className="lecture">
                 <button
                   type="button"
-                  className="bouton bouton--secondaire"
+                  className="bouton bouton--secondaire bouton--retour"
                   style={{ marginBottom: 18 }}
                   onClick={() => setModuleOuvert(null)}
                 >
@@ -125,7 +125,7 @@ export default function App() {
                 >
                   J'ai terminé ce module
                 </button>
-              </>
+              </div>
             ) : (
               <Parcours
                 faits={progression.faits}
@@ -134,9 +134,18 @@ export default function App() {
             ))}
 
           {zone === 'outils' && <BoiteAOutils />}
-          {zone === 'quiz' && <Quiz />}
+          {zone === 'quiz' && (
+            <div className="lecture">
+              <Quiz />
+            </div>
+          )}
           {zone === 'moi' && (
-            <Moi faits={progression.faits} onReinitialiser={progression.reinitialiser} />
+            <div className="lecture">
+              <Moi
+                faits={progression.faits}
+                onReinitialiser={progression.reinitialiser}
+              />
+            </div>
           )}
 
           <p className="pied">
@@ -222,13 +231,15 @@ function BoiteAOutils() {
       <p className="carte__intro">
         Les calculateurs, accessibles directement — sans repasser par le cours.
       </p>
-      <BudgetRetrait />
-      <TempsDePort />
-      <Protection />
-      <ComposeurQuart />
-      <Comparateur />
-      <DureePermise />
-      <EchelleMetiers />
+      <div className="grille">
+        <BudgetRetrait />
+        <TempsDePort />
+        <Protection />
+        <ComposeurQuart />
+        <Comparateur />
+        <DureePermise />
+        <EchelleMetiers />
+      </div>
     </>
   );
 }

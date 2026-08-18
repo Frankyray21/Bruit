@@ -1405,6 +1405,89 @@ input[type='range'] {
   line-height: 1.5;
 }
 
+/* ---------- Grand écran : occuper la largeur sans casser la lecture ---------- */
+
+/*
+ * Le site est pensé au pouce, sur un téléphone à 400 px. Sur un écran
+ * d'ordinateur, la même colonne de 720 px laissait les deux tiers de l'écran
+ * vides — en salle de formation, projeté, ça donne un timbre-poste.
+ *
+ * Le compromis retenu : la page s'élargit, mais tout ne s'élargit pas avec
+ * elle. Ce qui se lit (un module, le quiz) reste dans une colonne étroite,
+ * parce qu'une ligne de 1100 px se lit mal. Ce qui se parcourt (la liste des
+ * modules, les calculateurs) passe sur deux colonnes.
+ */
+@media (min-width: 1200px) {
+  .contenu {
+    max-width: 1140px;
+    padding: 28px 32px 60px;
+  }
+
+  /* Colonne de lecture : le texte d'un module suit un fil, il ne se met pas
+     en colonnes. */
+  .lecture {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .module-liste {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  /* Les calculateurs sont indépendants les uns des autres : deux colonnes les
+     rendent comparables d'un coup d'œil au lieu d'un long défilement. */
+  .grille {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+
+  .grille > .carte {
+    margin-bottom: 0;
+  }
+
+  /* Un « retour » large de 760 px sur un écran d'ordinateur ressemble à une
+     erreur : à la souris, on vise, on n'a pas besoin d'une cible au pouce. */
+  .bouton--retour {
+    width: auto;
+    min-width: 220px;
+  }
+
+  /* Le hero gagne en hauteur : le modèle 3D a besoin d'air pour être lisible. */
+  .hero {
+    min-height: 460px;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+}
+
+@media (min-width: 1600px) {
+  .contenu {
+    max-width: 1320px;
+  }
+
+  .hero {
+    min-height: 520px;
+  }
+}
+
+/* Mode présentation : une seule colonne, plus grosse — on projette, on ne
+   parcourt pas. */
+.app--presentation .grille,
+.app--presentation .module-liste {
+  display: flex;
+  flex-direction: column;
+}
+
+.app--presentation .grille > .carte {
+  margin-bottom: 16px;
+}
+
 /* ---------- Mode présentation ---------- */
 
 .app--presentation {
