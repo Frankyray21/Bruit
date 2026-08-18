@@ -1016,7 +1016,11 @@ input[type='range'] {
   }
 }
 
-/* Le lecteur Sketchfab occupe tout le cadre et reste manipulable au doigt. */
+/*
+ * Le lecteur Sketchfab occupe tout le cadre et reste manipulable au doigt.
+ * Son fond est transparent (`transparent=1`) : le noir affiché derrière le
+ * modèle est celui de `.hero`, pas celui du modèle.
+ */
 .hero__sketchfab {
   width: 100%;
   height: 100%;

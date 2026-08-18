@@ -19,9 +19,13 @@ const MODELE = '4f5438fc9337454587ec4a2c30c8c42f';
  * image fixe avec un bouton « play » et n'ouvre le lecteur qu'au clic — un
  * hero ne demande pas la permission de vivre. `autospin` fait tourner le
  * modèle, `annotation_cycle` déroule ses annotations une par une, et
- * `ui_theme=dark` accorde les commandes du lecteur au fond noir.
+ * `ui_theme=dark` accorde les commandes du lecteur au fond sombre.
  *
- * Pas de `transparent=1` : le lecteur garde son fond noir, voulu.
+ * `transparent=1` est ce qui donne le fond NOIR, malgré son nom. Le fond
+ * clair qu'on voyait vient du modèle lui-même : son auteur l'a réglé dans la
+ * scène, et aucun paramètre d'URL ne le remplace — `ui_theme` ne colore que
+ * les boutons du lecteur. En rendant le fond du lecteur transparent, c'est le
+ * cadre du hero qu'on voit à travers, et lui est noir (`.hero`, styles.css).
  *
  * `dnt=1` demande à Sketchfab de ne pas pister le visiteur ; sans effet sur
  * l'affichage.
@@ -29,7 +33,7 @@ const MODELE = '4f5438fc9337454587ec4a2c30c8c42f';
 export const SKETCHFAB_SRC =
   `https://sketchfab.com/models/${MODELE}/embed` +
   '?autospin=1&autostart=1&annotations_visible=1&preload=1' +
-  '&annotation_cycle=5&ui_theme=dark&dnt=1';
+  '&annotation_cycle=5&ui_theme=dark&transparent=1&dnt=1';
 
 export const SKETCHFAB_PAGE = `https://sketchfab.com/3d-models/ear-cross-section-${MODELE}`;
 
