@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import paquet from './package.json' with { type: 'json' };
 
-// Estampille de version = moment du build (celui de la CI à chaque déploiement).
-// Affichée dans le site pour confirmer qu'on est sur la dernière version.
-const VERSION = new Date()
+// Version affichée = numéro du paquet + moment du build (celui de la CI à
+// chaque déploiement). Le numéro dit quelle livraison est en ligne, l'heure
+// confirme que le navigateur n'a pas gardé une vieille copie en cache.
+const HORODATAGE = new Date()
   .toLocaleString('fr-CA', {
     timeZone: 'America/Toronto',
     day: '2-digit',
@@ -14,6 +16,8 @@ const VERSION = new Date()
     minute: '2-digit',
   })
   .replace(',', '');
+
+const VERSION = `${paquet.version} · ${HORODATAGE}`;
 
 // Le site est publié sur https://frankyray21.github.io/Bruit/ — d'où le base.
 // BASE_PATH=/ permet de servir la racine en local ou sur un autre hébergeur.
