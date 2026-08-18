@@ -27,6 +27,7 @@ import { FacteurDerating, Protection } from '../outils/Protection.js';
 import { PoseBouchons, Symptomes, VerifCoquilles } from '../outils/Pose.js';
 import { TempsDePort } from '../outils/TempsDePort.js';
 import { OreilleCoupe } from '../anim3d/OreilleCoupe.js';
+import { OreilleSketchfab } from '../anim3d/OreilleSketchfab.js';
 import { AnimationSon } from '../anim3d/AnimationSon.js';
 import { SerieAnnuelle } from '../ui/Graphe.js';
 import { entier, nb } from '../ui/format.js';
@@ -226,6 +227,8 @@ function ModuleDommages() {
   return (
     <>
       <OreilleCoupe />
+
+      <OreilleSketchfab />
 
       <Suspense
         fallback={

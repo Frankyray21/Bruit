@@ -669,6 +669,47 @@ input[type='range'] {
   border: 1px solid var(--bordure);
 }
 
+/* ---------- Intégration Sketchfab ---------- */
+
+/*
+ * Le lecteur Sketchfab n'a pas de hauteur propre : sans ce cadre, l'iframe
+ * s'écrase à la hauteur par défaut (150 px). Le ratio garde la même allure du
+ * téléphone à la projection en salle.
+ */
+.sketchfab-embed-wrapper {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 70vh;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--fond);
+  border: 1px solid var(--bordure);
+}
+
+.sketchfab-embed-wrapper__attente {
+  margin: 0;
+  color: var(--texte-doux);
+  font-size: 0.9rem;
+}
+
+.sketchfab-embed-wrapper iframe {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sketchfab-embed-wrapper iframe.est-chargee {
+  opacity: 1;
+}
+
 /* ---------- Bannière « installer l'app » ---------- */
 
 .installer-banniere {
