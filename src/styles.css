@@ -991,18 +991,41 @@ input[type='range'] {
   color: var(--texte);
 }
 
-/* ---------- Hero d'accueil (modèle 3D d'oreille en fond) ---------- */
+/* ---------- Hero d'accueil (modèle 3D d'oreille) ---------- */
 
+/*
+ * Le hero déborde de la colonne de contenu, jusqu'à ses bords : c'est une
+ * image, elle n'a pas de marge à respecter. Rien ne se superpose au modèle —
+ * titre et crédit sont posés dessous, dans `.hero__legende`.
+ */
 .hero {
   position: relative;
-  border-radius: var(--rayon);
   overflow: hidden;
-  border: 1px solid var(--bordure);
-  min-height: 340px;
-  margin-bottom: 22px;
+  background: #000;
+  /* Grand, mais jamais au point d'avaler l'écran : sur un portable bas de
+     plafond, la borne en `vh` garde le début des modules visible. */
+  min-height: min(420px, 52vh);
+  margin: -20px -16px 0;
   display: flex;
 }
 
+/* Entre la tablette et le grand écran, le hero grandit déjà. */
+@media (min-width: 980px) {
+  .hero {
+    min-height: min(520px, 64vh);
+  }
+}
+
+/* Le lecteur Sketchfab occupe tout le cadre et reste manipulable au doigt. */
+.hero__sketchfab {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  border: 0;
+}
+
+/* Repli hors-ligne : ondes sonores et, si la 3D locale existe, le modèle. */
 .hero__media {
   position: absolute;
   inset: 0;
@@ -1055,75 +1078,19 @@ input[type='range'] {
   }
 }
 
-/*
- * Le lecteur Sketchfab occupe tout le hero. `pointer-events` reste actif :
- * on doit pouvoir tourner le modèle au doigt. Le voile et le titre, eux, se
- * laissent traverser (voir plus bas) pour ne pas voler le geste.
- */
-.hero__sketchfab {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
+/* Titre de la page et crédit d'auteur — sous le cadre, jamais devant. */
+.hero__legende {
+  padding: 20px 0 22px;
 }
 
-/* Voile : sombre en bas et à gauche pour que le titre reste lisible. */
-.hero__voile {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(
-      to top,
-      var(--fond) 2%,
-      rgba(10, 14, 23, 0.4) 40%,
-      transparent 70%
-    ),
-    linear-gradient(to right, rgba(10, 14, 23, 0.75), transparent 65%);
-}
-
-.hero__contenu {
-  position: relative;
-  z-index: 1;
-  align-self: flex-end;
-  padding: 22px;
-  width: 100%;
-  pointer-events: none; /* le glissement va au modèle, pas au titre */
-}
-
-/* Derrière un vrai modèle, le voile s'allège : il doit rester visible. */
-.hero__voile--modele {
-  background: linear-gradient(
-    to top,
-    var(--fond) 0%,
-    rgba(10, 14, 23, 0.72) 22%,
-    transparent 52%
-  );
-}
-
-/* Crédit d'auteur du modèle — exigé par sa licence, discret mais cliquable. */
 .hero__credit {
-  position: absolute;
-  right: 10px;
-  top: 8px;
-  z-index: 2;
-  margin: 0;
-  font-size: 0.68rem;
-  color: var(--texte-doux);
-  background: rgba(10, 14, 23, 0.6);
-  padding: 3px 8px;
-  border-radius: 999px;
+  margin: 10px 0 0;
+  font-size: 0.75rem;
+  color: var(--texte-faible);
 }
 
 .hero__credit a {
-  color: inherit;
-}
-
-@media (min-width: 980px) {
-  .hero {
-    min-height: 420px;
-  }
+  color: var(--texte-doux);
 }
 
 /* ---------- Scène 3D ---------- */
@@ -1458,7 +1425,8 @@ input[type='range'] {
 
   /* Le hero gagne en hauteur : le modèle 3D a besoin d'air pour être lisible. */
   .hero {
-    min-height: 460px;
+    min-height: min(620px, 68vh);
+    margin: -28px -32px 0;
   }
 
   h1 {
@@ -1472,7 +1440,7 @@ input[type='range'] {
   }
 
   .hero {
-    min-height: 520px;
+    min-height: min(720px, 72vh);
   }
 }
 
