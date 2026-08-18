@@ -1,21 +1,34 @@
 /**
- * Hero d'accueil — fond propre (ondes sonores) + titre, et, si un vrai modèle
- * GLB d'oreille est déposé, ce modèle en 3D par-dessus.
+ * Hero d'accueil — le modèle 3D de l'oreille en fond, titre par-dessus.
  *
- * Par défaut, aucun objet 3D généré par code : un motif d'ondes sonores sobre
- * sert de fond. Dès qu'un fichier `public/models/oreille.glb` est présent, la
- * 3D réelle apparaît en fondu — exactement l'idée du hero de TMS.
+ * Trois fonds possibles, du meilleur au plus modeste :
+ *   1. le modèle Sketchfab annoté, qui tourne tout seul (demande le réseau) ;
+ *   2. un `public/models/oreille.glb` déposé dans le dépôt, ou la cochlée
+ *      générée en code — les deux fonctionnent hors-ligne (voir HeroCanvas) ;
+ *   3. le motif d'ondes sonores, toujours dessiné derrière.
+ *
+ * Le repli n'est pas un détail : au fond de la mine il n'y a pas de réseau, et
+ * c'est justement là que le site doit encore s'ouvrir.
  */
 
 import { lazy, Suspense, type ReactNode } from 'react';
+import {
+  CreditSketchfab,
+  SKETCHFAB_ATTRIBUTS,
+  SKETCHFAB_SRC,
+  useSketchfab,
+} from './sketchfab.js';
 
 const HeroCanvas = lazy(() => import('./HeroCanvas.js'));
 
 export function HeroOreille({ children }: { children: ReactNode }) {
+  const sketchfab = useSketchfab();
+
   return (
     <section className="hero">
       <div className="hero__media">
-        {/* Fond sobre : ondes sonores concentriques, motif de marque. */}
+        {/* Fond sobre : ondes sonores concentriques, motif de marque. Il reste
+            derrière le modèle : c'est ce qu'on voit pendant son chargement. */}
         <svg
           className="hero__ondes"
           viewBox="0 0 400 300"
@@ -44,14 +57,32 @@ export function HeroOreille({ children }: { children: ReactNode }) {
           <circle cx="288" cy="132" r="6" fill="#ef5a5c" />
         </svg>
 
-        {/* Vrai modèle 3D si présent ; sinon, ne rend rien. */}
-        <Suspense fallback={null}>
-          <HeroCanvas />
-        </Suspense>
+        {sketchfab === 'joignable' ? (
+          <iframe
+            className="hero__sketchfab"
+            title="Coupe de l'oreille en 3D"
+            src={SKETCHFAB_SRC}
+            allowFullScreen
+            allow="autoplay; fullscreen; xr-spatial-tracking"
+            {...SKETCHFAB_ATTRIBUTS}
+          />
+        ) : (
+          /* Pas de réseau : le modèle local (ou la cochlée générée en code). */
+          sketchfab === 'indisponible' && (
+            <Suspense fallback={null}>
+              <HeroCanvas />
+            </Suspense>
+          )
+        )}
 
-        <div className="hero__voile" />
+        <div
+          className={`hero__voile${sketchfab === 'joignable' ? ' hero__voile--modele' : ''}`}
+        />
       </div>
+
       <div className="hero__contenu">{children}</div>
+
+      {sketchfab === 'joignable' && <CreditSketchfab className="hero__credit" />}
     </section>
   );
 }

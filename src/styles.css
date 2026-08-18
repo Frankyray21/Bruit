@@ -991,79 +991,7 @@ input[type='range'] {
   color: var(--texte);
 }
 
-/* ---------- Coupe anatomique animée (SVG) ---------- */
-
-.oreille-svg {
-  width: 100%;
-  height: auto;
-  display: block;
-  background: var(--fond);
-  border: 1px solid var(--bordure);
-  border-radius: 12px;
-  padding: 8px;
-}
-
-.oreille-etiq text {
-  font-family: system-ui, sans-serif;
-}
-
-/* Le signal parcourt la spirale : longueur de tiret ~ portion visible. */
-.oreille-signal {
-  stroke-dasharray: 40 300;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .onde {
-    animation: onde-entre 2.4s ease-in-out infinite;
-  }
-  .onde2 {
-    animation-delay: 0.3s;
-  }
-  .onde3 {
-    animation-delay: 0.6s;
-  }
-  @keyframes onde-entre {
-    0% {
-      opacity: 0;
-      transform: translateX(-8px);
-    }
-    40% {
-      opacity: 0.9;
-    }
-    100% {
-      opacity: 0;
-      transform: translateX(10px);
-    }
-  }
-
-  .oreille-tympan {
-    transform-box: fill-box;
-    transform-origin: center;
-    animation: tympan-vibre 0.5s ease-in-out infinite;
-  }
-  @keyframes tympan-vibre {
-    0%, 100% { transform: scaleX(1); }
-    50% { transform: scaleX(0.55); }
-  }
-
-  .oreille-signal {
-    animation: signal-parcourt 2.4s linear infinite;
-  }
-  @keyframes signal-parcourt {
-    from { stroke-dashoffset: 340; }
-    to { stroke-dashoffset: 0; }
-  }
-
-  .oreille-nerf {
-    stroke-dasharray: 6 8;
-    animation: nerf-file 1.2s linear infinite;
-  }
-  @keyframes nerf-file {
-    to { stroke-dashoffset: -14; }
-  }
-}
-
-/* ---------- Hero d'accueil (cochlée 3D en fond) ---------- */
+/* ---------- Hero d'accueil (modèle 3D d'oreille en fond) ---------- */
 
 .hero {
   position: relative;
@@ -1127,10 +1055,24 @@ input[type='range'] {
   }
 }
 
+/*
+ * Le lecteur Sketchfab occupe tout le hero. `pointer-events` reste actif :
+ * on doit pouvoir tourner le modèle au doigt. Le voile et le titre, eux, se
+ * laissent traverser (voir plus bas) pour ne pas voler le geste.
+ */
+.hero__sketchfab {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
 /* Voile : sombre en bas et à gauche pour que le titre reste lisible. */
 .hero__voile {
   position: absolute;
   inset: 0;
+  pointer-events: none;
   background:
     linear-gradient(
       to top,
@@ -1147,6 +1089,35 @@ input[type='range'] {
   align-self: flex-end;
   padding: 22px;
   width: 100%;
+  pointer-events: none; /* le glissement va au modèle, pas au titre */
+}
+
+/* Derrière un vrai modèle, le voile s'allège : il doit rester visible. */
+.hero__voile--modele {
+  background: linear-gradient(
+    to top,
+    var(--fond) 0%,
+    rgba(10, 14, 23, 0.72) 22%,
+    transparent 52%
+  );
+}
+
+/* Crédit d'auteur du modèle — exigé par sa licence, discret mais cliquable. */
+.hero__credit {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  z-index: 2;
+  margin: 0;
+  font-size: 0.68rem;
+  color: var(--texte-doux);
+  background: rgba(10, 14, 23, 0.6);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.hero__credit a {
+  color: inherit;
 }
 
 @media (min-width: 980px) {

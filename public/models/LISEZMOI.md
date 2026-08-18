@@ -9,9 +9,11 @@ scène vide).
 | **`oreille.glb`** | Le hero d'accueil **et** le module « Ce que le bruit détruit » | L'oreille complète : externe (pavillon, conduit, tympan) et interne (cochlée) |
 | **`cellules.glb`** | Le module « Ce que le bruit détruit » | Les cellules ciliées / l'organe de Corti — ce que le bruit détruit sans retour |
 
-Dans le hero, `oreille.glb` tourne lentement en fond derrière le titre, comme le
-corps 3D du hero de TMS. S'il est absent, l'accueil montre un fond d'ondes
-sonores propre.
+Le hero d'accueil montre d'abord le modèle Sketchfab « Ear cross-section »
+(annoté, il tourne tout seul) — mais celui-là vient du réseau. **Sans réseau**,
+le hero bascule sur `oreille.glb` s'il est déposé ici, sinon sur la cochlée
+générée en code, sur un fond d'ondes sonores. Déposer le `.glb` est donc ce qui
+donne un vrai modèle 3D au fond de la mine.
 
 ## Où trouver un modèle libre et téléchargeable
 
