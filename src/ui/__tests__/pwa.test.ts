@@ -16,4 +16,10 @@ describe('contrat de mise à jour sans interruption', () => {
     expect(ui).toContain('window.confirm');
     expect(ui).toContain('await updateServiceWorker(true)');
   });
+  it('reconnaît le précache déjà préparé après reload, seulement pour cette app', () => {
+    const ui = readFileSync('src/ui/InstallerApp.tsx', 'utf8');
+    expect(ui).toContain('navigator.serviceWorker.ready');
+    expect(ui).toContain('registration.active && registration.scope === portee');
+    expect(ui).toContain('pret || dejaPrepare');
+  });
 });
