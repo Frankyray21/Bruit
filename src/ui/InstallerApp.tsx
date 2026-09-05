@@ -83,6 +83,7 @@ export function CarteInstall() {
 }
 export function BanniereMiseAJour() {
   const [enLigne, setEnLigne] = useState(() => navigator.onLine);
+  const [dejaPrepare, setDejaPrepare] = useState(false);
   const [erreur, setErreur] = useState('');
   const [actualisation, setActualisation] = useState(false);
   const [controleChange, setControleChange] = useState(false);
@@ -97,10 +98,20 @@ export function BanniereMiseAJour() {
     },
   });
   useEffect(() => {
+    // offlineReady signale la première installation seulement. Après reload,
+    // reconnaître aussi le worker actif de cette app, jamais celui d'un voisin.
+    let vivant = true;
+    if ('serviceWorker' in navigator) {
+      const portee = new URL(import.meta.env.BASE_URL, location.origin).href;
+      void navigator.serviceWorker.ready.then(registration => {
+        if (vivant && registration.active && registration.scope === portee) setDejaPrepare(true);
+      }).catch(() => {});
+    }
     const actualiser = () => setEnLigne(navigator.onLine);
     window.addEventListener('online', actualiser);
     window.addEventListener('offline', actualiser);
     return () => {
+      vivant = false;
       window.removeEventListener('online', actualiser);
       window.removeEventListener('offline', actualiser);
     };
@@ -114,7 +125,7 @@ export function BanniereMiseAJour() {
     catch { actualisationDemandee.current = false; setActualisation(false); setErreur('Actualisation impossible. Réessaie avec du réseau.'); }
   }
   return <div className="etat-reseau">
-    <p role="status">{!enLigne ? 'Hors ligne. Les contenus téléchargés restent accessibles.' : pret ? 'Contenus principaux prêts hors ligne.' : 'En ligne. Prépare le site avant de descendre.'}</p>
+    <p role="status">{!enLigne ? 'Hors ligne. Les contenus téléchargés restent accessibles.' : pret || dejaPrepare ? 'Contenus principaux prêts hors ligne.' : 'En ligne. Prépare le site avant de descendre.'}</p>
     {(miseAJour || controleChange) && <div className="mise-a-jour" role="status">
       <span>Une nouvelle version est prête. Actualise quand tu as terminé tes calculs.</span>
       <button type="button" className="bouton bouton--secondaire" disabled={actualisation} onClick={() => void appliquer()}>{actualisation ? 'Actualisation…' : 'Actualiser'}</button>
