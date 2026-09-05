@@ -34,7 +34,10 @@ Installable sur téléphone depuis le menu du navigateur (« Ajouter à l'écran
 d'accueil »), et fonctionnel **sans réseau** une fois installé.
 
 Le workflow `.github/workflows/deploy.yml` rejoue les tests, construit le site et
-publie le résultat sur la branche `gh-pages` à chaque poussée.
+publie le résultat sur la branche `gh-pages` après une poussée sur `main`
+(ou sur une branche historique `claude/**`). Les améliorations passent par une
+pull request vers **`main`**, la source de la version déployée, même si GitHub
+affiche une autre branche par défaut.
 
 > **Une manipulation est requise une seule fois**, dans
 > **Réglages → Pages → Build and deployment** : choisir la source
@@ -48,14 +51,33 @@ publie le résultat sur la branche `gh-pages` à chaque poussée.
 ## État du projet
 
 Site fonctionnel : 6 modules de formation, une boîte à outils, un quiz de
-14 questions avec attestation, un mode présentation pour le formateur. Le moteur
-de calcul est couvert par 76 tests qui reproduisent chaque ligne des tableaux de
-la formation.
+14 questions avec attestation, un mode présentation pour le formateur. Les
+76 tests du moteur reproduisent les tableaux de la formation ; des tests
+supplémentaires couvrent navigation, stockage, quiz, contrôles et récupération.
+
+### Version 0.6.0 — interface et fiabilité
+
+- Accueil repensé et navigation adaptée au téléphone, à la tablette et au bureau.
+- Six modules accessibles par lien direct, retour navigateur et reprise du parcours.
+- Dix entrées dans la boîte à outils : recherche et catégories, un outil à la fois.
+  Les réglages des outils ouverts sont conservés en mémoire pendant la visite,
+  mais pas après rechargement (sauf préférences de calcul déjà persistantes).
+- Quiz sauvegardé sur cet appareil, y compris la réponse courante et la date du
+  résultat. Attestation imprimable après réussite ; seuil et questions inchangés.
+- Réinitialisation avec confirmation, limitée au nom, au parcours et au quiz.
+- Stockage validé ; fonctionnement en mémoire lorsque le navigateur le refuse.
+- Mise à jour installable seulement après confirmation, sans recharge automatique
+  du quiz en cours. Le bouton de secours ne nettoie que le cache de Bruit.
+- Vues 3D à la demande, vidéo sans lecture automatique, modèle externe Sketchfab
+  chargé uniquement sur demande. Aucun appel aux médias optionnels absents.
+- Repères tactiles des graphiques corrigés, contrôles nommés et navigation clavier.
+
+Les données de référence, le moteur de calcul et les 14 questions sont conservés.
 
 ```bash
-npm install
+npm ci
 npm run dev      # développement
-npm test         # 76 tests du moteur de calcul
+npm test         # calculs, interface et fiabilité
 npm run build    # typecheck + build de production
 ```
 
@@ -82,14 +104,20 @@ src/anim3d/                   Cochlée 3D interactive (Three.js, chargée à la 
 Le module « Ce que le bruit détruit » contient une **vue 3D de la cochlée** :
 on la tourne au doigt, et un curseur de bruit couche puis détruit les cellules
 ciliées — d'abord dans la zone des aigus, comme dans la réalité. Three.js est
-embarqué dans le bundle (aucun chargement externe) et n'est téléchargé qu'à
-l'ouverture du module, pour ne pas ralentir les calculateurs. C'est une
+embarqué en local et son rendu n'est activé qu'au clic sur « Ouvrir la vue 3D ».
+Le service worker télécharge aussi ce bundle pour préparer le hors-ligne. C'est une
 illustration schématique, pas un examen médical.
 
 Le même module renvoie à l'animation **« Le voyage du son »** de la NIDCD
-(NIH), du **domaine public**. Par défaut, c'est un lien (en ligne). Pour
-l'avoir hors-ligne, dépose le fichier vidéo dans `public/videos/` — voir
-`public/videos/LISEZMOI.md`.
+(NIH), du **domaine public**. La vidéo locale `public/videos/videoplayback.mp4`
+est incluse dans le précache. L'autre animation reste un lien externe tant que
+son fichier optionnel n'est pas présent. L'inventaire des vidéos et modèles GLB
+est produit à la construction : reconstruire après ajout d'un média.
+
+La préparation hors ligne doit être terminée avant de couper le réseau ; le
+site affiche son état. Le lecteur externe Sketchfab et les liens vers des
+ressources externes ne sont pas disponibles hors ligne. Un modèle optionnel de
+plus de 6 Mo doit faire l'objet d'une décision explicite sur le budget de cache.
 
 Le moteur `src/domain/` est **vérifiable sans démarrer le site**. C'est
 volontaire : les formules sont la valeur réelle du projet et le formateur doit

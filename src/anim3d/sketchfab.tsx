@@ -15,65 +15,54 @@ import { useEffect, useState } from 'react';
 const MODELE = '4f5438fc9337454587ec4a2c30c8c42f';
 
 /**
- * `autostart=1` est le paramètre décisif : sans lui, Sketchfab affiche une
- * image fixe avec un bouton « play » et n'ouvre le lecteur qu'au clic — un
- * hero ne demande pas la permission de vivre. `autospin` fait tourner le
- * modèle, `annotation_cycle` déroule ses annotations une par une, et
- * `ui_theme=dark` accorde les commandes du lecteur au fond sombre.
- *
- * `transparent=1` est ce qui donne le fond NOIR, malgré son nom. Le fond
- * clair qu'on voyait vient du modèle lui-même : son auteur l'a réglé dans la
- * scène, et aucun paramètre d'URL ne le remplace — `ui_theme` ne colore que
- * les boutons du lecteur. En rendant le fond du lecteur transparent, c'est le
- * cadre du hero qu'on voit à travers, et lui est noir (`.hero`, styles.css).
- *
- * `dnt=1` demande à Sketchfab de ne pas pister le visiteur ; sans effet sur
- * l'affichage.
+ * Pas de rotation ni de lancement automatiques. L'utilisateur choisit aussi
+ * quand charger le lecteur externe. `dnt=1` demande de limiter le suivi,
+ * sans constituer une garantie sur les pratiques du service tiers.
  */
 export const SKETCHFAB_SRC =
   `https://sketchfab.com/models/${MODELE}/embed` +
-  '?autospin=1&autostart=1&annotations_visible=1&preload=1' +
-  '&annotation_cycle=5&ui_theme=dark&transparent=1&dnt=1';
+  '?autospin=0&autostart=0&annotations_visible=1&preload=0' +
+  '&ui_theme=dark&transparent=1&dnt=1';
 
 export const SKETCHFAB_PAGE = `https://sketchfab.com/3d-models/ear-cross-section-${MODELE}`;
-
-/**
- * Attributs hérités du code d'intégration de Sketchfab : les types JSX de
- * React ne les connaissent pas, on les passe donc par un spread.
- */
-export const SKETCHFAB_ATTRIBUTS = {
-  mozallowfullscreen: 'true',
-  webkitallowfullscreen: 'true',
-  'xr-spatial-tracking': '',
-  'execution-while-out-of-viewport': '',
-  'execution-while-not-rendered': '',
-  'web-share': '',
-} as Record<string, string>;
 
 export type EtatSketchfab = 'verification' | 'joignable' | 'indisponible';
 
 /** Le lecteur Sketchfab répond-il ? Revérifie dès que le réseau revient. */
-export function useSketchfab(): EtatSketchfab {
+export function useSketchfab(actif = false): EtatSketchfab {
   const [etat, setEtat] = useState<EtatSketchfab>('verification');
 
   useEffect(() => {
+    if (!actif) return;
     let vivant = true;
+    let controle: AbortController | undefined;
+    let delai: ReturnType<typeof setTimeout> | undefined;
 
     // `no-cors` : on ne lit pas la réponse (Sketchfab ne l'autoriserait pas),
     // on veut seulement savoir si la requête aboutit.
     function verifier() {
-      fetch(SKETCHFAB_SRC, { mode: 'no-cors', cache: 'no-store' })
-        .then(() => vivant && setEtat('joignable'))
-        .catch(() => vivant && setEtat('indisponible'));
+      controle?.abort();
+      clearTimeout(delai);
+      if (!navigator.onLine) { setEtat('indisponible'); return; }
+      setEtat('verification');
+      controle = new AbortController();
+      const signal = controle.signal;
+      delai = setTimeout(() => { controle?.abort(); if (vivant) setEtat('indisponible'); }, 5000);
+      fetch(SKETCHFAB_SRC, { mode: 'no-cors', cache: 'no-store', signal })
+        .then(() => vivant && !signal.aborted && setEtat('joignable'))
+        .catch(() => vivant && !signal.aborted && setEtat('indisponible'))
+        .finally(() => { if (!signal.aborted) clearTimeout(delai); });
     }
 
     verifier();
     window.addEventListener('online', verifier);
     return () => {
       vivant = false;
+      controle?.abort();
+      clearTimeout(delai);
       window.removeEventListener('online', verifier);
     };
-  }, []);
+  }, [actif]);
 
   return etat;
 }
