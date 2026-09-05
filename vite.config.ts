@@ -2,6 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import paquet from './package.json' with { type: 'json' };
+import { readdirSync } from 'node:fs';
+
+// Inventaire à la construction : ne jamais réclamer un média optionnel absent.
+const fichiers = (dossier: string, extension: string) =>
+  readdirSync(new URL(`./public/${dossier}/`, import.meta.url)).filter(nom => nom.endsWith(extension));
 
 // Version affichée = numéro du paquet + moment du build (celui de la CI à
 // chaque déploiement). Le numéro dit quelle livraison est en ligne, l'heure
@@ -25,11 +30,13 @@ export default defineConfig({
   base: process.env.BASE_PATH ?? '/Bruit/',
   define: {
     __VERSION__: JSON.stringify(VERSION),
+    __MODELES_LOCAUX__: JSON.stringify(fichiers('models', '.glb')),
+    __VIDEOS_LOCALES__: JSON.stringify(fichiers('videos', '.mp4')),
   },
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.svg'],
       manifest: {
         name: 'Bruit — Protection auditive',
@@ -56,7 +63,7 @@ export default defineConfig({
       workbox: {
         // Tout doit être disponible hors-ligne : il n'y a pas de réseau sous terre.
         // La vidéo (mp4) est incluse pour que l'animation joue au fond.
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2,mp4}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2,mp4,glb}'],
         // La vidéo dépasse la limite de précache par défaut (2 Mo) ; on la relève
         // pour qu'elle soit bien mise en cache. Coût : une installation plus
         // lourde, assumé puisqu'on veut l'animation hors-ligne.
@@ -65,7 +72,7 @@ export default defineConfig({
         // peuvent servir des fichiers qui n'existent plus — d'où une page vide.
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: true,
+        skipWaiting: false,
       },
     }),
   ],

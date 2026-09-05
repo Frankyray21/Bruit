@@ -1,193 +1,124 @@
-/**
- * Bouton « Télécharger l'application ».
- *
- * Le site est une PWA : on peut l'installer comme une vraie app, et elle
- * fonctionne ensuite hors-ligne (au fond, comme en surface). L'installation
- * n'est pas la même selon l'appareil :
- *   • Android / ordinateur (Chrome, Edge) : une vraie invite système, déclenchée
- *     par le bouton via l'évènement `beforeinstallprompt`.
- *   • iPhone / iPad (Safari) : pas d'invite possible — on montre le geste
- *     (Partager → « Sur l'écran d'accueil »).
- *   • Déjà installée : on confirme, et on n'affiche plus rien d'incitatif.
- *
- * Deux présentations : une bannière discrète en haut du site, et une carte
- * détaillée dans l'onglet « Moi ».
- */
+/// <reference types="vite-plugin-pwa/react" />
+/** Installation partagée et mises à jour demandées par le travailleur. */
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useRegisterSW } from 'virtual:pwa-register/react';
+import { useStockage } from '../etat/stockage.js';
 
-import { useEffect, useState } from 'react';
-
-/** L'évènement d'installation, absent des types standards du DOM. */
 interface EvtInstall extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
-
-const CLE_MASQUE = 'installer-masque';
-
-function estInstallee(): boolean {
-  return (
-    matchMedia('(display-mode: standalone)').matches ||
-    // Safari iOS : propriété non standard.
-    (navigator as unknown as { standalone?: boolean }).standalone === true
-  );
-}
-
-function estIOS(): boolean {
-  const ua = navigator.userAgent;
-  const iOS = /iphone|ipad|ipod/i.test(ua);
-  // iPad récent se présente en « Macintosh » mais a un écran tactile.
-  const iPadOS = /Macintosh/i.test(ua) && navigator.maxTouchPoints > 1;
-  return iOS || iPadOS;
-}
-
 interface EtatInstall {
   evt: EvtInstall | null;
   installee: boolean;
   ios: boolean;
+  enCours: boolean;
+  erreur: string;
 }
-
-function useInstall(): EtatInstall & {
-  installer: () => void;
-} {
-  const [evt, setEvt] = useState<EvtInstall | null>(null);
-  const [installee, setInstallee] = useState(false);
-  const [ios, setIos] = useState(false);
-
+let etatInstall: EtatInstall = { evt: null, installee: false, ios: false, enCours: false, erreur: '' };
+const abonnes = new Set<() => void>();
+let ecouteInstallee = false;
+function publier(changement: Partial<EtatInstall>) {
+  etatInstall = { ...etatInstall, ...changement };
+  abonnes.forEach((abonne) => abonne());
+}
+function initialiserInstallation() {
+  if (ecouteInstallee || typeof window === 'undefined') return;
+  ecouteInstallee = true;
+  const ua = navigator.userAgent;
+  publier({
+    installee: window.matchMedia?.('(display-mode: standalone)').matches || (navigator as unknown as { standalone?: boolean }).standalone === true,
+    ios: /iphone|ipad|ipod/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1),
+  });
+  window.addEventListener('beforeinstallprompt', (evt) => {
+    evt.preventDefault();
+    publier({ evt: evt as EvtInstall, erreur: '' });
+  });
+  window.addEventListener('appinstalled', () => publier({ installee: true, evt: null, enCours: false }));
+}
+function abonnerInstallation(callback: () => void) {
+  abonnes.add(callback);
+  initialiserInstallation();
+  return () => { abonnes.delete(callback); };
+}
+async function installer() {
+  if (!etatInstall.evt || etatInstall.enCours) return;
+  const evt = etatInstall.evt;
+  publier({ enCours: true, erreur: '' });
+  try {
+    await evt.prompt();
+    await evt.userChoice;
+    publier({ evt: null, enCours: false });
+  } catch {
+    publier({ evt: null, enCours: false, erreur: "Utilise le menu du navigateur pour installer l'application." });
+  }
+}
+function useInstall() {
+  return useSyncExternalStore(abonnerInstallation, () => etatInstall, () => etatInstall);
+}
+function InstructionsIOS() {
+  return <p className="carte__intro">Sur iPhone ou iPad : touche <strong>Partager</strong>, puis <strong>Sur l'écran d'accueil</strong>.</p>;
+}
+export function BanniereInstall() {
+  const { evt, installee, ios, enCours, erreur } = useInstall();
+  const [masque, setMasque] = useStockage('installer-masque', false);
+  if (installee || masque || (!evt && !ios && !erreur)) return null;
+  return <div className="installer-banniere" role="region" aria-label="Installer l'application">
+    <span className="installer-banniere__icone" aria-hidden="true">⤓</span>
+    <span className="installer-banniere__texte">Garde la formation à portée de main. Prépare le hors-ligne avant de descendre.</span>
+    {evt ? <button type="button" className="installer-banniere__action" disabled={enCours} onClick={() => void installer()}>{enCours ? 'Installation…' : 'Installer'}</button> : ios ? <span>Partager → écran d'accueil</span> : null}
+    {erreur && <span role="status">{erreur}</span>}
+    <button type="button" className="installer-banniere__fermer" onClick={() => setMasque(true)} aria-label="Masquer le conseil d'installation">×</button>
+  </div>;
+}
+export function CarteInstall() {
+  const { evt, installee, ios, enCours, erreur } = useInstall();
+  return <>
+    {installee ? <p role="status">✓ Application installée.</p> : evt ?
+      <button type="button" className="bouton" disabled={enCours} onClick={() => void installer()}>{enCours ? 'Installation…' : "Installer l'application"}</button>
+      : ios ? <InstructionsIOS /> : <p className="carte__intro">Dans le menu du navigateur, choisis <strong>Installer l'application</strong> ou <strong>Ajouter à l'écran d'accueil</strong>.</p>}
+    {erreur && <p role="status">{erreur}</p>}
+    <p className="carte__intro">Ouvre le site avec du réseau avant de descendre. Les ressources externes nécessitent Internet ; les médias locaux sont préparés pour le hors-ligne.</p>
+  </>;
+}
+export function BanniereMiseAJour() {
+  const [enLigne, setEnLigne] = useState(() => navigator.onLine);
+  const [erreur, setErreur] = useState('');
+  const [actualisation, setActualisation] = useState(false);
+  const [controleChange, setControleChange] = useState(false);
+  const actualisationDemandee = useRef(false);
+  const { needRefresh: [miseAJour], offlineReady: [pret], updateServiceWorker } = useRegisterSW({
+    immediate: true,
+    onRegisterError: () => setErreur('Préparation hors ligne indisponible. Réessaie avec du réseau.'),
+    onNeedReload: () => {
+      // Une actualisation dans un autre onglet ne doit pas interrompre celui-ci.
+      if (actualisationDemandee.current) window.location.reload();
+      else setControleChange(true);
+    },
+  });
   useEffect(() => {
-    setInstallee(estInstallee());
-    setIos(estIOS());
-
-    const surPrompt = (e: Event) => {
-      e.preventDefault(); // on garde la main : c'est notre bouton qui déclenche
-      setEvt(e as EvtInstall);
-    };
-    const surInstall = () => {
-      setInstallee(true);
-      setEvt(null);
-    };
-
-    window.addEventListener('beforeinstallprompt', surPrompt);
-    window.addEventListener('appinstalled', surInstall);
+    const actualiser = () => setEnLigne(navigator.onLine);
+    window.addEventListener('online', actualiser);
+    window.addEventListener('offline', actualiser);
     return () => {
-      window.removeEventListener('beforeinstallprompt', surPrompt);
-      window.removeEventListener('appinstalled', surInstall);
+      window.removeEventListener('online', actualiser);
+      window.removeEventListener('offline', actualiser);
     };
   }, []);
-
-  const installer = () => {
-    if (!evt) return;
-    void evt.prompt();
-    void evt.userChoice.finally(() => setEvt(null));
-  };
-
-  return { evt, installee, ios, installer };
-}
-
-/** Le geste iOS, décrit avec le glyphe du bouton Partager de Safari. */
-function InstructionsIOS() {
-  return (
-    <p className="carte__intro" style={{ marginBottom: 0 }}>
-      Sur iPhone : touche{' '}
-      <span aria-label="le bouton Partager" role="img">
-        􀈂
-      </span>{' '}
-      <strong>Partager</strong> en bas de Safari, puis{' '}
-      <strong>« Sur l'écran d'accueil »</strong>. L'app s'ajoute comme les
-      autres.
-    </p>
-  );
-}
-
-/** Bannière discrète en haut du site — se cache une fois masquée ou installée. */
-export function BanniereInstall() {
-  const { evt, installee, ios, installer } = useInstall();
-  const [masque, setMasque] = useState(
-    () => localStorage.getItem(CLE_MASQUE) === '1',
-  );
-
-  if (installee || masque) return null;
-  if (!evt && !ios) return null; // rien à proposer sur ce navigateur
-
-  const fermer = () => {
-    localStorage.setItem(CLE_MASQUE, '1');
-    setMasque(true);
-  };
-
-  return (
-    <div className="installer-banniere" role="region" aria-label="Installer l'application">
-      <span className="installer-banniere__icone" aria-hidden="true">
-        ⤓
-      </span>
-      <span className="installer-banniere__texte">
-        Installe l'app pour l'utiliser <strong>hors-ligne</strong>, au fond.
-      </span>
-      {evt ? (
-        <button
-          type="button"
-          className="installer-banniere__action"
-          onClick={installer}
-        >
-          Installer
-        </button>
-      ) : (
-        <span className="installer-banniere__ios" aria-hidden="true">
-          Partager → écran d'accueil
-        </span>
-      )}
-      <button
-        type="button"
-        className="installer-banniere__fermer"
-        onClick={fermer}
-        aria-label="Masquer"
-      >
-        ×
-      </button>
-    </div>
-  );
-}
-
-/** Carte détaillée pour l'onglet « Moi ». */
-export function CarteInstall() {
-  const { evt, installee, ios, installer } = useInstall();
-
-  if (installee) {
-    return (
-      <div className="verdict verdict--vert" role="status">
-        <span className="verdict__pastille" aria-hidden="true">
-          ✓
-        </span>
-        <span>
-          Application installée — elle fonctionne hors-ligne, sans réseau.
-        </span>
-      </div>
-    );
+  async function appliquer() {
+    if (!window.confirm('Actualiser le site ? Le quiz est sauvegardé. Les réglages temporaires des outils seront réinitialisés.')) return;
+    setActualisation(true);
+    actualisationDemandee.current = true;
+    if (controleChange) { window.location.reload(); return; }
+    try { await updateServiceWorker(true); }
+    catch { actualisationDemandee.current = false; setActualisation(false); setErreur('Actualisation impossible. Réessaie avec du réseau.'); }
   }
-
-  if (evt) {
-    return (
-      <>
-        <button type="button" className="bouton" onClick={installer}>
-          ⤓ Télécharger l'application
-        </button>
-        <p
-          className="carte__intro"
-          style={{ marginTop: 10, marginBottom: 0, fontSize: '0.82rem' }}
-        >
-          S'installe comme une vraie app et fonctionne ensuite hors-ligne.
-        </p>
-      </>
-    );
-  }
-
-  if (ios) return <InstructionsIOS />;
-
-  // Navigateur sans invite (Firefox, ou l'évènement pas encore prêt).
-  return (
-    <p className="carte__intro" style={{ marginBottom: 0 }}>
-      Depuis le menu de ton navigateur (⋮), choisis{' '}
-      <strong>« Ajouter à l'écran d'accueil »</strong> ou{' '}
-      <strong>« Installer l'application »</strong>. Elle fonctionnera ensuite
-      hors-ligne.
-    </p>
-  );
+  return <div className="etat-reseau">
+    <p role="status">{!enLigne ? 'Hors ligne. Les contenus téléchargés restent accessibles.' : pret ? 'Contenus principaux prêts hors ligne.' : 'En ligne. Prépare le site avant de descendre.'}</p>
+    {(miseAJour || controleChange) && <div className="mise-a-jour" role="status">
+      <span>Une nouvelle version est prête. Actualise quand tu as terminé tes calculs.</span>
+      <button type="button" className="bouton bouton--secondaire" disabled={actualisation} onClick={() => void appliquer()}>{actualisation ? 'Actualisation…' : 'Actualiser'}</button>
+    </div>}
+    {erreur && <p role="status">{erreur}</p>}
+  </div>;
 }

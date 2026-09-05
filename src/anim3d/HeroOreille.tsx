@@ -1,92 +1,18 @@
-/**
- * Hero d'accueil — le modèle 3D de l'oreille, plein cadre, sur fond noir.
- *
- * Rien ne passe devant le modèle : ni titre, ni voile, ni crédit. Le titre de
- * la page et la ligne de crédit sont posés *sous* le cadre — une annotation du
- * modèle qui passe derrière un titre ne se lit plus, et le crédit d'auteur non
- * plus.
- *
- * Trois fonds possibles, du meilleur au plus modeste :
- *   1. le modèle Sketchfab annoté, qui tourne tout seul (demande le réseau) ;
- *   2. un `public/models/oreille.glb` déposé dans le dépôt, ou la cochlée
- *      générée en code — les deux fonctionnent hors-ligne (voir HeroCanvas) ;
- *   3. le motif d'ondes sonores, dessiné derrière les deux.
- *
- * Le repli n'est pas un détail : au fond de la mine il n'y a pas de réseau, et
- * c'est justement là que le site doit encore s'ouvrir.
- */
+import { useState } from 'react';
+import { Carte } from '../ui/composants.js';
+import { CreditSketchfab, SKETCHFAB_PAGE, SKETCHFAB_SRC, useSketchfab } from './sketchfab.js';
 
-import { lazy, Suspense, type ReactNode } from 'react';
-import {
-  CreditSketchfab,
-  SKETCHFAB_ATTRIBUTS,
-  SKETCHFAB_SRC,
-  useSketchfab,
-} from './sketchfab.js';
-
-const HeroCanvas = lazy(() => import('./HeroCanvas.js'));
-
-export function HeroOreille({ children }: { children: ReactNode }) {
-  const sketchfab = useSketchfab();
-  const modele = sketchfab === 'joignable';
-
-  return (
-    <>
-      <section className={`hero${modele ? ' hero--modele' : ''}`}>
-        {modele ? (
-          <iframe
-            className="hero__sketchfab"
-            title="Coupe de l'oreille en 3D"
-            src={SKETCHFAB_SRC}
-            allowFullScreen
-            allow="autoplay; fullscreen; xr-spatial-tracking"
-            {...SKETCHFAB_ATTRIBUTS}
-          />
-        ) : (
-          <div className="hero__media">
-            {/* Fond sobre : ondes sonores concentriques, motif de marque. */}
-            <svg
-              className="hero__ondes"
-              viewBox="0 0 400 300"
-              preserveAspectRatio="xMidYMid slice"
-              aria-hidden="true"
-            >
-              <defs>
-                <radialGradient id="hero-lueur" cx="72%" cy="45%" r="60%">
-                  <stop offset="0%" stopColor="#d22325" stopOpacity="0.28" />
-                  <stop offset="55%" stopColor="#d22325" stopOpacity="0.06" />
-                  <stop offset="100%" stopColor="#d22325" stopOpacity="0" />
-                </radialGradient>
-              </defs>
-              <rect width="400" height="300" fill="url(#hero-lueur)" />
-              <g
-                fill="none"
-                stroke="#ef5a5c"
-                strokeLinecap="round"
-                transform="translate(288 132)"
-              >
-                <path className="hero__onde ho1" d="M0 -34 A34 34 0 0 1 0 34" strokeWidth="3" opacity="0.9" />
-                <path className="hero__onde ho2" d="M0 -60 A60 60 0 0 1 0 60" strokeWidth="2.4" opacity="0.6" />
-                <path className="hero__onde ho3" d="M0 -88 A88 88 0 0 1 0 88" strokeWidth="2" opacity="0.4" />
-                <path className="hero__onde ho4" d="M0 -118 A118 118 0 0 1 0 118" strokeWidth="1.6" opacity="0.25" />
-              </g>
-              <circle cx="288" cy="132" r="6" fill="#ef5a5c" />
-            </svg>
-
-            {/* Pas de réseau : le modèle local, ou la cochlée générée en code. */}
-            {sketchfab === 'indisponible' && (
-              <Suspense fallback={null}>
-                <HeroCanvas />
-              </Suspense>
-            )}
-          </div>
-        )}
-      </section>
-
-      <div className="hero__legende">
-        {children}
-        {modele && <CreditSketchfab className="hero__credit" />}
-      </div>
-    </>
-  );
+/** Le lecteur externe ne reçoit aucune requête avant une action explicite. */
+export function HeroOreille() {
+  const [actif, setActif] = useState(false);
+  const etat = useSketchfab(actif);
+  return <Carte titre="Explorer l’oreille complète" source="3D · ressource externe">
+    <p className="carte__intro">Le modèle anatomique Sketchfab nécessite une connexion et charge du contenu externe. La vue schématique de la cochlée reste disponible plus haut sans ce service.</p>
+    <button className="bouton bouton--secondaire" aria-expanded={actif} onClick={() => setActif(!actif)}>{actif ? 'Fermer le modèle externe' : 'Charger le modèle Sketchfab'}</button>
+    {actif && etat === 'verification' && <p role="status">Connexion au modèle…</p>}
+    {actif && etat === 'joignable' && <iframe className="modele-externe" title="Coupe de l’oreille en 3D — Sketchfab" src={SKETCHFAB_SRC} allowFullScreen allow="fullscreen" style={{ width: '100%', height: 400, border: 0, marginTop: 16 }} />}
+    {actif && etat === 'indisponible' && <p role="status">Le modèle externe ne répond pas. Vous pouvez continuer la formation ou réessayer plus tard.</p>}
+    {actif && <p><a href={SKETCHFAB_PAGE} target="_blank" rel="noopener noreferrer">Ouvrir directement sur Sketchfab ↗</a></p>}
+    <CreditSketchfab className="carte__source" />
+  </Carte>;
 }

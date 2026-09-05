@@ -13,9 +13,8 @@ import { lazy, Suspense, type ReactNode } from 'react';
 import { statistiques } from '../data/index.js';
 import { Avertissement, Carte, Declic } from '../ui/composants.js';
 
-// La 3D (Three.js) n'est téléchargée qu'à l'ouverture du module 4 : elle ne
-// pèse pas sur le démarrage des calculateurs. Une fois chargée, elle est en
-// cache et fonctionne hors-ligne comme le reste.
+// La 3D (Three.js) est rendue à la demande. Le précache télécharge également
+// son bundle pour préparer le hors-ligne, sans démarrer la scène.
 const OreilleInterne = lazy(() => import('../anim3d/OreilleInterne.js'));
 import { ComposeurQuart } from '../outils/ComposeurQuart.js';
 import { Comparateur } from '../outils/Comparateur.js';
@@ -27,6 +26,8 @@ import { FacteurDerating, Protection } from '../outils/Protection.js';
 import { PoseBouchons, Symptomes, VerifCoquilles } from '../outils/Pose.js';
 import { TempsDePort } from '../outils/TempsDePort.js';
 import { AnimationSon } from '../anim3d/AnimationSon.js';
+import { MediaADemande } from '../anim3d/MediaADemande.js';
+import { HeroOreille } from '../anim3d/HeroOreille.js';
 import { SerieAnnuelle } from '../ui/Graphe.js';
 import { entier, nb } from '../ui/format.js';
 
@@ -224,13 +225,9 @@ function ModuleExposition() {
 function ModuleDommages() {
   return (
     <>
-      <Suspense
-        fallback={
-          <div className="scene3d-chargement">Chargement de la vue 3D…</div>
-        }
-      >
+      <MediaADemande titre="La cochlée sous le bruit · vue 3D">
         <OreilleInterne />
-      </Suspense>
+      </MediaADemande>
 
       <Carte titre="Les quatre atteintes" source="diapo 12">
         <ul className="liste-puces">
@@ -272,7 +269,7 @@ function ModuleDommages() {
         fichier="videoplayback.mp4"
         titre="Le voyage du son"
         source="NIDCD · NIH"
-        intro="Le son de l'oreille jusqu'au cerveau, cellules ciliées comprises. Touche le son pour l'activer."
+        intro="Le son de l'oreille jusqu'au cerveau, cellules ciliées comprises. Lance la vidéo quand tu es prêt ; le son est désactivé au départ."
         lien="https://www.nidcd.nih.gov/news/multimedia/journey-of-sound-video"
         lienNom="le site de la NIDCD (NIH)"
         note="domaine public"
@@ -282,13 +279,15 @@ function ModuleDommages() {
         fichier="cellules.mp4"
         titre="Le bruit détruit la cellule ciliée"
         source="animation · optionnelle"
-        intro="Les cils de la cellule ciliée pliés puis rompus par le bruit — la lésion ne se répare pas. Dépose un clip cellules.mp4 pour l'afficher ici (voir le LISEZMOI)."
+        intro="Les cils de la cellule ciliée pliés puis rompus par le bruit — la lésion ne se répare pas. Ressource complémentaire à consulter en ligne."
         lien="https://www.cochlea.eu/en/hair-cells/"
         lienNom="cochlea.eu (NeurOreille)"
         note="ressource pédagogique — vérifie la licence avant réutilisation"
       />
 
-      <Suspense fallback={<div className="scene3d-chargement">Chargement…</div>}>
+      <HeroOreille />
+
+      {__MODELES_LOCAUX__.includes('oreille.glb') && <Suspense fallback={<div className="scene3d-chargement">Chargement…</div>}>
         <ModeleGlb
           fichier="oreille.glb"
           titre="Modèle 3D de l'oreille"
@@ -297,9 +296,9 @@ function ModuleDommages() {
           aria="Modèle 3D anatomique de l'oreille, manipulable"
           recherche="ear anatomy"
         />
-      </Suspense>
+      </Suspense>}
 
-      <Suspense fallback={<div className="scene3d-chargement">Chargement…</div>}>
+      {__MODELES_LOCAUX__.includes('cellules.glb') && <Suspense fallback={<div className="scene3d-chargement">Chargement…</div>}>
         <ModeleGlb
           fichier="cellules.glb"
           titre="Les cellules ciliées, de près"
@@ -308,7 +307,7 @@ function ModuleDommages() {
           aria="Modèle 3D des cellules ciliées de la cochlée, manipulable"
           recherche="cochlea hair cells organ of Corti"
         />
-      </Suspense>
+      </Suspense>}
     </>
   );
 }

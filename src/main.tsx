@@ -13,6 +13,7 @@ import '@fontsource/barlow-condensed/700.css';
 import '@fontsource/barlow-condensed/800.css';
 
 import './styles.css';
+import './interface.css';
 
 const racine = document.getElementById('root');
 if (!racine) throw new Error('Élément #root introuvable');
@@ -23,14 +24,5 @@ createRoot(racine).render(
   </StrictMode>,
 );
 
-// Toujours à jour : quand un nouveau service worker prend le contrôle (nouveau
-// déploiement), on recharge une fois pour servir la dernière version. Combiné à
-// skipWaiting/clientsClaim, l'utilisateur n'a jamais une version périmée.
-if ('serviceWorker' in navigator) {
-  let dejaRecharge = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (dejaRecharge) return;
-    dejaRecharge = true;
-    location.reload();
-  });
-}
+// L'enregistrement et l'actualisation sont gérés par BanniereMiseAJour.
+// Aucun rechargement automatique pendant un quiz ou un calcul.
