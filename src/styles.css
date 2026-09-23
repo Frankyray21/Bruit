@@ -2115,3 +2115,15 @@ h1.entete__titre {
   stroke-width: 4px;
   stroke-linejoin: round;
 }
+
+/* Valeurs rapides sous un curseur : une rangée de gros boutons. */
+.choix--rapides {
+  margin-top: 4px;
+}
+
+.choix--rapides .choix__option {
+  flex: 1 1 0;
+  min-height: 56px;
+  padding: 8px 6px;
+  font-size: 0.9rem;
+}

@@ -47,10 +47,39 @@ publie le résultat sur la branche `gh-pages` à chaque poussée.
 
 ## État du projet
 
-Site fonctionnel : 6 modules de formation, une boîte à outils, un quiz de
-14 questions avec attestation, un mode présentation pour le formateur. Le moteur
-de calcul est couvert par 76 tests qui reproduisent chaque ligne des tableaux de
-la formation.
+Site fonctionnel : 6 modules de formation, chacun fermé par une question de
+validation, une boîte à outils organisée autour des trois questions ci-dessus,
+un quiz de 14 questions avec attestation, et un espace « Réglages du
+formateur ». Le moteur de calcul est couvert par 76 tests qui reproduisent
+chaque ligne des tableaux de la formation.
+
+### Le parcours du travailleur
+
+1. **Dis-moi ton poste** — poste et protecteur choisis une fois (à l'accueil ou
+   dans « Moi »), repris par tous les calculateurs : « Mon poste » n'est plus
+   demandé cinq fois.
+2. **Six modules dans l'ordre** — bouton « Commencer / Continuer », prochain
+   module mis en évidence, durée estimée, en-tête « Module n / 6 ». Chaque
+   module se termine par **une question de validation** : « Terminé » ne
+   s'active qu'après réponse, puis enchaîne sur le module suivant.
+3. **Le quiz** — 14 questions dans un ordre tiré au sort, 12 bonnes réponses
+   requises, place gardée si on quitte l'app. En cas d'échec, la liste des
+   modules à revoir et la relecture de chaque erreur ; en cas de réussite,
+   l'attestation (nom, date, score, modules suivis), imprimable.
+4. **« Moi »** — profil, progression (modules faits, questions ratées,
+   résultat du quiz), installation de l'app, et les réglages du formateur.
+
+Tout est mémorisé sur l'appareil : la zone et le module ouverts, la
+progression, le quiz en cours. Une mise à jour automatique ne fait rien
+perdre.
+
+### L'espace du formateur
+
+Dans « Moi › Réglages du formateur » : le mode **Projeter** (gros caractères,
+flèches ← → pour passer d'un module à l'autre, Échap pour la liste, et au quiz
+un bouton « Révéler » pour faire voter la salle avant de dévoiler la réponse),
+le **facteur d'efficacité des bouchons** (60 % par défaut, voir §7 du plan), et
+**Réinitialiser cet appareil** pour un téléphone ou une tablette de prêt.
 
 ```bash
 npm install
@@ -76,6 +105,11 @@ data/protecteurs.json         Protecteurs auditifs et leur NRR
 data/statistiques-cnesst.json Données de surdité professionnelle au Québec
 src/domain/                   Moteur de calcul, pur et sans dépendance UI
 src/domain/__tests__/         Un test par ligne des diapos 6, 14 et 16
+src/etat/                     Profil, progression, quiz et réglages (localStorage)
+src/parcours/                 Les 6 modules et la question de validation
+src/quiz/                     Banque de questions, quiz, attestation
+src/outils/                   Les calculateurs
+src/ui/                       Composants « terrain », graphiques SVG, champs du profil
 src/anim3d/                   Cochlée 3D interactive (Three.js, chargée à la demande)
 ```
 
@@ -86,10 +120,11 @@ embarqué dans le bundle (aucun chargement externe) et n'est téléchargé qu'à
 l'ouverture du module, pour ne pas ralentir les calculateurs. C'est une
 illustration schématique, pas un examen médical.
 
-Le même module renvoie à l'animation **« Le voyage du son »** de la NIDCD
-(NIH), du **domaine public**. Par défaut, c'est un lien (en ligne). Pour
-l'avoir hors-ligne, dépose le fichier vidéo dans `public/videos/` — voir
-`public/videos/LISEZMOI.md`.
+Le même module joue l'animation **« Le voyage du son »** de la NIDCD (NIH),
+du **domaine public**, embarquée dans `public/videos/`. Deux emplacements
+supplémentaires (un clip sur les cellules ciliées, deux modèles 3D `.glb`)
+restent **optionnels** : ils n'apparaissent à l'écran que si le fichier est
+déposé — voir `public/videos/LISEZMOI.md` et `public/models/LISEZMOI.md`.
 
 Le moteur `src/domain/` est **vérifiable sans démarrer le site**. C'est
 volontaire : les formules sont la valeur réelle du projet et le formateur doit

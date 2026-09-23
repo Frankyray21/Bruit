@@ -66,6 +66,19 @@ export function Protection() {
 
   const additionNaive = bouchon.nrr + coquille.nrr;
 
+  // Le moteur juge l'équipement ; l'écran juge ce que le travailleur a
+  // sélectionné. En double protection suffisante, le verdict est vert — pas
+  // « double protection requise » à quelqu'un qui la porte déjà.
+  const affiche =
+    verdict.niveau === 'jaune'
+      ? double
+        ? { niveau: 'vert' as const, message: 'Suffisant en double protection' }
+        : {
+            niveau: 'rouge' as const,
+            message: 'Bouchons seuls insuffisants — passe en double protection',
+          }
+      : verdict;
+
   return (
     <Carte
       titre="Ma protection suffit-elle ?"
@@ -121,10 +134,10 @@ export function Protection() {
         etiquette="Niveau perçu sous la protection"
         valeur={`${nb(restant, 1)} dBA`}
         note={`durée permise : ${formaterDuree(dureePermise(restant))}`}
-        ton={restant > 85 ? 'rouge' : restant < 70 ? 'jaune' : 'vert'}
+        ton={restant > 85 ? 'rouge' : 'vert'}
       />
 
-      <Verdict niveau={verdict.niveau} message={verdict.message} />
+      <Verdict niveau={affiche.niveau} message={affiche.message} />
 
       {double && (
         <Declic>

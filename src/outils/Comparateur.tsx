@@ -5,13 +5,13 @@
  * décroissant : un NRR 20 gardé en permanence bat un NRR 33 enlevé 48 minutes.
  */
 
-import { useState } from 'react';
 import {
   attenuationEffective,
   attenuationReelle,
 } from '../domain/protection.js';
 import { bouchons, protecteurParId, protecteurs } from '../data/index.js';
 import { useConfig } from '../etat/config.js';
+import { useStockage } from '../etat/stockage.js';
 import { useTravailleur } from '../etat/travailleur.js';
 import {
   Carte,
@@ -21,7 +21,7 @@ import {
   Resultat,
   Selecteur,
 } from '../ui/composants.js';
-import { formatMinutes } from './TempsDePort.js';
+import { formatMinutes, RETRAITS_RAPIDES } from './TempsDePort.js';
 import { nb } from '../ui/format.js';
 
 const QUART_MIN = 8 * 60;
@@ -30,11 +30,19 @@ export function Comparateur() {
   const { facteurPour } = useConfig();
   const { protecteur } = useTravailleur();
   // A = ton protecteur, retiré 48 minutes ; B = l'arceau le plus modeste,
-  // jamais retiré. Le renversement se voit au premier regard.
-  const [idA, setIdA] = useState(protecteur.id);
-  const [retraitA, setRetraitA] = useState(48);
-  const [idB, setIdB] = useState(protecteur.id === 'arceau-bleu' ? 'arceau-noir' : 'arceau-bleu');
-  const [retraitB, setRetraitB] = useState(0);
+  // jamais retiré. Le renversement se voit au premier regard. Les réglages
+  // sont conservés d'un écran à l'autre.
+  const [reglages, setReglages] = useStockage('comparateur', () => ({
+    idA: protecteur.id,
+    retraitA: 48,
+    idB: protecteur.id === 'arceau-bleu' ? 'arceau-noir' : 'arceau-bleu',
+    retraitB: 0,
+  }));
+  const { idA, retraitA, idB, retraitB } = reglages;
+  const setIdA = (idA: string) => setReglages({ ...reglages, idA });
+  const setRetraitA = (retraitA: number) => setReglages({ ...reglages, retraitA });
+  const setIdB = (idB: string) => setReglages({ ...reglages, idB });
+  const setRetraitB = (retraitB: number) => setReglages({ ...reglages, retraitB });
 
   const a = evalue(idA, retraitA, facteurPour);
   const b = evalue(idB, retraitB, facteurPour);
@@ -69,7 +77,7 @@ export function Comparateur() {
         etiquette="Le mieux protégé"
         valeur={gagnant.nom}
         note={`${nb(gagnant.effective, 1)} dB contre ${nb(perdant.effective, 1)} dB — un écart de ${nb(Math.abs(a.effective - b.effective), 1)} dB`}
-        ton={renversement ? 'jaune' : 'vert'}
+        ton="vert"
       />
 
       {renversement && (
@@ -133,6 +141,7 @@ function Ligne({
         affichage={formatMinutes(retrait)}
         legende="temps sans protection"
         etiquette={`${titre} — temps sans protection, en minutes`}
+        valeursRapides={RETRAITS_RAPIDES}
       />
     </Champ>
   );

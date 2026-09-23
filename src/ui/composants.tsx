@@ -121,6 +121,7 @@ export function Curseur({
   affichage,
   legende,
   etiquette,
+  valeursRapides,
 }: {
   min: number;
   max: number;
@@ -131,6 +132,11 @@ export function Curseur({
   legende?: string;
   /** Ce que règle le curseur, pour le lecteur d'écran (ex. « Niveau de bruit »). */
   etiquette?: string;
+  /**
+   * Valeurs à un appui, sous la piste : avec des gants, viser « 10 min » sur
+   * 240 crans est impossible ; un gros bouton, non.
+   */
+  valeursRapides?: readonly { valeur: number; label: string }[];
 }) {
   return (
     <>
@@ -149,6 +155,21 @@ export function Curseur({
         aria-valuetext={legende ? `${affichage}, ${legende}` : affichage}
         onChange={(e) => onChange(Number(e.target.value))}
       />
+      {valeursRapides && (
+        <div className="choix choix--rapides" role="group" aria-label="Valeurs rapides">
+          {valeursRapides.map((v) => (
+            <button
+              key={v.valeur}
+              type="button"
+              className={`choix__option${v.valeur === valeur ? ' choix__option--actif' : ''}`}
+              aria-pressed={v.valeur === valeur}
+              onClick={() => onChange(v.valeur)}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
+      )}
     </>
   );
 }

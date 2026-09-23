@@ -5,11 +5,11 @@
  * Il ne prédit PAS de perte auditive.
  */
 
-import { useState } from 'react';
 import { cumulCarriere } from '../domain/carriere.js';
 import { dureePermise, formaterDuree } from '../domain/rsst.js';
 import { energieRelative } from '../domain/sources.js';
 import { taches } from '../data/index.js';
+import { useStockage } from '../etat/stockage.js';
 import { useTravailleur } from '../etat/travailleur.js';
 import {
   Avertissement,
@@ -24,7 +24,7 @@ import { entier, nb } from '../ui/format.js';
 
 export function Carriere() {
   const { poste: metier } = useTravailleur();
-  const [annees, setAnnees] = useState(25);
+  const [annees, setAnnees] = useStockage('carriere-annees', 25);
 
   const cumul = cumulCarriere(
     [{ niveauDBA: metier.niveau_dBA, dureeH: 8 }],

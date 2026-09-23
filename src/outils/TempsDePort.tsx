@@ -6,12 +6,12 @@
  * Le curseur part à 10 minutes : le choc doit être visible au premier regard.
  */
 
-import { useState } from 'react';
 import {
   attenuationEffective,
   attenuationReelle,
 } from '../domain/protection.js';
 import { useConfig } from '../etat/config.js';
+import { useStockage } from '../etat/stockage.js';
 import { useTravailleur } from '../etat/travailleur.js';
 import { Carte, Champ, Curseur, Declic, Resultat } from '../ui/composants.js';
 import { ChampProtecteur } from '../ui/ProfilChamps.js';
@@ -19,10 +19,20 @@ import { nb } from '../ui/format.js';
 
 const QUART_MIN = 8 * 60;
 
+/** Les lignes de la diapo 16, en minutes de retrait — à un appui. */
+export const RETRAITS_RAPIDES = [
+  { valeur: 0, label: 'jamais' },
+  { valeur: 10, label: '10 min' },
+  { valeur: 24, label: '24 min' },
+  { valeur: 48, label: '48 min' },
+  { valeur: 240, label: '4 h' },
+] as const;
+
 export function TempsDePort() {
   const { facteurPour } = useConfig();
   const { protecteur } = useTravailleur();
-  const [minutesRetrait, setMinutesRetrait] = useState(10);
+  // Conservé : réglé dans le module, retrouvé dans la boîte à outils.
+  const [minutesRetrait, setMinutesRetrait] = useStockage('temps-de-port-min', 10);
 
   const nominale = attenuationReelle(protecteur.nrr, facteurPour(protecteur));
 
@@ -49,13 +59,18 @@ export function TempsDePort() {
           affichage={formatMinutes(minutesRetrait)}
           legende={`porté ${nb(tempsDePort * 100, 1)} % du quart`}
           etiquette="Temps sans protection, en minutes"
+          valeursRapides={RETRAITS_RAPIDES}
         />
       </Champ>
 
       <Resultat
         etiquette="Protection réellement obtenue"
         valeur={`${nb(effective, 1)} dB`}
-        note={`au lieu de ${nb(nominale, 1)} dB si le protecteur est porté en tout temps`}
+        note={
+          minutesRetrait === 0
+            ? `${nb(nominale, 1)} dB, c'est le maximum de ce protecteur sur le terrain (NRR ${protecteur.nrr} à ${nb(facteurPour(protecteur) * 100, 0)} % d'efficacité) — glisse le curseur pour voir ce qu'un retrait coûte`
+            : `au lieu de ${nb(nominale, 1)} dB si le protecteur est porté en tout temps (NRR ${protecteur.nrr} à ${nb(facteurPour(protecteur) * 100, 0)} % d'efficacité)`
+        }
         ton={partPerdue > 50 ? 'rouge' : partPerdue > 25 ? 'jaune' : 'vert'}
       />
 
