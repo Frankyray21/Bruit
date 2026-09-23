@@ -84,21 +84,12 @@ export default function ModeleGlb({
 
   if (etat === 'absent') return null;
 
-  // Pendant le chargement, seul le conteneur existe (invisible, sans carte) :
-  // la visionneuse a besoin d'un élément pour se monter, et l'observateur de
-  // redimensionnement la met à la bonne taille dès que la carte apparaît.
-  if (etat === 'chargement') {
-    return (
-      <div
-        ref={conteneur}
-        className="scene3d scene3d--attente"
-        aria-hidden="true"
-      />
-    );
-  }
-
+  // La carte est montée dès le début mais masquée le temps du chargement : le
+  // conteneur doit rester LE MÊME élément DOM, puisque la visionneuse y a
+  // accroché son canvas. Une fois visible, l'observateur de redimensionnement
+  // met la scène à la bonne taille.
   return (
-    <Carte titre={titre} source="modèle 3D" intro={intro}>
+    <Carte titre={titre} source="modèle 3D" intro={intro} cache={etat !== 'pret'}>
       <div ref={conteneur} className="scene3d" role="img" aria-label={aria} />
     </Carte>
   );

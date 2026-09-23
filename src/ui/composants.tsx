@@ -49,15 +49,18 @@ export function Carte({
   titre,
   source,
   intro,
+  cache = false,
   children,
 }: {
   titre?: string;
   source?: string;
   intro?: string;
+  /** Carte montée mais invisible (ex. : le temps qu'un modèle 3D se charge). */
+  cache?: boolean;
   children: ReactNode;
 }) {
   return (
-    <section className="carte">
+    <section className="carte" hidden={cache}>
       {titre && (
         <div className="carte__titre">
           <h2>{titre}</h2>
