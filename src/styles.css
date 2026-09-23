@@ -356,6 +356,17 @@ button {
   white-space: nowrap;
 }
 
+/* Le kicker court (« diapo 11 ») ne se coupe pas ; une ligne de crédit entière
+   (source d'une vidéo, d'un modèle) doit au contraire se replier : en nowrap,
+   elle élargissait la page à 680 px et faisait dézoomer tout le module 4 sur
+   téléphone. */
+.carte__source--credit {
+  display: block;
+  white-space: normal;
+  letter-spacing: 0.06em;
+  overflow-wrap: anywhere;
+}
+
 .carte__intro {
   color: var(--texte-doux);
   font-size: 0.92rem;
@@ -753,7 +764,9 @@ input[type='range'] {
 /* On peut aussi régler le niveau en glissant sur la courbe : cible large,
    utilisable avec des gants ; le glissement ne fait pas défiler la page. */
 .graphe--interactif {
-  touch-action: none;
+  /* pan-y : le doigt qui balaie vers le bas fait défiler la page ; le
+     glissement horizontal règle le niveau. */
+  touch-action: pan-y;
   cursor: pointer;
 }
 
@@ -1123,7 +1136,10 @@ input[type='range'] {
   overflow: hidden;
   background: var(--fond);
   border: 1px solid var(--bordure);
-  touch-action: none; /* le glissement tourne la cochlée, il ne défile pas */
+  /* pan-y : un balayage vertical fait défiler la page (sinon la scène, qui
+     occupe presque tout l'écran d'un téléphone, piégeait le défilement) ; un
+     glissement horizontal tourne la cochlée. */
+  touch-action: pan-y;
   cursor: grab;
 }
 

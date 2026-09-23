@@ -72,7 +72,7 @@ export function AnimationSon({
         </a>
       )}
 
-      <p className="carte__source" style={{ marginTop: 12, display: 'block' }}>
+      <p className="carte__source carte__source--credit" style={{ marginTop: 12 }}>
         Source :{' '}
         <a href={lien} target="_blank" rel="noopener noreferrer">
           {lienNom}

@@ -107,7 +107,7 @@ export default function ModeleGlb({
         >
           Trouver un modèle sur NIH 3D ↗
         </a>
-        <p className="carte__source" style={{ marginTop: 12, display: 'block' }}>
+        <p className="carte__source carte__source--credit" style={{ marginTop: 12 }}>
           NIH 3D héberge des modèles anatomiques, souvent du domaine public,
           téléchargeables en .glb.
         </p>

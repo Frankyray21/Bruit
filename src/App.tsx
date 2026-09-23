@@ -6,7 +6,7 @@
  * calculateurs au fond de la mine.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MODULES } from './parcours/modules.js';
 import { Quiz } from './quiz/Quiz.js';
 import { useProgression, useStockage } from './etat/stockage.js';
@@ -37,6 +37,14 @@ export default function App() {
   const progression = useProgression();
 
   const module = MODULES.find((m) => m.id === moduleOuvert);
+
+  // À chaque changement d'écran (zone ou module), on repart du haut : sans
+  // ça, ouvrir le module 6 depuis le bas de la liste atterrissait au milieu du
+  // module, et passer à « Outils » arrivait tout en bas de la boîte à outils.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.getElementById('contenu')?.focus({ preventScroll: true });
+  }, [zone, moduleOuvert]);
 
   return (
     <FournisseurConfig>
@@ -98,7 +106,7 @@ export default function App() {
             </button>
           </header>
 
-          <main className="contenu" id="contenu">
+          <main className="contenu" id="contenu" tabIndex={-1}>
           <BanniereInstall />
 
           {zone === 'parcours' &&
@@ -288,7 +296,7 @@ function Moi({
           Rien ne quitte ton appareil : pas de compte, pas de serveur, aucune
           donnée transmise. Ta progression est stockée localement.
         </Avertissement>
-        <p className="carte__source" style={{ marginTop: 12, display: 'block' }}>
+        <p className="carte__source carte__source--credit" style={{ marginTop: 12 }}>
           Version {__VERSION__} · se met à jour automatiquement
         </p>
       </Carte>
