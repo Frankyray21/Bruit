@@ -3,8 +3,47 @@
  * texte libre dans le parcours principal.
  */
 
-import { useId, type ReactNode } from 'react';
+import { Component, useId, type ErrorInfo, type ReactNode } from 'react';
 import type { NiveauVerdict } from '../domain/verdict.js';
+
+/**
+ * Une partie de l'écran qui plante (3D, vidéo, un calcul sur une donnée
+ * inattendue) ne doit pas emporter tout le site : on affiche un repli à sa
+ * place, et le reste continue de fonctionner.
+ */
+export class FrontiereErreur extends Component<
+  { children: ReactNode; quoi?: string },
+  { erreur: boolean }
+> {
+  override state = { erreur: false };
+
+  static getDerivedStateFromError() {
+    return { erreur: true };
+  }
+
+  override componentDidCatch(erreur: unknown, info: ErrorInfo) {
+    console.error(erreur, info.componentStack);
+  }
+
+  override render() {
+    if (!this.state.erreur) return this.props.children;
+    return (
+      <Carte titre="Cette partie n'a pas pu s'afficher">
+        <Avertissement>
+          Un imprévu a bloqué l'affichage {this.props.quoi ?? 'de cette section'}.
+          Le reste du site fonctionne normalement.
+        </Avertissement>
+        <button
+          type="button"
+          className="bouton bouton--secondaire"
+          onClick={() => this.setState({ erreur: false })}
+        >
+          Réessayer
+        </button>
+      </Carte>
+    );
+  }
+}
 
 export function Carte({
   titre,

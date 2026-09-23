@@ -2167,3 +2167,67 @@ h1.entete__titre {
 .section-titre:focus-visible {
   outline: none;
 }
+
+/* ---------- Premier lancement : trois étapes ---------- */
+
+.etapes-accueil {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.etapes-accueil__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: var(--cible);
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--bordure-controle);
+  background: var(--fond-carte-haut);
+  text-align: left;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.etapes-accueil__item strong {
+  color: var(--texte);
+}
+
+.etapes-accueil__num {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--g-rouge);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+
+.icone-partager {
+  vertical-align: -4px;
+  margin: 0 2px;
+}
+
+.installer-banniere__action {
+  min-height: 56px;
+}
+
+/* ---------- Projection : une carte par écran ---------- */
+
+.app--presentation .contenu > .carte {
+  min-height: calc(100dvh - 110px);
+  scroll-margin-top: 70px;
+  margin-bottom: 40px;
+}
+
+.app--presentation .contenu > .carte:has(.attestation),
+.app--presentation .contenu > .carte:has(.quiz__question) {
+  min-height: 0;
+}

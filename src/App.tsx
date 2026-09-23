@@ -14,7 +14,7 @@ import { formaterDate, Quiz } from './quiz/Quiz.js';
 import { effacerTout, useStockage } from './etat/stockage.js';
 import { FournisseurConfig } from './etat/config.js';
 import { FournisseurTravailleur, useTravailleur } from './etat/travailleur.js';
-import { Avertissement, Carte, Champ, Choix } from './ui/composants.js';
+import { Avertissement, Carte, Champ, Choix, FrontiereErreur } from './ui/composants.js';
 import { ChampPoste, ChampProtecteur } from './ui/ProfilChamps.js';
 import { BudgetRetrait } from './outils/BudgetRetrait.js';
 import { ComposeurQuart } from './outils/ComposeurQuart.js';
@@ -73,18 +73,43 @@ function Coquille() {
       : `${zoneNom} — Protection auditive`;
   }, [zone, module, indexModule]);
 
-  // En projection, le formateur avance au clavier : → module suivant,
-  // ← précédent, Échap = liste. Les champs gardent leurs propres flèches.
+  // En projection, le formateur avance au clavier ou à la télécommande :
+  // → / Espace / Page suivante = carte suivante (puis module suivant),
+  // ← / Page précédente = carte précédente (puis module précédent),
+  // Échap = liste des modules, F = plein écran. Chaque carte occupe un écran.
   useEffect(() => {
     if (!presentation) return;
+    const HAUT = 70; // sous l'en-tête collant
+    const cartes = () =>
+      Array.from(document.querySelectorAll<HTMLElement>('#contenu > .carte'));
+    const versCarte = (c: HTMLElement) => c.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    const carteSuivante = () => {
+      const c = cartes().find((el) => el.getBoundingClientRect().top > HAUT + 8);
+      if (c) versCarte(c);
+      return !!c;
+    };
+    const cartePrecedente = () => {
+      const c = [...cartes()].reverse().find((el) => el.getBoundingClientRect().top < HAUT - 8);
+      if (c) versCarte(c);
+      return !!c;
+    };
     const surTouche = (e: KeyboardEvent) => {
       const cible = e.target;
       if (cible instanceof HTMLElement && /^(INPUT|SELECT|TEXTAREA)$/.test(cible.tagName)) return;
+      if (e.key === 'f' || e.key === 'F') {
+        if (document.fullscreenElement) void document.exitFullscreen();
+        else void document.documentElement.requestFullscreen?.();
+        return;
+      }
       if (zone !== 'parcours') return;
-      if (e.key === 'ArrowRight') {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        if (module && carteSuivante()) return;
         const prochain = indexModule < 0 ? MODULES[0] : MODULES[indexModule + 1];
         if (prochain) setModuleOuvert(prochain.id);
-      } else if (e.key === 'ArrowLeft') {
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        if (module && cartePrecedente()) return;
         if (indexModule > 0) setModuleOuvert(MODULES[indexModule - 1]!.id);
         else if (indexModule === 0) setModuleOuvert(null);
       } else if (e.key === 'Escape') {
@@ -93,7 +118,7 @@ function Coquille() {
     };
     window.addEventListener('keydown', surTouche);
     return () => window.removeEventListener('keydown', surTouche);
-  }, [presentation, zone, indexModule, setModuleOuvert]);
+  }, [presentation, zone, module, indexModule, setModuleOuvert]);
 
   function allerA(z: Zone) {
     setZone(z);
@@ -193,39 +218,46 @@ function Coquille() {
         )}
 
         <main className="contenu" id="contenu" tabIndex={-1}>
-          <BanniereInstall />
+          {/* Pas de bannière sur l'écran projeté en salle. */}
+          {!presentation && <BanniereInstall onAide={() => allerA('moi')} />}
 
-          {zone === 'parcours' &&
-            (module ? (
-              <ModulePage
-                module={module}
-                suivant={suivant}
-                onRetour={() => setModuleOuvert(null)}
-                onTerminer={terminerModule}
-              />
-            ) : (
-              <Parcours onOuvrir={ouvrirModule} onQuiz={() => allerA('quiz')} />
-            ))}
+          <FrontiereErreur key={`${zone}-${moduleOuvert ?? ''}`} quoi="de cet écran">
+            {zone === 'parcours' &&
+              (module ? (
+                <ModulePage
+                  module={module}
+                  suivant={suivant}
+                  onRetour={() => setModuleOuvert(null)}
+                  onTerminer={terminerModule}
+                />
+              ) : (
+                <Parcours
+                  onOuvrir={ouvrirModule}
+                  onQuiz={() => allerA('quiz')}
+                  onMoi={() => allerA('moi')}
+                />
+              ))}
 
-          {zone === 'outils' && <BoiteAOutils onProfil={() => allerA('moi')} />}
-          {zone === 'quiz' && (
-            <>
-              <h1 className="sr-only">Quiz</h1>
-              <Quiz
-                onRevoir={ouvrirModule}
-                onFormation={() => allerA('parcours')}
-                revelation={presentation}
+            {zone === 'outils' && <BoiteAOutils onProfil={() => allerA('moi')} />}
+            {zone === 'quiz' && (
+              <>
+                <h1 className="sr-only">Quiz</h1>
+                <Quiz
+                  onRevoir={ouvrirModule}
+                  onFormation={() => allerA('parcours')}
+                  revelation={presentation}
+                />
+              </>
+            )}
+            {zone === 'moi' && (
+              <Moi
+                onOuvrir={ouvrirModule}
+                onQuiz={() => allerA('quiz')}
+                presentation={presentation}
+                setPresentation={setPresentation}
               />
-            </>
-          )}
-          {zone === 'moi' && (
-            <Moi
-              onOuvrir={ouvrirModule}
-              onQuiz={() => allerA('quiz')}
-              presentation={presentation}
-              setPresentation={setPresentation}
-            />
-          )}
+            )}
+          </FrontiereErreur>
 
           <p className="pied">
             Estimations pédagogiques calculées à partir des dosimétries de la
@@ -280,7 +312,7 @@ function ModulePage({
         <p className="module__objectif">{module.objectif}</p>
       </div>
 
-      {module.contenu()}
+      <FrontiereErreur quoi="d'une partie de ce module">{module.contenu()}</FrontiereErreur>
 
       <ValidationModule module={module} />
 
@@ -314,11 +346,14 @@ function ModulePage({
 function Parcours({
   onOuvrir,
   onQuiz,
+  onMoi,
 }: {
   onOuvrir: (id: string) => void;
   onQuiz: () => void;
+  onMoi: () => void;
 }) {
   const { faits, validations, resultatQuiz, posteChoisi, protecteurChoisi } = useTravailleur();
+  const [accueilVu, setAccueilVu] = useStockage('accueil-vu', false);
   const prochain = MODULES.find((m) => !faits.includes(m.id));
   const quizReussi = resultatQuiz?.reussi === true;
 
@@ -355,6 +390,50 @@ function Parcours({
           {libelleCta}
         </button>
       </HeroOreille>
+
+      {!accueilVu && faits.length === 0 && (
+        <Carte titre="Avant de descendre" intro="Trois étapes, dans l'ordre. Tout se fait sur ce téléphone, sans compte.">
+          <ol className="etapes-accueil">
+            <li>
+              <button type="button" className="etapes-accueil__item" onClick={onMoi}>
+                <span className="etapes-accueil__num">1</span>
+                <span>
+                  <strong>Installe l'app</strong> pendant que tu as du réseau — sous
+                  terre, elle fonctionnera sans.
+                </span>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                className="etapes-accueil__item"
+                onClick={() => onOuvrir(MODULES[0]!.id)}
+              >
+                <span className="etapes-accueil__num">2</span>
+                <span>
+                  <strong>Suis les six modules</strong>, dans l'ordre — 35 à 40
+                  minutes, en une ou plusieurs fois.
+                </span>
+              </button>
+            </li>
+            <li>
+              <button type="button" className="etapes-accueil__item" onClick={onQuiz}>
+                <span className="etapes-accueil__num">3</span>
+                <span>
+                  <strong>Passe le quiz</strong> : 14 questions, et ton attestation.
+                </span>
+              </button>
+            </li>
+          </ol>
+          <button
+            type="button"
+            className="bouton bouton--secondaire"
+            onClick={() => setAccueilVu(true)}
+          >
+            Compris
+          </button>
+        </Carte>
+      )}
 
       {(!posteChoisi || !protecteurChoisi) && (
         <Carte
@@ -638,10 +717,11 @@ function Moi({
             onChange={(id) => setPresentation(id === 'projeter')}
           />
           <p className="champ__aide">
-            En projection : gros caractères, les flèches ← → du clavier
-            passent d'un module à l'autre (Échap : la liste), et au quiz la
-            réponse n'est dévoilée qu'au bouton « Révéler » — le temps de faire
-            voter la salle.
+            En projection : gros caractères, une carte par écran. Au clavier
+            ou à la télécommande : → ou Espace = carte suivante (puis module
+            suivant), ← = précédente, Échap = liste des modules, F = plein
+            écran. Au quiz, la réponse n'est dévoilée qu'au bouton « Révéler »
+            — le temps de faire voter la salle.
           </p>
         </Champ>
 

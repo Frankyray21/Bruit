@@ -165,6 +165,14 @@
         // suppression de tous les caches, puis rechargement. C'est la sortie de
         // secours quand une ancienne version reste coincée.
         document.getElementById('reinitialiser').addEventListener('click', function () {
+          // Sous terre, vider le cache reviendrait à effacer l'app sans pouvoir
+          // la retélécharger : on refuse tant qu'il n'y a pas de réseau.
+          if (navigator.onLine === false) {
+            noter(
+              'Pas de réseau : ce bouton a besoin du Wi-Fi de la surface. Pour l’instant, touche « Simplement recharger ».',
+            );
+            return;
+          }
           var etapes = [];
 
           if ('serviceWorker' in navigator) {

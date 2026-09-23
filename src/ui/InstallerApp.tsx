@@ -83,23 +83,96 @@ function useInstall(): EtatInstall & {
   return { evt, installee, ios, installer };
 }
 
-/** Le geste iOS, décrit avec le glyphe du bouton Partager de Safari. */
+/** L'icône Partager de Safari (carré, flèche vers le haut), dessinée en code. */
+function IconePartager() {
+  return (
+    <svg
+      className="icone-partager"
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 15V3" />
+      <path d="M8 7l4-4 4 4" />
+      <path d="M5 11v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9" />
+    </svg>
+  );
+}
+
+/** Le geste iOS, pas à pas. */
 function InstructionsIOS() {
   return (
     <p className="carte__intro" style={{ marginBottom: 0 }}>
-      Sur iPhone : touche{' '}
-      <span aria-label="le bouton Partager" role="img">
-        􀈂
-      </span>{' '}
-      <strong>Partager</strong> en bas de Safari, puis{' '}
-      <strong>« Sur l'écran d'accueil »</strong>. L'app s'ajoute comme les
-      autres.
+      Sur iPhone : touche le bouton <strong>Partager</strong>{' '}
+      <IconePartager /> (le carré avec une flèche vers le haut, en bas de
+      Safari), puis <strong>« Sur l'écran d'accueil »</strong>. L'app s'ajoute
+      comme les autres.
     </p>
   );
 }
 
+type EtatHorsLigne = 'inconnu' | 'en-cours' | 'pret';
+
+/**
+ * Le contenu est-il téléchargé pour fonctionner sans réseau ?
+ *
+ * `navigator.serviceWorker.ready` se résout quand le service worker est actif,
+ * c'est-à-dire une fois tous les fichiers du site mis en cache. C'est le
+ * signal « tu peux descendre ».
+ */
+function useHorsLigne(): EtatHorsLigne {
+  const [etat, setEtat] = useState<EtatHorsLigne>('inconnu');
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+    let annule = false;
+    setEtat('en-cours');
+    navigator.serviceWorker.ready
+      .then(() => {
+        if (!annule) setEtat('pret');
+      })
+      .catch(() => {
+        if (!annule) setEtat('inconnu');
+      });
+    return () => {
+      annule = true;
+    };
+  }, []);
+  return etat;
+}
+
+function EtatContenu() {
+  const etat = useHorsLigne();
+  if (etat === 'pret') {
+    return (
+      <div className="verdict verdict--vert" role="status" style={{ marginTop: 0, marginBottom: 12 }}>
+        <span className="verdict__pastille" aria-hidden="true">
+          ✓
+        </span>
+        <span>Contenu téléchargé : le site fonctionne sans réseau sur cet appareil.</span>
+      </div>
+    );
+  }
+  if (etat === 'en-cours') {
+    return (
+      <div className="verdict verdict--jaune" role="status" style={{ marginTop: 0, marginBottom: 12 }}>
+        <span className="verdict__pastille" aria-hidden="true">
+          ⏳
+        </span>
+        <span>Téléchargement du contenu en cours — garde la page ouverte quelques secondes.</span>
+      </div>
+    );
+  }
+  return null;
+}
+
 /** Bannière discrète en haut du site — se cache une fois masquée ou installée. */
-export function BanniereInstall() {
+export function BanniereInstall({ onAide }: { onAide: () => void }) {
   const { evt, installee, ios, installer } = useInstall();
   const [masque, setMasque] = useState(
     () => localStorage.getItem(CLE_MASQUE) === '1',
@@ -130,9 +203,9 @@ export function BanniereInstall() {
           Installer
         </button>
       ) : (
-        <span className="installer-banniere__ios" aria-hidden="true">
-          Partager → écran d'accueil
-        </span>
+        <button type="button" className="installer-banniere__action" onClick={onAide}>
+          Comment ?
+        </button>
       )}
       <button
         type="button"
@@ -152,20 +225,24 @@ export function CarteInstall() {
 
   if (installee) {
     return (
-      <div className="verdict verdict--vert" role="status">
-        <span className="verdict__pastille" aria-hidden="true">
-          ✓
-        </span>
-        <span>
-          Application installée — elle fonctionne hors-ligne, sans réseau.
-        </span>
-      </div>
+      <>
+        <EtatContenu />
+        <div className="verdict verdict--vert" role="status">
+          <span className="verdict__pastille" aria-hidden="true">
+            ✓
+          </span>
+          <span>
+            Application installée — elle fonctionne hors-ligne, sans réseau.
+          </span>
+        </div>
+      </>
     );
   }
 
   if (evt) {
     return (
       <>
+        <EtatContenu />
         <button type="button" className="bouton" onClick={installer}>
           ⤓ Télécharger l'application
         </button>
@@ -179,15 +256,25 @@ export function CarteInstall() {
     );
   }
 
-  if (ios) return <InstructionsIOS />;
+  if (ios) {
+    return (
+      <>
+        <EtatContenu />
+        <InstructionsIOS />
+      </>
+    );
+  }
 
   // Navigateur sans invite (Firefox, ou l'évènement pas encore prêt).
   return (
-    <p className="carte__intro" style={{ marginBottom: 0 }}>
-      Depuis le menu de ton navigateur (⋮), choisis{' '}
-      <strong>« Ajouter à l'écran d'accueil »</strong> ou{' '}
-      <strong>« Installer l'application »</strong>. Elle fonctionnera ensuite
-      hors-ligne.
-    </p>
+    <>
+      <EtatContenu />
+      <p className="carte__intro" style={{ marginBottom: 0 }}>
+        Depuis le menu de ton navigateur (⋮), choisis{' '}
+        <strong>« Ajouter à l'écran d'accueil »</strong> ou{' '}
+        <strong>« Installer l'application »</strong>. Elle fonctionnera ensuite
+        hors-ligne.
+      </p>
+    </>
   );
 }

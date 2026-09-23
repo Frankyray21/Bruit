@@ -25,10 +25,10 @@ export interface GraduationY {
   readonly label: string;
 }
 
-const L = 44; // marge gauche (étiquettes Y)
+const L = 56; // marge gauche (étiquettes Y : « 200 % », « ×1000 » en 14 px)
 const R = 14; // marge droite
-const T = 16; // marge haute
-const B = 26; // marge basse (étiquettes X)
+const T = 18; // marge haute
+const B = 28; // marge basse (étiquettes X)
 const LARG = 360;
 const HAUT = 196;
 const PL = LARG - L - R; // largeur du tracé
