@@ -2127,3 +2127,43 @@ h1.entete__titre {
   padding: 8px 6px;
   font-size: 0.9rem;
 }
+
+/* Sommaire de la boîte à outils. */
+.sommaire {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 14px 0 6px;
+}
+
+.sommaire__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--cible);
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--bordure-controle);
+  background: var(--fond-carte);
+  text-align: left;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+}
+
+.sommaire__item .section-titre__num {
+  width: 30px;
+  height: 30px;
+  font-size: 0.9rem;
+}
+
+.section-titre {
+  scroll-margin-top: 80px;
+}
+
+.section-titre:focus-visible {
+  outline: none;
+}

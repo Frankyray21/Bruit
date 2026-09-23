@@ -401,14 +401,46 @@ function Parcours({
   );
 }
 
-function SectionTitre({ numero, children }: { numero: string; children: string }) {
+const SECTIONS_OUTILS = [
+  { id: 'outils-temps', numero: '1', titre: 'Combien de temps puis-je rester exposé ?', court: 'Combien de temps ?' },
+  { id: 'outils-protection', numero: '2', titre: 'Quelle protection dois-je porter ?', court: 'Quelle protection ?' },
+  { id: 'outils-retrait', numero: '3', titre: "Qu'est-ce que je risque si je l'enlève ?", court: "Si je l'enlève ?" },
+  { id: 'outils-plus', numero: '+', titre: 'Pour aller plus loin', court: 'Plus loin' },
+] as const;
+
+function SectionTitre({ section }: { section: (typeof SECTIONS_OUTILS)[number] }) {
   return (
-    <h2 className="section-titre">
+    <h2 className="section-titre" id={section.id} tabIndex={-1}>
       <span className="section-titre__num" aria-hidden="true">
-        {numero}
+        {section.numero}
       </span>
-      {children}
+      {section.titre}
     </h2>
+  );
+}
+
+/** Sommaire de la boîte à outils : la page fait dix écrans de téléphone. */
+function SommaireOutils() {
+  return (
+    <nav className="sommaire" aria-label="Sections de la boîte à outils">
+      {SECTIONS_OUTILS.map((s) => (
+        <button
+          key={s.id}
+          type="button"
+          className="sommaire__item"
+          onClick={() => {
+            const cible = document.getElementById(s.id);
+            cible?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            cible?.focus({ preventScroll: true });
+          }}
+        >
+          <span className="section-titre__num" aria-hidden="true">
+            {s.numero}
+          </span>
+          {s.court}
+        </button>
+      ))}
+    </nav>
   );
 }
 
@@ -433,19 +465,21 @@ function BoiteAOutils({ onProfil }: { onProfil: () => void }) {
         </button>
       </div>
 
-      <SectionTitre numero="1">Combien de temps puis-je rester exposé ?</SectionTitre>
+      <SommaireOutils />
+
+      <SectionTitre section={SECTIONS_OUTILS[0]} />
       <DureePermise />
       <ComposeurQuart />
 
-      <SectionTitre numero="2">Quelle protection dois-je porter ?</SectionTitre>
+      <SectionTitre section={SECTIONS_OUTILS[1]} />
       <Protection />
       <BudgetRetrait />
 
-      <SectionTitre numero="3">Qu'est-ce que je risque si je l'enlève ?</SectionTitre>
+      <SectionTitre section={SECTIONS_OUTILS[2]} />
       <TempsDePort />
       <Comparateur />
 
-      <SectionTitre numero="+">Pour aller plus loin</SectionTitre>
+      <SectionTitre section={SECTIONS_OUTILS[3]} />
       <EchelleMetiers />
       <Carriere />
     </>
