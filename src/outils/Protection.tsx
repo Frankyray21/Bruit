@@ -80,6 +80,7 @@ export function Protection() {
           valeur={bouchonId}
           onChange={setBouchonId}
           format={formatProtecteur}
+          etiquette="Bouchons"
         />
       </Champ>
 
@@ -101,6 +102,7 @@ export function Protection() {
             valeur={coquilleId}
             onChange={setCoquilleId}
             format={formatProtecteur}
+            etiquette="Coquilles"
           />
         </Champ>
       )}

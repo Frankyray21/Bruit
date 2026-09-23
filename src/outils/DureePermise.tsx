@@ -199,7 +199,7 @@ export function PostesAtelier() {
     <Carte
       titre="Les postes d'atelier mesurés"
       source="diapo 9"
-      intro="Ces valeurs sont des Leq sur 8 heures, mesurés par dosimétrie. Elles servent à vérifier que le calcul du site colle à la réalité."
+      intro="Six postes d'atelier mesurés sur une journée complète (dosimétrie, niveau moyen sur 8 h) : c'est ce qu'encaisse réellement un travailleur de l'atelier."
     >
       <div className="barres">
         {[...postesAtelier]

@@ -28,6 +28,7 @@ export function ChampPoste({ etiquette = 'Mon poste' }: { etiquette?: string }) 
         valeur={poste.id}
         onChange={(id) => majProfil({ posteId: id })}
         format={formatMetier}
+        etiquette={etiquette}
       />
     </Champ>
   );
@@ -54,6 +55,7 @@ export function ChampProtecteur({
         valeur={valeur}
         onChange={(id) => majProfil({ protecteurId: id })}
         format={formatProtecteur}
+        etiquette={etiquette}
       />
     </Champ>
   );

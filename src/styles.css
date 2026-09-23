@@ -13,6 +13,9 @@
   --fond-carte-haut: #1a2332;
   --fond-2: #0d1320;
   --bordure: #1e293b;
+  /* Contour des contrôles (options, sélecteurs, boutons) : assez clair pour
+     que la limite du composant se voie sous une lampe frontale. */
+  --bordure-controle: #5d7096;
   --texte: #f1f5f9;
   --texte-doux: #9aa7bd;
   --texte-faible: #8694ad;
@@ -239,7 +242,8 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  min-height: 60px;
+  padding: 8px 16px;
   border-bottom: 1px solid var(--bordure);
   background: var(--fond);
   position: sticky;
@@ -321,9 +325,10 @@ button {
 
 .carte__titre {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
+  gap: 4px 12px;
   margin-bottom: 14px;
 }
 
@@ -348,11 +353,11 @@ button {
 /* La source (« diapo 11 ») devient un kicker rouge en capitales. */
 .carte__source {
   font-family: var(--font-display);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--rouge-clair);
+  color: var(--texte-faible);
   white-space: nowrap;
 }
 
@@ -395,10 +400,10 @@ button {
 }
 
 .choix__option {
-  min-height: 52px;
+  min-height: 56px;
   padding: 10px 16px;
   border-radius: 10px;
-  border: 1px solid var(--bordure);
+  border: 1px solid var(--bordure-controle);
   background: var(--fond-carte-haut);
   font-size: 0.95rem;
   flex: 1 1 auto;
@@ -418,7 +423,7 @@ input.choix__select {
   min-height: var(--cible);
   padding: 0 14px;
   border-radius: 10px;
-  border: 1px solid var(--bordure);
+  border: 1px solid var(--bordure-controle);
   background: var(--fond-carte-haut);
   color: var(--texte);
   font: inherit;
@@ -430,10 +435,54 @@ input.choix__select::placeholder {
 }
 
 input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   height: var(--cible);
+  margin: 0;
   accent-color: var(--rouge);
   background: transparent;
+  cursor: pointer;
+}
+
+/* Pouce de 32 px sur une piste de 8 px : le doigt ganté le trouve. */
+input[type='range']::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--bordure-controle);
+}
+input[type='range']::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--bordure-controle);
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 32px;
+  height: 32px;
+  margin-top: -12px;
+  border-radius: 50%;
+  background: var(--rouge-clair);
+  border: 3px solid var(--fond);
+  box-shadow: 0 0 0 1px var(--rouge-clair);
+}
+input[type='range']::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--rouge-clair);
+  border: 3px solid var(--fond);
+  box-shadow: 0 0 0 1px var(--rouge-clair);
+}
+input[type='range']:focus-visible {
+  outline: none;
+}
+input[type='range']:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px var(--bleu);
+}
+input[type='range']:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 4px var(--bleu);
 }
 
 .curseur__valeur {
@@ -654,16 +703,16 @@ input[type='range'] {
 }
 
 .ligne__bouton {
-  min-height: 48px;
+  min-height: 56px;
   flex: 1;
   border-radius: 8px;
-  border: 1px solid var(--bordure);
+  border: 1px solid var(--bordure-controle);
   background: var(--fond-carte);
   font-size: 0.9rem;
 }
 
 .ligne__bouton--retirer {
-  flex: 0 0 56px;
+  flex: 0 0 64px;
   color: var(--rouge-clair);
   font-size: 1.2rem;
 }
@@ -740,8 +789,9 @@ input[type='range'] {
 
 .installer-banniere__fermer {
   flex: 0 0 auto;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
+  margin-left: 4px;
   border-radius: 8px;
   color: var(--texte-doux);
   font-size: 1.3rem;
@@ -790,9 +840,9 @@ input[type='range'] {
 
 .graphe__gradY,
 .graphe__gradX {
-  fill: var(--texte-faible);
+  fill: var(--texte-doux);
   font-family: system-ui, sans-serif;
-  font-size: 12px;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -833,7 +883,7 @@ input[type='range'] {
   fill: var(--texte);
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 15px;
+  font-size: 18px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -848,7 +898,7 @@ input[type='range'] {
 .graphe__seuil-lbl {
   fill: var(--texte-doux);
   font-family: system-ui, sans-serif;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 /* Valeur qui sort de l'échelle (dose réelle au-delà du plafond). */
@@ -856,7 +906,7 @@ input[type='range'] {
   fill: var(--rouge-clair);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 /* ---------- Échelle des métiers (dot plot HTML) ---------- */
@@ -877,7 +927,7 @@ input[type='range'] {
 .echelle__repere {
   position: absolute;
   transform: translateX(-50%);
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   color: var(--texte-faible);
   white-space: nowrap;
 }
@@ -905,8 +955,10 @@ input[type='range'] {
   outline: 2px solid var(--rouge);
 }
 
-.echelle__ligne:hover {
-  background: color-mix(in srgb, var(--rouge) 6%, var(--fond-carte-haut));
+@media (hover: hover) {
+  .echelle__ligne:hover {
+    background: color-mix(in srgb, var(--rouge) 6%, var(--fond-carte-haut));
+  }
 }
 
 .echelle__nom {
@@ -936,12 +988,12 @@ input[type='range'] {
   top: -3px;
   bottom: -3px;
   width: 2px;
-  background: var(--texte-faible);
-  opacity: 0.6;
+  background: var(--texte-doux);
+  opacity: 0.9;
 }
 
 .echelle__norme--faible {
-  opacity: 0.3;
+  opacity: 0.45;
 }
 
 /* Le point encode la POSITION (dBA), pas une longueur : pas de faux ratio. */
@@ -1280,14 +1332,25 @@ input[type='range'] {
     box-shadow 0.2s var(--ease);
 }
 
-.bouton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(210, 35, 37, 0.35);
+@media (hover: hover) {
+  .bouton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(210, 35, 37, 0.35);
+  }
+}
+
+.bouton:active,
+.choix__option:active,
+.quiz__option:not(:disabled):active,
+.module-carte:active,
+.ligne__bouton:active {
+  transform: scale(0.985);
+  transition: transform 60ms;
 }
 
 .bouton--secondaire {
   background: var(--fond-carte-haut);
-  border: 1px solid var(--bordure);
+  border: 1px solid var(--bordure-controle);
   color: var(--texte);
 }
 
@@ -1320,7 +1383,7 @@ input[type='range'] {
   min-height: var(--cible);
   padding: 14px 16px;
   border-radius: 12px;
-  border: 1px solid var(--bordure);
+  border: 1px solid var(--bordure-controle);
   background: var(--fond-carte-haut);
   margin-bottom: 10px;
 }
@@ -1365,7 +1428,7 @@ input[type='range'] {
   border-radius: 12px;
   background: var(--fond-carte-haut);
   margin-bottom: 10px;
-  opacity: 0.45;
+  opacity: 0.62;
 }
 
 .etape--active {
@@ -1608,7 +1671,7 @@ input[type='range'] {
 
 .entete__progression {
   position: sticky;
-  top: 75px;
+  top: 61px;
   z-index: 9;
   height: 3px;
   background: var(--bordure);
@@ -2008,4 +2071,47 @@ input[type='range'] {
   opacity: 0;
   pointer-events: none;
   border: none;
+}
+
+
+/* ---------- Divers (suite) ---------- */
+
+/* Texte pour le lecteur d'écran seulement. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Choix retenu mais pas encore révélé (vote de la salle en projection). */
+.quiz__option--provisoire {
+  border-color: var(--bleu);
+  box-shadow: 0 0 0 1px var(--bleu) inset;
+}
+
+.quiz__option--provisoire .quiz__lettre {
+  border-color: var(--bleu);
+  color: var(--texte);
+}
+
+h1.entete__titre {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.15;
+}
+
+/* Étiquettes de la coupe de l'oreille : un liseré sombre les détache du dessin. */
+.oreille-etiq text {
+  paint-order: stroke;
+  stroke: var(--fond);
+  stroke-width: 4px;
+  stroke-linejoin: round;
 }

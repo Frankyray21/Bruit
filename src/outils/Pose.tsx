@@ -47,7 +47,9 @@ export function PoseBouchons() {
 
       {chrono !== null && (
         <>
-          <div className="chrono">{chrono} s</div>
+          <div className="chrono" role="timer" aria-live="polite" aria-label="Temps d'attente restant">
+            {chrono} s
+          </div>
           <p className="carte__intro" style={{ textAlign: 'center' }}>
             Garde le doigt sur le bouchon, laisse-le se gonfler.
           </p>

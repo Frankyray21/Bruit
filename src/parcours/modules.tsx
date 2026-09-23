@@ -224,9 +224,9 @@ function ModuleDecibel() {
         <Avertissement>
           Dans une galerie réverbérante, <strong>reculer ne sert presque à
           rien</strong> : le niveau reste quasi constant. L'intuition « je
-          m'éloigne un peu » vient de l'extérieur, où elle est vraie. Le site
-          n'affiche pas de chiffres ici — aucune mesure de la mine ne permet de
-          les valider.
+          m'éloigne un peu » vient de l'extérieur, où elle est vraie. Il n'y a
+          pas de chiffre à retenir ici : seule une mesure sur place peut le
+          dire.
         </Avertissement>
       </Carte>
     </>

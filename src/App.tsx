@@ -167,18 +167,16 @@ function Coquille() {
           ) : (
             <span className="entete__marque" aria-hidden="true" />
           )}
-          <span className="entete__titre">
-            {module ? (
-              <>
-                <span className="entete__kicker">
-                  Module {indexModule + 1} / {MODULES.length}
-                </span>
-                {module.titre}
-              </>
-            ) : (
-              titreZone
-            )}
-          </span>
+          {module ? (
+            <h1 className="entete__titre">
+              <span className="entete__kicker">
+                Module {indexModule + 1} / {MODULES.length}
+              </span>
+              {module.titre}
+            </h1>
+          ) : (
+            <span className="entete__titre">{titreZone}</span>
+          )}
           <button
             type="button"
             className={`entete__action${presentation ? '' : ' entete__action--bureau'}`}
@@ -210,7 +208,16 @@ function Coquille() {
             ))}
 
           {zone === 'outils' && <BoiteAOutils onProfil={() => allerA('moi')} />}
-          {zone === 'quiz' && <Quiz onRevoir={ouvrirModule} onFormation={() => allerA('parcours')} />}
+          {zone === 'quiz' && (
+            <>
+              <h1 className="sr-only">Quiz</h1>
+              <Quiz
+                onRevoir={ouvrirModule}
+                onFormation={() => allerA('parcours')}
+                revelation={presentation}
+              />
+            </>
+          )}
           {zone === 'moi' && (
             <Moi
               onOuvrir={ouvrirModule}
@@ -597,8 +604,10 @@ function Moi({
             onChange={(id) => setPresentation(id === 'projeter')}
           />
           <p className="champ__aide">
-            En projection : gros caractères, et les flèches ← → du clavier
-            passent d'un module à l'autre (Échap : la liste).
+            En projection : gros caractères, les flèches ← → du clavier
+            passent d'un module à l'autre (Échap : la liste), et au quiz la
+            réponse n'est dévoilée qu'au bouton « Révéler » — le temps de faire
+            voter la salle.
           </p>
         </Champ>
 

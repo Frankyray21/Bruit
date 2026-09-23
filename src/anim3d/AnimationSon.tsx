@@ -12,7 +12,7 @@
  */
 
 import { useState } from 'react';
-import { Carte } from '../ui/composants.js';
+import { Avertissement, Carte } from '../ui/composants.js';
 
 const REDUIT =
   typeof matchMedia === 'function' &&
@@ -70,15 +70,16 @@ export function AnimationSon({
           onError={() => setErreur(true)}
         />
       ) : (
-        <a
-          className="bouton"
-          href={lien}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ display: 'grid', placeItems: 'center', textDecoration: 'none' }}
-        >
-          Voir l'animation sur {lienNom} ↗
-        </a>
+        <Avertissement>
+          La vidéo ne peut pas être lue sur cet appareil. Le message reste le
+          même : le son fait vibrer le tympan, puis les cellules ciliées de la
+          cochlée — celles que le bruit détruit. Avec du réseau, tu peux la voir
+          sur{' '}
+          <a href={lien} target="_blank" rel="noopener noreferrer">
+            {lienNom}
+          </a>
+          .
+        </Avertissement>
       )}
 
       <p className="carte__source carte__source--credit" style={{ marginTop: 12 }}>

@@ -107,7 +107,7 @@ export function OreilleCoupe() {
         />
 
         {/* Étiquettes */}
-        <g className="oreille-etiq" fill="#9198a1" fontSize="11">
+        <g className="oreille-etiq" fill="#b9c3d6" fontSize="14" fontWeight="600">
           <text x="44" y="204" textAnchor="middle">Pavillon</text>
           <text x="128" y="178" textAnchor="middle">Conduit</text>
           <text x="150" y="100" textAnchor="middle">Tympan</text>

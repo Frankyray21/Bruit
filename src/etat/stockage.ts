@@ -21,9 +21,14 @@ export function lire<T>(cle: string, defaut: T): T {
 
 export function useStockage<T>(
   cle: string,
-  defaut: T,
+  defaut: T | (() => T),
 ): [T, (valeur: T | ((precedent: T) => T)) => void] {
-  const [valeur, setValeur] = useState<T>(() => lire(cle, defaut));
+  const [valeur, setValeur] = useState<T>(() => {
+    const sentinelle = Symbol('absent');
+    const lu = lire<T | symbol>(cle, sentinelle);
+    if (lu !== sentinelle) return lu as T;
+    return typeof defaut === 'function' ? (defaut as () => T)() : defaut;
+  });
 
   useEffect(() => {
     try {

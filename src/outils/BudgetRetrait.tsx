@@ -25,7 +25,7 @@ export function BudgetRetrait() {
   return (
     <Carte
       titre="Ton budget de retrait"
-      source="diapo 16, inversée"
+      source="d'après la diapo 16"
       intro="« Porter la protection en tout temps » est un slogan que personne n'applique à la lettre : tout le monde enlève ses bouchons pour parler. Voici combien de temps tu peux le faire sans dépasser la norme."
     >
       <ChampPoste />

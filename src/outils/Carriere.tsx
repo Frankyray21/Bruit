@@ -68,7 +68,8 @@ export function Carriere() {
       <Avertissement>
         <strong>Ce n'est pas un pronostic médical.</strong> C'est le compteur du
         règlement, prolongé dans le temps. Projeter une perte auditive réelle
-        demanderait la norme ISO 1999 — le site ne le fait pas.
+        demanderait une norme spécialisée (ISO 1999) : ce compteur ne le fait
+        pas.
       </Avertissement>
     </Carte>
   );
@@ -84,7 +85,7 @@ export function Substitution() {
     <Carte
       titre="Changer d'outil, pas juste de bouchons"
       source="diapo 8"
-      intro="La formation ne parle que d'équipement de protection. Mais ses propres mesures montrent qu'un changement d'outil vaut mieux qu'un meilleur bouchon."
+      intro="Les mesures de la mine le montrent : changer d'outil fait parfois plus qu'un meilleur bouchon."
     >
       {paires.map(({ avant, apres }) => {
         const a = taches.find((t) => t.id === avant)!;

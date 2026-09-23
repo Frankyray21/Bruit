@@ -11,7 +11,7 @@
  * il faudra un serveur.
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { QUESTIONS, type Question } from './questions.js';
 import { MODULES } from '../parcours/modules.js';
 import { useStockage } from '../etat/stockage.js';
@@ -24,17 +24,46 @@ export const SEUIL_REUSSITE = 0.8;
 export const BONNES_REQUISES = Math.ceil(SEUIL_REUSSITE * QUESTIONS.length);
 
 interface EtatQuiz {
+  /** Position courante dans `ordre` (0 = première question posée). */
   readonly index: number;
-  /** Réponse choisie pour chaque question (index de l'option), `null` si pas encore répondu. */
+  /**
+   * Ordre de passage : `ordre[position]` = index de la question dans la
+   * banque. Tiré au sort à chaque tentative, pour que le quiz ne s'apprenne
+   * pas par cœur ; conservé avec l'état pour survivre à un rechargement.
+   */
+  readonly ordre: readonly number[];
+  /** Réponse choisie par question de la banque (index de l'option), `null` si pas répondu. */
   readonly reponses: readonly (number | null)[];
   readonly termine: boolean;
 }
 
-const ETAT_INITIAL: EtatQuiz = {
-  index: 0,
-  reponses: QUESTIONS.map(() => null),
-  termine: false,
-};
+/** Une permutation des indices de la banque (Fisher-Yates). */
+function tirerOrdre(): number[] {
+  const ordre = QUESTIONS.map((_, i) => i);
+  for (let i = ordre.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ordre[i], ordre[j]] = [ordre[j]!, ordre[i]!];
+  }
+  return ordre;
+}
+
+function etatInitial(): EtatQuiz {
+  return {
+    index: 0,
+    ordre: tirerOrdre(),
+    reponses: QUESTIONS.map(() => null),
+    termine: false,
+  };
+}
+
+function ordreValide(ordre: readonly number[] | undefined): boolean {
+  return (
+    Array.isArray(ordre) &&
+    ordre.length === QUESTIONS.length &&
+    new Set(ordre).size === QUESTIONS.length &&
+    ordre.every((i) => Number.isInteger(i) && i >= 0 && i < QUESTIONS.length)
+  );
+}
 
 export function formaterDate(iso: string): string {
   const d = new Date(iso);
@@ -56,31 +85,42 @@ export function OptionQuestion({
   question,
   i,
   choisi,
+  provisoire = null,
   onChoisir,
 }: {
   question: Question;
   i: number;
   choisi: number | null;
+  /** Choix retenu mais pas encore révélé (projection). */
+  provisoire?: number | null;
   onChoisir: (i: number) => void;
 }) {
+  const repondu = choisi !== null;
+  const juste = repondu && i === question.bonne;
+  const faux = repondu && i === choisi && i !== question.bonne;
   let classe = 'quiz__option';
-  if (choisi !== null) {
-    if (i === question.bonne) classe += ' quiz__option--juste';
-    else if (i === choisi) classe += ' quiz__option--faux';
-  }
+  if (juste) classe += ' quiz__option--juste';
+  else if (faux) classe += ' quiz__option--faux';
+  else if (!repondu && provisoire === i) classe += ' quiz__option--provisoire';
   const option = question.options[i]!;
+  // Le badge dit l'état sans la couleur : ✓ bonne réponse, ✕ ta réponse.
+  const badge = juste ? '✓' : faux ? '✕' : String.fromCharCode(65 + i);
   return (
     <button
       type="button"
       className={classe}
       onClick={() => onChoisir(i)}
-      disabled={choisi !== null}
-      aria-pressed={choisi === i}
+      disabled={repondu}
+      aria-pressed={repondu ? choisi === i : provisoire === i}
     >
       <span className="quiz__lettre" aria-hidden="true">
-        {String.fromCharCode(65 + i)}
+        {badge}
       </span>
-      {option}
+      <span>
+        {option}
+        {juste && <span className="sr-only"> — bonne réponse</span>}
+        {faux && <span className="sr-only"> — ta réponse, fausse</span>}
+      </span>
     </button>
   );
 }
@@ -88,37 +128,54 @@ export function OptionQuestion({
 export function Quiz({
   onRevoir,
   onFormation,
+  revelation = false,
 }: {
   /** Ouvre un module à revoir. */
   onRevoir: (moduleId: string) => void;
   /** Retourne à la liste des modules. */
   onFormation: () => void;
+  /**
+   * En projection : le premier appui ne fait que retenir un choix, un bouton
+   * « Révéler » dévoile la réponse — le formateur peut faire voter la salle.
+   */
+  revelation?: boolean;
 }) {
   const { profil, majProfil, faits, resultatQuiz, setResultatQuiz } = useTravailleur();
-  const [etat, setEtat] = useStockage<EtatQuiz>('quiz-etat', ETAT_INITIAL);
+  const [etatBrut, setEtat] = useStockage<EtatQuiz>('quiz-etat', etatInitial);
+  const [provisoire, setProvisoire] = useState<number | null>(null);
   const refQuestion = useRef<HTMLParagraphElement>(null);
 
-  // Une ancienne sauvegarde avec un nombre de questions différent serait
-  // incohérente : on repart proprement.
-  const reponses =
-    etat.reponses.length === QUESTIONS.length ? etat.reponses : ETAT_INITIAL.reponses;
+  // Une sauvegarde d'une version précédente (sans ordre, ou avec un autre
+  // nombre de questions) serait incohérente : on repart proprement.
+  const etat: EtatQuiz =
+    etatBrut.reponses.length === QUESTIONS.length && ordreValide(etatBrut.ordre)
+      ? etatBrut
+      : etatInitial();
+  const { reponses, ordre } = etat;
   const index = Math.min(etat.index, QUESTIONS.length - 1);
-  const question = QUESTIONS[index]!;
-  const choisi = reponses[index] ?? null;
+  const numero = ordre[index]!;
+  const question = QUESTIONS[numero]!;
+  const choisi = reponses[numero] ?? null;
   const bonnes = reponses.filter((r, i) => r !== null && r === QUESTIONS[i]!.bonne).length;
 
   // Après « Question suivante », le focus va sur la nouvelle question : au
   // clavier ou au lecteur d'écran, on ne reste pas sur un bouton disparu.
   useEffect(() => {
     if (!etat.termine) refQuestion.current?.focus();
+    setProvisoire(null);
   }, [index, etat.termine]);
 
   function repondre(i: number) {
     if (choisi !== null) return;
+    if (revelation && provisoire === null) {
+      setProvisoire(i);
+      return;
+    }
     setEtat({
       ...etat,
-      reponses: reponses.map((r, j) => (j === index ? i : r)),
+      reponses: reponses.map((r, j) => (j === numero ? i : r)),
     });
+    setProvisoire(null);
   }
 
   function suivante() {
@@ -134,14 +191,14 @@ export function Quiz({
         modulesRates,
       };
       setResultatQuiz(resultat);
-      setEtat({ ...etat, reponses, termine: true });
+      setEtat({ ...etat, termine: true });
     } else {
-      setEtat({ ...etat, reponses, index: index + 1 });
+      setEtat({ ...etat, index: index + 1 });
     }
   }
 
   function recommencer() {
-    setEtat(ETAT_INITIAL);
+    setEtat(etatInitial());
   }
 
   if (etat.termine && resultatQuiz) {
@@ -149,6 +206,7 @@ export function Quiz({
       <Resultat
         resultat={resultatQuiz}
         reponses={reponses}
+        ordre={ordre}
         nom={profil.nom}
         onNom={(nom) => majProfil({ nom })}
         modulesFaits={faits.length}
@@ -202,8 +260,21 @@ export function Quiz({
         </p>
 
         {question.options.map((_, i) => (
-          <OptionQuestion key={i} question={question} i={i} choisi={choisi} onChoisir={repondre} />
+          <OptionQuestion
+            key={i}
+            question={question}
+            i={i}
+            choisi={choisi}
+            provisoire={provisoire}
+            onChoisir={repondre}
+          />
         ))}
+
+        {revelation && choisi === null && provisoire !== null && (
+          <button type="button" className="bouton" onClick={() => repondre(provisoire)}>
+            Révéler la réponse
+          </button>
+        )}
 
         {choisi !== null && (
           <>
@@ -224,6 +295,7 @@ export function Quiz({
 function Resultat({
   resultat,
   reponses,
+  ordre,
   nom,
   onNom,
   modulesFaits,
@@ -232,6 +304,7 @@ function Resultat({
 }: {
   resultat: ResultatQuiz;
   reponses: readonly (number | null)[];
+  ordre: readonly number[];
   nom: string;
   onNom: (nom: string) => void;
   modulesFaits: number;
@@ -240,9 +313,14 @@ function Resultat({
 }) {
   const { bonnes, total, reussi } = resultat;
   const score = Math.round((bonnes / total) * 100);
-  const ratees = QUESTIONS.map((q, i) => ({ q, i, choisi: reponses[i] ?? null })).filter(
-    ({ q, choisi }) => choisi !== q.bonne,
-  );
+  // Dans l'ordre où les questions ont été posées, numérotées ainsi.
+  const ratees = ordre
+    .map((numero, position) => ({
+      q: QUESTIONS[numero]!,
+      i: position,
+      choisi: reponses[numero] ?? null,
+    }))
+    .filter(({ q, choisi }) => choisi !== q.bonne);
 
   return (
     <>
@@ -323,9 +401,10 @@ function Resultat({
         </div>
 
         <Avertissement>
-          Cette attestation est <strong>générée sur ton appareil</strong> et
-          repose sur une saisie déclarative. Elle ne constitue pas un registre
-          de formation opposable. Vérifie avec ton comité SST ce qu'il exige.
+          Cette attestation est <strong>générée sur ton appareil</strong>, à
+          partir de ce que tu as déclaré. Garde-la : c'est ton employeur et le
+          comité SST qui tiennent le registre officiel de formation, et ils
+          peuvent te demander de la présenter.
         </Avertissement>
       </Carte>
 

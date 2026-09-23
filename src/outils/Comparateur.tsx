@@ -46,7 +46,7 @@ export function Comparateur() {
     <Carte
       titre="Lequel protège vraiment ?"
       source="diapos 13 et 16"
-      intro="La diapo 13 classe les protecteurs par NRR. Mais le NRR suppose un port parfait. Compare deux protecteurs tels qu'ils sont réellement portés."
+      intro="Le catalogue classe les protecteurs par NRR. Mais le NRR suppose un port parfait. Compare deux protecteurs tels qu'ils sont réellement portés."
     >
       <Ligne
         titre="Protecteur A"
@@ -122,6 +122,7 @@ function Ligne({
         valeur={id}
         onChange={onId}
         format={(p) => `${p.nom} — NRR ${p.nrr}`}
+        etiquette={titre}
       />
       <Curseur
         min={0}
