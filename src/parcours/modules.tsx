@@ -22,8 +22,8 @@ import { Comparateur } from '../outils/Comparateur.js';
 import { DureePermise, EchelleMetiers, PostesAtelier } from '../outils/DureePermise.js';
 import { EchelleEnergie, SommationSources } from '../outils/SommationSources.js';
 import { BudgetRetrait } from '../outils/BudgetRetrait.js';
-import { Carriere, Substitution } from '../outils/Carriere.js';
-import { FacteurDerating, Protection } from '../outils/Protection.js';
+import { Substitution } from '../outils/Carriere.js';
+import { Protection } from '../outils/Protection.js';
 import { PoseBouchons, Symptomes, VerifCoquilles } from '../outils/Pose.js';
 import { TempsDePort } from '../outils/TempsDePort.js';
 import { OreilleCoupe } from '../anim3d/OreilleCoupe.js';
@@ -39,6 +39,10 @@ export interface Module {
   readonly titre: string;
   readonly sousTitre: string;
   readonly diapos: string;
+  /** Durée honnête, mesurée en défilant le module sur un téléphone. */
+  readonly duree: string;
+  /** Ce que le travailleur doit retenir en sortant — une phrase. */
+  readonly objectif: string;
   readonly contenu: () => ReactNode;
 }
 
@@ -48,6 +52,9 @@ export const MODULES: readonly Module[] = [
     titre: 'Pourquoi ça compte',
     sousTitre: 'Les chiffres de la CNESST',
     diapos: 'diapos 2 et 3',
+    duree: '≈ 3 min',
+    objectif:
+      'Comprendre que la surdité professionnelle explose au Québec et touche des travailleurs de plus en plus jeunes.',
     contenu: () => <ModulePourquoi />,
   },
   {
@@ -55,6 +62,9 @@ export const MODULES: readonly Module[] = [
     titre: 'Comprendre le décibel',
     sousTitre: 'La règle des 3 dBA, démontrée',
     diapos: 'diapos 4 à 6 et 10',
+    duree: '≈ 8 min',
+    objectif:
+      'Retenir la règle des 3 dBA : trois décibels de plus, deux fois moins de temps permis.',
     contenu: () => <ModuleDecibel />,
   },
   {
@@ -62,6 +72,9 @@ export const MODULES: readonly Module[] = [
     titre: 'Mon métier, mon exposition',
     sousTitre: 'Ce que la mine a mesuré',
     diapos: 'diapos 7 à 9',
+    duree: '≈ 7 min',
+    objectif:
+      'Situer ton poste sur l’échelle et voir à quelle heure ta dose du quart est atteinte.',
     contenu: () => <ModuleExposition />,
   },
   {
@@ -69,6 +82,9 @@ export const MODULES: readonly Module[] = [
     titre: 'Ce que le bruit détruit',
     sousTitre: 'Irréversible',
     diapos: 'diapos 11 et 12',
+    duree: '≈ 6 min',
+    objectif:
+      'Voir ce que le bruit détruit dans l’oreille, et reconnaître les signes qui imposent d’aller consulter.',
     contenu: () => <ModuleDommages />,
   },
   {
@@ -76,6 +92,9 @@ export const MODULES: readonly Module[] = [
     titre: 'Choisir sa protection',
     sousTitre: 'NRR, dérating, double protection',
     diapos: 'diapos 13 et 14',
+    duree: '≈ 6 min',
+    objectif:
+      'Savoir ce que ton protecteur vaut vraiment sur le terrain, et quand la double protection s’impose.',
     contenu: () => <ModuleChoisir />,
   },
   {
@@ -83,6 +102,9 @@ export const MODULES: readonly Module[] = [
     titre: 'La porter correctement',
     sousTitre: 'Le geste, et le temps de port',
     diapos: 'diapos 15 à 17',
+    duree: '≈ 6 min',
+    objectif:
+      'Poser ses bouchons correctement, et mesurer ce que coûtent dix minutes sans protection.',
     contenu: () => <ModulePorter />,
   },
 ];
@@ -110,7 +132,7 @@ function ModulePourquoi() {
             { annee: sommet.annee, label: entier(sommet.cas), cote: 'haut' },
             { annee: 2020, label: '', cote: 'haut', attenue: true },
           ]}
-          aria={`Cas reconnus de surdité professionnelle par la CNESST, de ${entier(premier.cas)} en ${premier.annee} à un sommet de ${entier(sommet.cas)} en ${sommet.annee}, puis une baisse des réclamations déposées en 2020 (effet COVID sur le dépôt, non une baisse du risque) et un rebond en 2021. Cas reconnus, non l'incidence médicale ; relevé visuel, fiabilité faible.`}
+          aria={`Cas reconnus de surdité professionnelle par la CNESST, de ${entier(premier.cas)} en ${premier.annee} à un sommet de ${entier(sommet.cas)} en ${sommet.annee}, puis une baisse des réclamations déposées en 2020 (effet COVID sur le dépôt, non une baisse du risque) et un rebond en 2021. Cas reconnus par la CNESST, non l'incidence médicale.`}
         />
 
         <Declic>
@@ -214,10 +236,34 @@ function ModuleDecibel() {
 function ModuleExposition() {
   return (
     <>
+      <Carte
+        titre="Ce que la mine a mesuré"
+        intro="Trois étapes : trouve ton poste sur l'échelle, compose ton quart tâche par tâche, puis vérifie avec les postes d'atelier mesurés. Le chiffre à retenir : l'heure à laquelle ta dose du quart est atteinte."
+      >
+        <ul className="liste-puces">
+          <li>
+            <strong>Treize postes mesurés</strong>, tous au-dessus de la norme.
+          </li>
+          <li>
+            <strong>Neuf tâches</strong> pour composer ton quart et voir la dose
+            monter.
+          </li>
+          <li>
+            <strong>Six postes d'atelier</strong> pour vérifier que le calcul
+            colle à la réalité.
+          </li>
+        </ul>
+      </Carte>
       <EchelleMetiers />
       <ComposeurQuart />
       <PostesAtelier />
-      <Carriere />
+      <Declic>
+        <strong>À retenir :</strong> sans protection, aucun poste souterrain ne
+        tient huit heures, et une seule tâche bruyante peut consommer la dose
+        du quart avant la pause. Le silence n'efface rien — il ne fait que ne
+        rien ajouter. La suite : ce que ce bruit détruit, puis comment se
+        protéger.
+      </Declic>
     </>
   );
 }
@@ -227,12 +273,53 @@ function ModuleDommages() {
     <>
       <OreilleCoupe />
 
+      <AnimationSon
+        fichier="videoplayback.mp4"
+        titre="Le voyage du son"
+        source="NIDCD · NIH"
+        intro="Le son de l'oreille jusqu'au cerveau, cellules ciliées comprises. Touche la vidéo pour la lancer."
+        lien="https://www.nidcd.nih.gov/news/multimedia/journey-of-sound-video"
+        lienNom="le site de la NIDCD (NIH)"
+        note="domaine public"
+      />
+
       <Suspense
         fallback={
           <div className="scene3d-chargement">Chargement de la vue 3D…</div>
         }
       >
         <OreilleInterne />
+      </Suspense>
+
+      {/* Compléments optionnels : n'apparaissent que si le fichier est déposé
+          dans public/ (voir les LISEZMOI). Absents, rien ne s'affiche. */}
+      <AnimationSon
+        fichier="cellules.mp4"
+        titre="Le bruit détruit la cellule ciliée"
+        source="animation"
+        intro="Les cils de la cellule ciliée pliés puis rompus par le bruit — la lésion ne se répare pas."
+        lien="https://www.cochlea.eu/en/hair-cells/"
+        lienNom="cochlea.eu (NeurOreille)"
+        note="ressource pédagogique"
+        optionnel
+      />
+
+      <Suspense fallback={null}>
+        <ModeleGlb
+          fichier="oreille.glb"
+          titre="Modèle 3D de l'oreille"
+          intro="Oreille externe et interne — fais glisser pour tourner le modèle."
+          aria="Modèle 3D anatomique de l'oreille, manipulable"
+        />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <ModeleGlb
+          fichier="cellules.glb"
+          titre="Les cellules ciliées, de près"
+          intro="L'organe de Corti — ces cellules détruites par le bruit ne repoussent pas. Fais glisser pour tourner."
+          aria="Modèle 3D des cellules ciliées de la cochlée, manipulable"
+        />
       </Suspense>
 
       <Carte titre="Les quatre atteintes" source="diapo 12">
@@ -270,48 +357,6 @@ function ModuleDommages() {
       </Carte>
 
       <Symptomes />
-
-      <AnimationSon
-        fichier="videoplayback.mp4"
-        titre="Le voyage du son"
-        source="NIDCD · NIH"
-        intro="Le son de l'oreille jusqu'au cerveau, cellules ciliées comprises. Touche le son pour l'activer."
-        lien="https://www.nidcd.nih.gov/news/multimedia/journey-of-sound-video"
-        lienNom="le site de la NIDCD (NIH)"
-        note="domaine public"
-      />
-
-      <AnimationSon
-        fichier="cellules.mp4"
-        titre="Le bruit détruit la cellule ciliée"
-        source="animation · optionnelle"
-        intro="Les cils de la cellule ciliée pliés puis rompus par le bruit — la lésion ne se répare pas. Dépose un clip cellules.mp4 pour l'afficher ici (voir le LISEZMOI)."
-        lien="https://www.cochlea.eu/en/hair-cells/"
-        lienNom="cochlea.eu (NeurOreille)"
-        note="ressource pédagogique — vérifie la licence avant réutilisation"
-      />
-
-      <Suspense fallback={<div className="scene3d-chargement">Chargement…</div>}>
-        <ModeleGlb
-          fichier="oreille.glb"
-          titre="Modèle 3D de l'oreille"
-          intro="Oreille externe et interne — fais glisser pour tourner le modèle."
-          sujet="de l'oreille complète (externe et interne)"
-          aria="Modèle 3D anatomique de l'oreille, manipulable"
-          recherche="ear anatomy"
-        />
-      </Suspense>
-
-      <Suspense fallback={<div className="scene3d-chargement">Chargement…</div>}>
-        <ModeleGlb
-          fichier="cellules.glb"
-          titre="Les cellules ciliées, de près"
-          intro="L'organe de Corti — ces cellules détruites par le bruit ne repoussent pas. Fais glisser pour tourner."
-          sujet="des cellules ciliées (organe de Corti)"
-          aria="Modèle 3D des cellules ciliées de la cochlée, manipulable"
-          recherche="cochlea hair cells organ of Corti"
-        />
-      </Suspense>
     </>
   );
 }
@@ -319,9 +364,26 @@ function ModuleDommages() {
 function ModuleChoisir() {
   return (
     <>
+      <Carte
+        titre="Ce que vaut vraiment un protecteur"
+        source="diapos 13 et 14"
+        intro="Le chiffre sur la boîte (NRR) vient d'un laboratoire. Sur le terrain, on en retire une partie seulement — et deux protecteurs ne s'additionnent pas. Trois outils pour voir ce que ta protection vaut à ton poste."
+      >
+        <ul className="liste-puces">
+          <li>
+            <strong>Bouchons</strong> : mousse (NRR 32-33) ou sur arceau (NRR
+            17-20).
+          </li>
+          <li>
+            <strong>Coquilles</strong> montées sur casque (NRR 25).
+          </li>
+          <li>
+            <strong>Double protection</strong> recommandée au-delà de 105 dBA.
+          </li>
+        </ul>
+      </Carte>
       <Protection />
       <Comparateur />
-      <FacteurDerating />
       <Substitution />
     </>
   );

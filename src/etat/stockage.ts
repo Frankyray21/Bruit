@@ -6,11 +6,11 @@
  * entièrement la question du consentement.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-const PREFIXE = 'bruit:';
+export const PREFIXE = 'bruit:';
 
-function lire<T>(cle: string, defaut: T): T {
+export function lire<T>(cle: string, defaut: T): T {
   try {
     const brut = localStorage.getItem(PREFIXE + cle);
     return brut === null ? defaut : (JSON.parse(brut) as T);
@@ -37,15 +37,24 @@ export function useStockage<T>(
   return [valeur, setValeur];
 }
 
-export function useProgression() {
-  const [faits, setFaits] = useStockage<string[]>('modules-faits', []);
-
-  const marquerFait = useCallback(
-    (id: string) => setFaits((precedent) => [...new Set([...precedent, id])]),
-    [setFaits],
-  );
-
-  const reinitialiser = useCallback(() => setFaits([]), [setFaits]);
-
-  return { faits, marquerFait, reinitialiser };
+/**
+ * Efface tout ce que le site a mémorisé sur cet appareil, puis recharge.
+ *
+ * Sert au formateur qui prête un téléphone ou une tablette à plusieurs
+ * travailleurs : chacun repart de zéro, sans trace du précédent.
+ */
+export function effacerTout(): void {
+  try {
+    const cles: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const cle = localStorage.key(i);
+      if (cle && cle.startsWith(PREFIXE)) cles.push(cle);
+    }
+    cles.forEach((c) => localStorage.removeItem(c));
+    // Ancienne clé de la bannière d'installation, sans préfixe.
+    localStorage.removeItem('installer-masque');
+  } catch {
+    // Rien à effacer, ou stockage inaccessible.
+  }
+  location.reload();
 }

@@ -111,6 +111,7 @@ export function EchelleEnergie() {
           onChange={setNiveau}
           affichage={`${nb(niveau, 1)} dBA`}
           legende="norme : 85 dBA"
+          etiquette="Niveau de bruit"
         />
       </Champ>
 

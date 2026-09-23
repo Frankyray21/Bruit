@@ -87,16 +87,20 @@ export function Selecteur<T extends { id: string; nom: string }>({
   valeur,
   onChange,
   format,
+  etiquette,
 }: {
   options: readonly T[];
   valeur: string;
   onChange: (id: string) => void;
   format?: (option: T) => string;
+  /** Étiquette pour le lecteur d'écran quand le champ n'en a pas de visible. */
+  etiquette?: string;
 }) {
   return (
     <select
       className="choix__select"
       value={valeur}
+      aria-label={etiquette}
       onChange={(e) => onChange(e.target.value)}
     >
       {options.map((o) => (
@@ -116,6 +120,7 @@ export function Curseur({
   onChange,
   affichage,
   legende,
+  etiquette,
 }: {
   min: number;
   max: number;
@@ -124,10 +129,12 @@ export function Curseur({
   onChange: (valeur: number) => void;
   affichage: string;
   legende?: string;
+  /** Ce que règle le curseur, pour le lecteur d'écran (ex. « Niveau de bruit »). */
+  etiquette?: string;
 }) {
   return (
     <>
-      <div className="curseur__valeur">
+      <div className="curseur__valeur" aria-hidden="true">
         <span className="curseur__nombre">{affichage}</span>
         {legende && <span className="carte__source">{legende}</span>}
       </div>
@@ -137,6 +144,9 @@ export function Curseur({
         max={max}
         step={pas}
         value={valeur}
+        aria-label={etiquette}
+        // « 97,8 dBA » ou « 10 min » plutôt que « 97.8 » ou « 10 ».
+        aria-valuetext={legende ? `${affichage}, ${legende}` : affichage}
         onChange={(e) => onChange(Number(e.target.value))}
       />
     </>

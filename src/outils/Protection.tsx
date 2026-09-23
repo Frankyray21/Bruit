@@ -16,30 +16,36 @@ import { protectionSuffisante } from '../domain/verdict.js';
 import {
   bouchons,
   coquilles,
+  meilleurBouchon,
   metierParId,
-  metiers,
   protecteurParId,
 } from '../data/index.js';
 import { useConfig } from '../etat/config.js';
+import { useTravailleur } from '../etat/travailleur.js';
 import {
   Avertissement,
   Carte,
   Champ,
+  Choix,
   Declic,
   Resultat,
   Selecteur,
   Verdict,
 } from '../ui/composants.js';
+import { ChampPoste, formatProtecteur } from '../ui/ProfilChamps.js';
 import { nb } from '../ui/format.js';
 
 export function Protection() {
   const { facteurBouchons, facteurCoquilles } = useConfig();
-  const [metierId, setMetierId] = useState('mineur-jackleg');
-  const [bouchonId, setBouchonId] = useState('howard-leight-max');
+  const { poste: metier, protecteur } = useTravailleur();
+  // Les bouchons partent de ceux du profil (s'il en a), les coquilles restent
+  // un choix local : la double protection est une simulation.
+  const [bouchonId, setBouchonId] = useState(
+    protecteur.type === 'bouchons' ? protecteur.id : meilleurBouchon.id,
+  );
   const [coquilleId, setCoquilleId] = useState('coquilles-casque');
   const [double, setDouble] = useState(false);
 
-  const metier = metierParId(metierId) ?? metiers[0]!;
   const bouchon = protecteurParId(bouchonId) ?? bouchons[0]!;
   const coquille = protecteurParId(coquilleId) ?? coquilles[0]!;
 
@@ -66,41 +72,26 @@ export function Protection() {
       source="diapos 13 et 14"
       intro="Le NRR est mesuré en laboratoire. Sur le terrain, on n'en retire qu'une partie."
     >
-      <Champ etiquette="Mon poste">
-        <Selecteur
-          options={metiers}
-          valeur={metierId}
-          onChange={setMetierId}
-          format={(m) => `${m.nom} — ${m.niveau_dBA} dBA`}
-        />
-      </Champ>
+      <ChampPoste />
 
       <Champ etiquette="Bouchons">
         <Selecteur
           options={bouchons}
           valeur={bouchonId}
           onChange={setBouchonId}
-          format={(p) => `${p.nom} — NRR ${p.nrr}`}
+          format={formatProtecteur}
         />
       </Champ>
 
-      <Champ etiquette="Protection">
-        <div className="choix">
-          <button
-            type="button"
-            className={`choix__option${!double ? ' choix__option--actif' : ''}`}
-            onClick={() => setDouble(false)}
-          >
-            Bouchons seuls
-          </button>
-          <button
-            type="button"
-            className={`choix__option${double ? ' choix__option--actif' : ''}`}
-            onClick={() => setDouble(true)}
-          >
-            Double protection
-          </button>
-        </div>
+      <Champ etiquette="Simple ou double ?">
+        <Choix
+          options={[
+            { id: 'simple', nom: 'Bouchons seuls' },
+            { id: 'double', nom: 'Bouchons + coquilles' },
+          ]}
+          valeur={double ? 'double' : 'simple'}
+          onChange={(id) => setDouble(id === 'double')}
+        />
       </Champ>
 
       {double && (
@@ -109,7 +100,7 @@ export function Protection() {
             options={coquilles}
             valeur={coquilleId}
             onChange={setCoquilleId}
-            format={(p) => `${p.nom} — NRR ${p.nrr}`}
+            format={formatProtecteur}
           />
         </Champ>
       )}
@@ -119,8 +110,8 @@ export function Protection() {
         valeur={`${nb(attenuation, 1)} dB`}
         note={
           double
-            ? `le meilleur NRR (${Math.max(bouchon.nrr, coquille.nrr)}) dératé à ${nb((facteurBouchons * 100), 0)} %, plus 5 dB`
-            : `NRR ${bouchon.nrr} dératé à ${nb((facteurBouchons * 100), 0)} %`
+            ? `le meilleur NRR (${Math.max(bouchon.nrr, coquille.nrr)}) à ${nb(facteurBouchons * 100, 0)} % d'efficacité, plus 5 dB`
+            : `NRR ${bouchon.nrr} à ${nb(facteurBouchons * 100, 0)} % d'efficacité sur le terrain`
         }
       />
 
@@ -154,8 +145,8 @@ export function Protection() {
           <strong>Même la double protection ne suffit pas ici.</strong> Sur les
           treize postes mesurés, c'est le seul cas. La réponse n'est pas un
           meilleur bouchon : c'est une rotation de poste, une limite de temps
-          d'exposition, ou une réduction du bruit à la source. À porter au
-          comité SST.
+          d'exposition, ou une réduction du bruit à la source. Parles-en à ton
+          superviseur ou au comité SST.
         </Avertissement>
       )}
 
@@ -163,7 +154,7 @@ export function Protection() {
         <Avertissement>
           À <strong>{nb(restant, 0)} dBA</strong> sous la protection, tu
           risques de ne plus entendre les alarmes, les véhicules ni tes
-          collègues. Ce point ne figure pas dans la formation — à valider avec
+          collègues. Ce point ne fait pas partie de la formation : parles-en à
           ton formateur avant d'en tirer une conclusion.
         </Avertissement>
       )}
@@ -171,33 +162,35 @@ export function Protection() {
   );
 }
 
-/** Outil #10 — le facteur de dérating, exposé parce que l'arbitrage est ouvert. */
+/**
+ * Outil #10 — le facteur de dérating, réglable par le formateur.
+ *
+ * Il vit dans « Réglages du formateur », pas dans le parcours : la
+ * contradiction de la formation (70 % à la diapo 13, 60 % dans l'exemple de la
+ * diapo 14) se tranche en salle, pas sur le téléphone d'un travailleur.
+ */
 export function FacteurDerating() {
   const { facteurBouchons, setFacteurBouchons } = useConfig();
 
   const jackleg = metierParId('mineur-jackleg')!;
   const attenuation = attenuationDoubleProtection(33, 25, facteurBouchons);
   const duree = dureePermise(jackleg.niveau_dBA - attenuation);
+  const options = [0.5, 0.6, 0.7].map((f) => ({
+    id: String(f),
+    nom: `${nb(f * 100, 0)} %`,
+  }));
+  const actif =
+    options.find((o) => Math.abs(Number(o.id) - facteurBouchons) < 0.001)?.id ??
+    String(facteurBouchons);
 
   return (
     <Carte
-      titre="Le facteur d'efficacité"
+      titre="Efficacité des bouchons sur le terrain"
       source="diapos 13 et 14"
-      intro="La formation se contredit : la diapo 13 annonce 70 % d'efficacité pour les bouchons, mais l'exemple chiffré de la diapo 14 calcule avec 60 %."
+      intro="La formation donne deux valeurs : 70 % à la diapo 13, 60 % dans l'exemple chiffré de la diapo 14. Le site utilise 60 % par défaut — la valeur la plus prudente, celle de l'exemple enseigné. Ce réglage s'applique à tous les calculateurs de cet appareil."
     >
       <Champ etiquette="Efficacité réelle des bouchons">
-        <div className="choix">
-          {[0.5, 0.6, 0.7].map((f) => (
-            <button
-              key={f}
-              type="button"
-              className={`choix__option${Math.abs(facteurBouchons - f) < 0.001 ? ' choix__option--actif' : ''}`}
-              onClick={() => setFacteurBouchons(f)}
-            >
-              {nb((f * 100), 0)} %
-            </button>
-          ))}
-        </div>
+        <Choix options={options} valeur={actif} onChange={(id) => setFacteurBouchons(Number(id))} />
       </Champ>
 
       <Resultat
@@ -209,9 +202,8 @@ export function FacteurDerating() {
 
       <Avertissement>
         Ce réglage n'est <strong>pas cosmétique</strong> : il fait passer ce
-        poste de 2 h 28 à 5 h 17. Le site retient 60 % par défaut, la valeur la
-        plus conservatrice et celle qui reproduit l'exemple enseigné. À trancher
-        avec le formateur.
+        poste de 2 h 28 à 5 h 17 de durée permise. Garde la même valeur sur
+        tous les appareils d'un même groupe.
       </Avertissement>
     </Carte>
   );

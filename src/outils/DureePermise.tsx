@@ -7,7 +7,8 @@
 
 import { useState } from 'react';
 import { dureePermise, formaterDuree } from '../domain/rsst.js';
-import { metierParId, metiers, postesAtelier, tableRsst } from '../data/index.js';
+import { metiers, postesAtelier, tableRsst } from '../data/index.js';
+import { useTravailleur } from '../etat/travailleur.js';
 import {
   Avertissement,
   Barre,
@@ -16,14 +17,16 @@ import {
   Curseur,
   Declic,
   Resultat,
-  Selecteur,
   tonNiveau,
 } from '../ui/composants.js';
 import { CourbeNiveau } from '../ui/Graphe.js';
 import { nb } from '../ui/format.js';
 
 export function DureePermise() {
-  const [niveau, setNiveau] = useState(97.8);
+  const { poste } = useTravailleur();
+  // Le curseur part du niveau de ton poste : la première valeur affichée te
+  // concerne.
+  const [niveau, setNiveau] = useState(Math.min(116, Math.max(80, poste.niveau_dBA)));
   const duree = dureePermise(niveau);
   const ton = duree < 1 ? 'rouge' : duree < 8 ? 'jaune' : 'vert';
 
@@ -42,6 +45,7 @@ export function DureePermise() {
           onChange={setNiveau}
           affichage={`${nb(niveau, 1)} dBA`}
           legende="norme : 85 dBA / 8 h"
+          etiquette="Niveau de bruit"
         />
       </Champ>
 
@@ -110,7 +114,8 @@ function positionEchelle(dBA: number): number {
 }
 
 export function EchelleMetiers() {
-  const [selection, setSelection] = useState<string | null>(null);
+  const { poste, posteChoisi } = useTravailleur();
+  const [selection, setSelection] = useState<string | null>(posteChoisi ? poste.id : null);
   const tries = [...metiers].sort((a, b) => b.niveau_dBA - a.niveau_dBA);
 
   return (
@@ -135,6 +140,7 @@ export function EchelleMetiers() {
         {tries.map((m) => {
           const ton = tonNiveau(m.niveau_dBA);
           const actif = selection === m.id;
+          const estMonPoste = posteChoisi && poste.id === m.id;
           const dansTable = tableRsst.some(
             (l) => l.niveau_dBA === Math.round(m.niveau_dBA * 10) / 10,
           );
@@ -146,7 +152,10 @@ export function EchelleMetiers() {
               aria-pressed={actif}
               onClick={() => setSelection(actif ? null : m.id)}
             >
-              <span className="echelle__nom">{m.nom}</span>
+              <span className="echelle__nom">
+                {m.nom}
+                {estMonPoste && <span className="tag tag--moi">mon poste</span>}
+              </span>
               <span className="echelle__val">{nb(m.niveau_dBA, 1)} dBA</span>
               <span className="echelle__piste" aria-hidden="true">
                 <span className="echelle__norme" style={{ left: `${positionEchelle(85)}%` }} />
@@ -212,25 +221,5 @@ export function PostesAtelier() {
         que le fond.
       </Avertissement>
     </Carte>
-  );
-}
-
-export function ChoixMetier({
-  valeur,
-  onChange,
-}: {
-  valeur: string;
-  onChange: (id: string) => void;
-}) {
-  const metier = metierParId(valeur) ?? metiers[0]!;
-  return (
-    <Champ etiquette={`Mon poste — ${formaterDuree(dureePermise(metier.niveau_dBA))} sans protection`}>
-      <Selecteur
-        options={metiers}
-        valeur={valeur}
-        onChange={onChange}
-        format={(m) => `${m.nom} — ${m.niveau_dBA} dBA`}
-      />
-    </Champ>
   );
 }

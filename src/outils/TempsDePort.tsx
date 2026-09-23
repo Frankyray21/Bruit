@@ -3,6 +3,7 @@
  *
  * Diapo 16. L'entrée est en MINUTES DE RETRAIT et non en pourcentage :
  * « 98 % » est abstrait, « j'ai enlevé mes bouchons 10 minutes » est vécu.
+ * Le curseur part à 10 minutes : le choc doit être visible au premier regard.
  */
 
 import { useState } from 'react';
@@ -10,20 +11,20 @@ import {
   attenuationEffective,
   attenuationReelle,
 } from '../domain/protection.js';
-import { bouchons, protecteurParId } from '../data/index.js';
 import { useConfig } from '../etat/config.js';
-import { Carte, Champ, Curseur, Declic, Resultat, Selecteur } from '../ui/composants.js';
+import { useTravailleur } from '../etat/travailleur.js';
+import { Carte, Champ, Curseur, Declic, Resultat } from '../ui/composants.js';
+import { ChampProtecteur } from '../ui/ProfilChamps.js';
 import { nb } from '../ui/format.js';
 
 const QUART_MIN = 8 * 60;
 
 export function TempsDePort() {
-  const { facteurBouchons } = useConfig();
-  const [protecteurId, setProtecteurId] = useState('howard-leight-max');
-  const [minutesRetrait, setMinutesRetrait] = useState(0);
+  const { facteurPour } = useConfig();
+  const { protecteur } = useTravailleur();
+  const [minutesRetrait, setMinutesRetrait] = useState(10);
 
-  const protecteur = protecteurParId(protecteurId) ?? bouchons[0]!;
-  const nominale = attenuationReelle(protecteur.nrr, facteurBouchons);
+  const nominale = attenuationReelle(protecteur.nrr, facteurPour(protecteur));
 
   const tempsDePort = 1 - minutesRetrait / QUART_MIN;
   const effective = attenuationEffective(nominale, tempsDePort);
@@ -36,14 +37,7 @@ export function TempsDePort() {
       source="diapo 16"
       intro="Enlever sa protection quelques minutes ne coûte pas quelques minutes de protection. L'énergie sonore reçue pendant ce laps de temps écrase tout le reste du quart."
     >
-      <Champ etiquette="Protecteur">
-        <Selecteur
-          options={bouchons}
-          valeur={protecteurId}
-          onChange={setProtecteurId}
-          format={(p) => `${p.nom} — NRR ${p.nrr}`}
-        />
-      </Champ>
+      <ChampProtecteur etiquette="Protecteur" />
 
       <Champ etiquette="Temps sans protection sur un quart de 8 h">
         <Curseur
@@ -53,7 +47,8 @@ export function TempsDePort() {
           valeur={minutesRetrait}
           onChange={setMinutesRetrait}
           affichage={formatMinutes(minutesRetrait)}
-          legende={`porté ${nb((tempsDePort * 100), 1)} % du quart`}
+          legende={`porté ${nb(tempsDePort * 100, 1)} % du quart`}
+          etiquette="Temps sans protection, en minutes"
         />
       </Champ>
 

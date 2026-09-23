@@ -12,6 +12,7 @@ import {
 } from '../domain/protection.js';
 import { bouchons, protecteurParId, protecteurs } from '../data/index.js';
 import { useConfig } from '../etat/config.js';
+import { useTravailleur } from '../etat/travailleur.js';
 import {
   Carte,
   Champ,
@@ -26,14 +27,17 @@ import { nb } from '../ui/format.js';
 const QUART_MIN = 8 * 60;
 
 export function Comparateur() {
-  const { facteurBouchons } = useConfig();
-  const [idA, setIdA] = useState('howard-leight-max');
+  const { facteurPour } = useConfig();
+  const { protecteur } = useTravailleur();
+  // A = ton protecteur, retiré 48 minutes ; B = l'arceau le plus modeste,
+  // jamais retiré. Le renversement se voit au premier regard.
+  const [idA, setIdA] = useState(protecteur.id);
   const [retraitA, setRetraitA] = useState(48);
-  const [idB, setIdB] = useState('arceau-bleu');
+  const [idB, setIdB] = useState(protecteur.id === 'arceau-bleu' ? 'arceau-noir' : 'arceau-bleu');
   const [retraitB, setRetraitB] = useState(0);
 
-  const a = evalue(idA, retraitA, facteurBouchons);
-  const b = evalue(idB, retraitB, facteurBouchons);
+  const a = evalue(idA, retraitA, facteurPour);
+  const b = evalue(idB, retraitB, facteurPour);
   const gagnant = a.effective >= b.effective ? a : b;
   const perdant = gagnant === a ? b : a;
   const renversement = gagnant.nrr < perdant.nrr;
@@ -82,9 +86,13 @@ export function Comparateur() {
   );
 }
 
-function evalue(id: string, retraitMin: number, facteur: number) {
+function evalue(
+  id: string,
+  retraitMin: number,
+  facteurPour: (p: { type: 'bouchons' | 'coquilles' }) => number,
+) {
   const protecteur = protecteurParId(id) ?? bouchons[0]!;
-  const nominale = attenuationReelle(protecteur.nrr, facteur);
+  const nominale = attenuationReelle(protecteur.nrr, facteurPour(protecteur));
   return {
     nom: protecteur.nom,
     nrr: protecteur.nrr,
@@ -123,6 +131,7 @@ function Ligne({
         onChange={onRetrait}
         affichage={formatMinutes(retrait)}
         legende="temps sans protection"
+        etiquette={`${titre} — temps sans protection, en minutes`}
       />
     </Champ>
   );

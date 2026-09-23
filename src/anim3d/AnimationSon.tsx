@@ -7,12 +7,16 @@
  *   • `videoplayback.mp4` — « Le voyage du son » (NIDCD/NIH, domaine public)
  *   • `cellules.mp4`      — « Le bruit détruit la cellule ciliée »
  *
- * Si le fichier est absent ou illisible, la carte bascule sur un lien externe :
- * jamais de lecteur cassé.
+ * Si le fichier est absent ou illisible, la carte bascule sur un lien externe
+ * (jamais de lecteur cassé) — ou, pour un clip optionnel, ne s'affiche pas.
  */
 
 import { useState } from 'react';
 import { Carte } from '../ui/composants.js';
+
+const REDUIT =
+  typeof matchMedia === 'function' &&
+  matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export interface AnimationSonProps {
   /** Nom du fichier dans `public/videos/` (ex. `videoplayback.mp4`). */
@@ -29,6 +33,8 @@ export interface AnimationSonProps {
   readonly lienNom: string;
   /** Fin de la ligne de crédit (ex. « domaine public »). */
   readonly note: string;
+  /** Clip facultatif : sans fichier, la carte disparaît au lieu d'un lien. */
+  readonly optionnel?: boolean;
 }
 
 export function AnimationSon({
@@ -39,12 +45,15 @@ export function AnimationSon({
   lien,
   lienNom,
   note,
+  optionnel = false,
 }: AnimationSonProps) {
   // Repli sur le lien si le fichier est absent ou illisible : jamais de player
   // cassé. On met la source directement sur <video> pour que `onError` se
   // déclenche de façon fiable quand le fichier manque.
   const [erreur, setErreur] = useState(false);
   const url = `${import.meta.env.BASE_URL}videos/${fichier}`;
+
+  if (erreur && optionnel) return null;
 
   return (
     <Carte titre={titre} source={source} intro={intro}>
@@ -53,7 +62,7 @@ export function AnimationSon({
           className="video-son"
           src={url}
           controls
-          autoPlay
+          autoPlay={!REDUIT}
           muted
           loop
           playsInline

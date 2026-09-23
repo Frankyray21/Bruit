@@ -105,6 +105,7 @@ export function VerifCoquilles() {
           key={i}
           type="button"
           className={`quiz__option${faits.includes(i) ? ' quiz__option--juste' : ''}`}
+          aria-pressed={faits.includes(i)}
           onClick={() =>
             setFaits(
               faits.includes(i) ? faits.filter((f) => f !== i) : [...faits, i],
@@ -141,6 +142,7 @@ export function Symptomes() {
           key={i}
           type="button"
           className={`quiz__option${coches.includes(i) ? ' quiz__option--faux' : ''}`}
+          aria-pressed={coches.includes(i)}
           onClick={() =>
             setCoches(
               coches.includes(i) ? coches.filter((c) => c !== i) : [...coches, i],
