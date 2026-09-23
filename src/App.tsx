@@ -7,7 +7,7 @@
  * mémorisés : on reprend où on était, même après une mise à jour.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MODULES, type Module } from './parcours/modules.js';
 import { ValidationModule } from './parcours/Validation.js';
 import { formaterDate, Quiz } from './quiz/Quiz.js';
@@ -52,6 +52,32 @@ function Coquille() {
   const { marquerFait } = useTravailleur();
 
   const zone: Zone = ZONES.some((z) => z.id === zoneBrute) ? zoneBrute : 'parcours';
+
+  // L'écran courant se reflète dans l'URL (#/parcours/porter, #/outils…) :
+  // le bouton Retour du téléphone revient à l'écran précédent au lieu de
+  // quitter le site, et un lien vers un module peut se partager.
+  const premierHash = useRef(true);
+  useEffect(() => {
+    const lire = () => {
+      const m = /^#\/(parcours|outils|quiz|moi)(?:\/([\w-]+))?/.exec(location.hash);
+      if (!m) return;
+      const z = m[1] as Zone;
+      const id = m[2] && MODULES.some((x) => x.id === m[2]) ? m[2] : null;
+      setZone(z);
+      setModuleOuvert(z === 'parcours' ? id : null);
+    };
+    if (location.hash) lire();
+    window.addEventListener('popstate', lire);
+    return () => window.removeEventListener('popstate', lire);
+  }, [setZone, setModuleOuvert]);
+  useEffect(() => {
+    const hash = `#/${zone}${zone === 'parcours' && moduleOuvert ? `/${moduleOuvert}` : ''}`;
+    if (location.hash === hash) return;
+    if (premierHash.current) history.replaceState(null, '', hash);
+    else history.pushState(null, '', hash);
+    premierHash.current = false;
+  }, [zone, moduleOuvert]);
+
   const indexModule = MODULES.findIndex((m) => m.id === moduleOuvert);
   const module = zone === 'parcours' && indexModule >= 0 ? MODULES[indexModule] : undefined;
   const suivant = module ? MODULES[indexModule + 1] : undefined;
@@ -218,8 +244,10 @@ function Coquille() {
         )}
 
         <main className="contenu" id="contenu" tabIndex={-1}>
-          {/* Pas de bannière sur l'écran projeté en salle. */}
-          {!presentation && <BanniereInstall onAide={() => allerA('moi')} />}
+          {/* Sur l'accueil seulement, et jamais sur l'écran projeté en salle. */}
+          {!presentation && zone === 'parcours' && !module && (
+            <BanniereInstall onAide={() => allerA('moi')} />
+          )}
 
           <FrontiereErreur key={`${zone}-${moduleOuvert ?? ''}`} quoi="de cet écran">
             {zone === 'parcours' &&

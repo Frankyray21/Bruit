@@ -789,9 +789,9 @@ input[type='range']:focus-visible::-moz-range-thumb {
 
 .installer-banniere__fermer {
   flex: 0 0 auto;
-  width: 44px;
-  height: 44px;
-  margin-left: 4px;
+  width: 56px;
+  height: 56px;
+  margin-left: 2px;
   border-radius: 8px;
   color: var(--texte-doux);
   font-size: 1.3rem;

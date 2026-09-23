@@ -152,14 +152,26 @@
 
         function montrer() {
           var racine = document.getElementById('root');
-          if (racine && racine.childElementCount === 0) {
-            document.getElementById('secours').style.display = 'block';
+          var secours = document.getElementById('secours');
+          if (racine && secours && racine.childElementCount === 0) {
+            secours.style.display = 'block';
           }
         }
 
         // Si l'application n'a rien monté après 5 secondes, on affiche le
-        // message plutôt qu'une page vide.
+        // message plutôt qu'une page vide — et on le retire dès qu'elle monte,
+        // même tard (téléphone lent, première visite).
         setTimeout(montrer, 5000);
+        var racineObs = document.getElementById('root');
+        if (racineObs && window.MutationObserver) {
+          new MutationObserver(function (_, obs) {
+            if (racineObs.childElementCount > 0) {
+              var secours = document.getElementById('secours');
+              if (secours) secours.style.display = 'none';
+              obs.disconnect();
+            }
+          }).observe(racineObs, { childList: true });
+        }
 
         // Réinitialisation complète : désinscription du service worker,
         // suppression de tous les caches, puis rechargement. C'est la sortie de

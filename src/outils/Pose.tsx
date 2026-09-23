@@ -14,18 +14,29 @@ const ATTENTE_S = 10;
 
 export function PoseBouchons() {
   const [etape, setEtape] = useState(0);
+  /** Heure de fin de l'attente (ms), `null` hors attente. */
+  const [fin, setFin] = useState<number | null>(null);
   const [chrono, setChrono] = useState<number | null>(null);
 
+  // Le compte se calcule sur l'horloge, pas sur une chaîne de setTimeout :
+  // un onglet mis en arrière-plan ne le ralentit pas. À zéro, le téléphone
+  // vibre — on garde les yeux (et le doigt) sur le bouchon, pas sur l'écran.
   useEffect(() => {
-    if (chrono === null) return;
-    if (chrono <= 0) {
-      setEtape(3);
-      setChrono(null);
-      return;
-    }
-    const t = setTimeout(() => setChrono(chrono - 1), 1000);
-    return () => clearTimeout(t);
-  }, [chrono]);
+    if (fin === null) return;
+    const tic = () => {
+      const restant = Math.max(0, Math.ceil((fin - Date.now()) / 1000));
+      setChrono(restant);
+      if (restant <= 0) {
+        setFin(null);
+        setChrono(null);
+        setEtape(3);
+        navigator.vibrate?.([200, 100, 200]);
+      }
+    };
+    tic();
+    const t = setInterval(tic, 250);
+    return () => clearInterval(t);
+  }, [fin]);
 
   const etapes = installation.bouchons;
 
@@ -66,7 +77,7 @@ export function PoseBouchons() {
         <button
           type="button"
           className="bouton"
-          onClick={() => setChrono(ATTENTE_S)}
+          onClick={() => setFin(Date.now() + ATTENTE_S * 1000)}
         >
           Démarrer les {ATTENTE_S} secondes d'attente
         </button>
