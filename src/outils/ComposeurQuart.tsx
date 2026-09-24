@@ -172,9 +172,9 @@ export function ComposeurQuart() {
           momentLimite={moment}
           momentLabel={moment !== null ? formaterDuree(moment) : ''}
           doseTotale={total}
-          aria={`Dose cumulée du quart en fonction des heures écoulées : elle franchit la limite des 100 %${
-            moment !== null ? ` après ${formaterDuree(moment)}` : ''
-          } et atteint ${Math.round(total)} % en fin de quart. La dose ne redescend jamais ; les heures sont comptées dans l'ordre des tâches, en partant de zéro.`}
+          aria={`Dose cumulée du quart en fonction des heures écoulées${
+            moment !== null ? ` : elle franchit la limite des 100 % après ${formaterDuree(moment)}` : ''
+          } et atteint ${Math.round(total)} % en fin de quart. L'échelle s'adapte à la dose ; la dose ne redescend jamais ; les heures sont comptées dans l'ordre des tâches, en partant de zéro.`}
         />
       )}
 

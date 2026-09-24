@@ -419,7 +419,7 @@ function Parcours({
   onMoi: () => void;
   presentation: boolean;
 }) {
-  const { faits, validations, resultatQuiz, posteChoisi, protecteurChoisi } = useTravailleur();
+  const { faits, validations, resultatQuiz, posteChoisi } = useTravailleur();
   const [accueilVu, setAccueilVu] = useStockage('accueil-vu', false);
   const prochain = MODULES.find((m) => !faits.includes(m.id));
   const quizReussi = resultatQuiz?.reussi === true;
@@ -502,13 +502,12 @@ function Parcours({
         </Carte>
       )}
 
-      {(!posteChoisi || !protecteurChoisi) && (
+      {!posteChoisi && (
         <Carte
           titre="Dis-moi ton poste"
-          intro="Les calculateurs parleront de toi : ton niveau de bruit, ta durée permise, ta protection. Modifiable à tout moment dans « Moi »."
+          intro="Les calculateurs parleront de toi : ton niveau de bruit, ta durée permise, ta protection. Modifiable à tout moment dans « Moi », où tu peux aussi indiquer ton protecteur."
         >
-          <ChampPoste />
-          <ChampProtecteur />
+          <ChampPoste invite />
         </Carte>
       )}
 
@@ -665,8 +664,8 @@ function Moi({
             onChange={(e) => majProfil({ nom: e.target.value })}
           />
         </Champ>
-        <ChampPoste />
-        <ChampProtecteur />
+        <ChampPoste invite />
+        <ChampProtecteur invite />
       </Carte>
 
       <Carte titre="Ma progression">

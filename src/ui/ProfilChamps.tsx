@@ -20,21 +20,31 @@ export function formatProtecteur(p: Protecteur): string {
 }
 
 /**
- * Tant que rien n'est choisi, le sélecteur affiche une invite plutôt que le
- * poste type : sinon, un travailleur dont le poste EST le poste type n'aurait
- * aucun moyen de le confirmer (aucun changement, donc aucun onChange).
+ * Deux présentations :
+ * - `invite` (accueil, « Moi ») : tant que rien n'est choisi, une invite
+ *   « Choisis ton poste… » plutôt que le poste type — sinon un travailleur dont
+ *   le poste EST le poste type n'aurait aucun moyen de le confirmer.
+ * - sans `invite` (dans un outil) : la valeur réellement utilisée par le calcul,
+ *   pour que le résultat affiché corresponde toujours au sélecteur.
  */
-export function ChampPoste({ etiquette = 'Mon poste' }: { etiquette?: string }) {
+export function ChampPoste({
+  etiquette = 'Mon poste',
+  invite = false,
+}: {
+  etiquette?: string;
+  invite?: boolean;
+}) {
   const { poste, posteChoisi, majProfil } = useTravailleur();
+  const montrerInvite = invite && !posteChoisi;
   return (
     <Champ etiquette={etiquette}>
       <select
         className="choix__select"
         aria-label={etiquette}
-        value={posteChoisi ? poste.id : ''}
+        value={montrerInvite ? '' : poste.id}
         onChange={(e) => majProfil({ posteId: e.target.value || null })}
       >
-        {!posteChoisi && <option value="">Choisis ton poste…</option>}
+        {montrerInvite && <option value="">Choisis ton poste…</option>}
         {metiers.map((m) => (
           <option key={m.id} value={m.id}>
             {formatMetier(m)}
@@ -48,13 +58,16 @@ export function ChampPoste({ etiquette = 'Mon poste' }: { etiquette?: string }) 
 export function ChampProtecteur({
   etiquette = 'Mon protecteur',
   options = protecteurs,
+  invite = false,
 }: {
   etiquette?: string;
   options?: readonly Protecteur[];
+  invite?: boolean;
 }) {
   const { protecteur, protecteurChoisi, majProfil } = useTravailleur();
   const dansListe = options.some((p) => p.id === protecteur.id);
-  const valeur = protecteurChoisi && dansListe ? protecteur.id : '';
+  const montrerInvite = (invite && !protecteurChoisi) || !dansListe;
+  const valeur = montrerInvite ? '' : protecteur.id;
   return (
     <Champ etiquette={etiquette}>
       <select
@@ -63,7 +76,7 @@ export function ChampProtecteur({
         value={valeur}
         onChange={(e) => majProfil({ protecteurId: e.target.value || null })}
       >
-        {valeur === '' && <option value="">Choisis ton protecteur…</option>}
+        {montrerInvite && <option value="">Choisis ton protecteur…</option>}
         {options.map((p) => (
           <option key={p.id} value={p.id}>
             {formatProtecteur(p)}
