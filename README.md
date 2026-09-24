@@ -88,9 +88,12 @@ npm test         # 76 tests du moteur de calcul
 npm run build    # typecheck + build de production
 ```
 
-Voir **[PLAN.md](PLAN.md)** pour le plan par phases et
+Voir **[PLAN.md](PLAN.md)** pour le plan par phases,
 **[docs/catalogue-outils.md](docs/catalogue-outils.md)** pour l'inventaire des
-29 outils interactifs et la sélection retenue pour la v1.
+29 outils interactifs et la sélection retenue pour la v1, et
+**[docs/audit-ux.md](docs/audit-ux.md)** pour l'audit d'expérience mené en vue
+de la formation des travailleurs (méthode, diagnostic, corrections, points à
+trancher).
 
 ## Structure du dépôt
 
@@ -99,6 +102,7 @@ PLAN.md                       Plan de réalisation par phases
 docs/formation-source.md      Contenu intégral de la formation, diapo par diapo
 docs/modele-de-calcul.md      Les 8 formules, leur validation et leurs limites
 docs/catalogue-outils.md      Les 29 outils interactifs, priorisés
+docs/audit-ux.md              Audit UX pour la formation : diagnostic et corrections
 data/rsst-art137.json         Table réglementaire des durées permises
 data/metiers.json             Niveaux mesurés par métier et par tâche
 data/protecteurs.json         Protecteurs auditifs et leur NRR
