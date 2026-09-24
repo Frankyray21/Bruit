@@ -4,24 +4,32 @@
  * La coquille est la vraie cochlée (modèle anatomique, `public/models/cochlee.glb`,
  * en millimètres, axe du modiolus vertical, apex en haut). Dans ce fichier est
  * aussi enregistrée la spirale du canal cochléaire (base → apex), le long de
- * laquelle on plante l'organe de Corti : à chaque station, une cellule ciliée
- * interne (touffe en arc, deux rangs) et trois cellules ciliées externes
- * (touffes en V pointées vers la paroi, trois rangs de stéréocils en escalier),
- * la disposition réelle. Si le modèle manque, une spirale conique lisse prend
- * le relais — la leçon reste la même.
+ * laquelle on reconstruit l'organe de Corti tel qu'il est décrit :
  *
- * ⚠️ L'échelle des cellules est exagérée (des micromètres rendus en dixièmes de
- * millimètre) pour qu'on les voie sur la cochlée entière ; et le temps est
- * compressé : la destruction réelle prend des mois et des années.
+ *   • par station, UNE cellule ciliée interne (CCI, côté modiolus, touffe en
+ *     arc peu profond) et TROIS cellules ciliées externes (CCE, touffes en V
+ *     ouvertes vers le modiolus, pointe vers la paroi) ;
+ *   • stéréocils en escalier sur trois rangs, le rang le plus haut du côté de
+ *     la paroi (strie vasculaire), le plus court du côté du modiolus ;
+ *   • gradients base → apex : stéréocils et corps des CCE plus longs vers
+ *     l'apex, membrane basilaire plus large vers l'apex ;
+ *   • membrane tectoriale (gel translucide) posée sur les touffes des CCE ;
+ *   • piliers interne et externe formant le tunnel de Corti entre CCI et CCE ;
+ *   • repères de fréquence selon la carte tonotopique de Greenwood (1990).
  *
- * Fait montré, réel et documenté : le bruit détruit les cellules ciliées en
- * commençant par la zone qui code les aigus (~4 kHz, près de la base), et cette
- * destruction est irréversible.
+ * Le modèle de dommage (fréquences, ordre CCE → CCI, rangées) est dans
+ * `tonotopie.ts`, avec ses références et ses tests.
+ *
+ * ⚠️ Deux libertés assumées, dites dans la carte : l'échelle des cellules est
+ * exagérée (des micromètres rendus en dixièmes de millimètre) pour qu'on les
+ * voie sur la cochlée entière, et le temps est compressé — la destruction
+ * réelle prend des mois et des années.
  */
 
 import {
   AmbientLight,
   BufferGeometry,
+  CanvasTexture,
   CapsuleGeometry,
   CatmullRomCurve3,
   Color,
@@ -39,27 +47,34 @@ import {
   PerspectiveCamera,
   Quaternion,
   Scene,
+  Sprite,
+  SpriteMaterial,
   TubeGeometry,
   Vector3,
   WebGLRenderer,
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { dommageCce, dommageCci, positionGreenwood } from './tonotopie.js';
 
 /** Stations (coupes de l'organe de Corti) le long de la spirale. */
 const NB_STATIONS = 56;
 
 /** Géométrie des touffes (mm, échelle exagérée). */
-const RAYON_CIL = 0.03;
-/** Rangs de stéréocils d'une cellule externe (escalier : court → long). */
-const HAUTEURS_CCE = [0.17, 0.25, 0.35];
-/** Rangs d'une cellule interne. */
-const HAUTEURS_CCI = [0.24, 0.32];
+const RAYON_CIL = 0.028;
+/** Rangs de stéréocils d'une CCE (escalier : court → long), à la base. */
+const HAUTEURS_CCE = [0.16, 0.24, 0.34];
+/** Rangs d'une CCI (trois rangs, plus trapus). */
+const HAUTEURS_CCI = [0.2, 0.26, 0.32];
 /** Stéréocils par rang. */
-const PAR_RANG = 9;
+const PAR_RANG = 11;
+
+/** Repères de fréquence affichés le long de la spirale. */
+const REPERES_HZ = [20000, 8000, 4000, 1000, 250];
 
 const VERT = new Color('#7ee787');
 const JAUNE = new Color('#f2c14e');
 const ROUGE = new Color('#ff7a8a');
+const MORT = new Color('#7a2b35');
 
 export interface PoigneeScene {
   /** Niveau de bruit courant, 60 à 120 dBA. Pilote l'état des cellules. */
@@ -68,26 +83,6 @@ export interface PoigneeScene {
   tourner: (deltaX: number, deltaY: number) => void;
   /** Libère toutes les ressources GPU. À appeler au démontage. */
   detruire: () => void;
-}
-
-/**
- * Vulnérabilité d'une cellule selon sa position tonotopique.
- *
- * Pic autour de t ≈ 0,72 (la région ~4 kHz, à un bon quart de la base) : c'est
- * là que la perte auditive due au bruit commence, avant de s'étendre. Cloche.
- * t = 0 à l'apex (graves), 1 à la base (aigus).
- */
-export function vulnerabilite(t: number): number {
-  const centre = 0.72;
-  const largeur = 0.22;
-  return Math.exp(-((t - centre) ** 2) / (2 * largeur ** 2));
-}
-
-/** Fraction de dommage d'une cellule, 0 (saine) à 1 (détruite). */
-export function dommage(t: number, niveauDBA: number): number {
-  // Rien sous 80 dBA ; montée progressive jusqu'à saturation vers 118.
-  const stress = Math.max(0, (niveauDBA - 80) / 38);
-  return Math.min(1, stress * (0.35 + 0.9 * vulnerabilite(t)));
 }
 
 /** Spirale de repli (mm) si le modèle n'est pas chargé : cône de 2,5 tours. */
@@ -102,24 +97,66 @@ function spiraleParDefaut(): Vector3[] {
   return pts;
 }
 
+/** Pseudo-aléa déterministe dans −1 … 1 (même scène à chaque ouverture). */
+function bruit(a: number, b: number): number {
+  const x = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
+  return (x - Math.floor(x)) * 2 - 1;
+}
+
 interface Cil {
   /** Pied du stéréocil (mm). */
   readonly base: Vector3;
-  /** Axe de basculement (horizontal, dans le plan de la touffe). */
-  readonly axe: Vector3;
+  /** Axe de basculement le long de la rangée (tangent à la spirale). */
+  readonly axeTangent: Vector3;
+  /** Axe de basculement radial, pour le couchage final vers la paroi. */
+  readonly axeRadial: Vector3;
   readonly hauteur: number;
   /** Station 0 (base) … 1 (apex). */
   readonly s: number;
+  /** Cellule interne ? Sinon externe de rangée `rangee` (0, 1, 2). */
+  readonly interne: boolean;
+  readonly rangee: number;
+  /** Rang dans l'escalier (0 = le plus court). */
+  readonly rang: number;
   /** Phase propre, pour un mouvement non synchrone. */
   readonly phase: number;
-  /** Rang dans l'escalier (0 = le plus court) ; décale la disparition. */
-  readonly rang: number;
+  /** Direction de désorganisation propre (−1 … 1), tirée une fois. */
+  readonly desordre: number;
 }
 
 interface Corps {
   readonly base: Vector3;
   readonly s: number;
-  readonly externe: boolean;
+  readonly interne: boolean;
+  readonly rangee: number;
+  readonly longueur: number;
+}
+
+/** Dommage 0…1 d'une cellule selon son type, sa rangée et sa position. */
+function dommageCellule(interne: boolean, rangee: number, s: number, niveau: number): number {
+  return interne ? dommageCci(s, niveau) : dommageCce(s, niveau, rangee);
+}
+
+/** Petite étiquette de texte qui fait toujours face à la caméra. */
+function etiquette(texte: string, accent: boolean): Sprite {
+  const toile = document.createElement('canvas');
+  toile.width = 256;
+  toile.height = 96;
+  const ctx = toile.getContext('2d');
+  if (ctx) {
+    ctx.font = '600 44px "Barlow Condensed", "Arial Narrow", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = accent ? '#ff8a99' : '#d9dee7';
+    ctx.fillText(texte, 128, 48);
+  }
+  const texture = new CanvasTexture(toile);
+  const sprite = new Sprite(
+    new SpriteMaterial({ map: texture, transparent: true, depthTest: false }),
+  );
+  sprite.scale.set(1.5, 0.57, 1);
+  sprite.renderOrder = 5;
+  return sprite;
 }
 
 export function creerScene(
@@ -155,7 +192,7 @@ export function creerScene(
   rim.position.set(-10, -4, -8);
   scene.add(rim);
 
-  // Groupe pivotant : contient la coquille, la membrane et les cellules.
+  // Groupe pivotant : contient la coquille, les membranes et les cellules.
   const monde = new Group();
   scene.add(monde);
 
@@ -167,99 +204,208 @@ export function creerScene(
   let corps: Corps[] = [];
   let meshCils: InstancedMesh | null = null;
   let meshCorps: InstancedMesh | null = null;
+  let couleursAJour = false;
 
-  function planter(spirale: Vector3[]) {
-    const courbe = new CatmullRomCurve3(spirale);
+  /** Ruban le long de la spirale, entre deux décalages radiaux, à une hauteur donnée. */
+  function ruban(
+    courbe: CatmullRomCurve3,
+    interieur: (s: number) => number,
+    exterieur: (s: number) => number,
+    y: (s: number) => number,
+    materiau: MeshStandardMaterial,
+  ): Mesh {
     const haut = new Vector3(0, 1, 0);
-
-    // Membrane basilaire : un ruban le long de la spirale, du modiolus vers la paroi.
     const sommets: number[] = [];
     const indices: number[] = [];
-    const NB_RUBAN = 160;
-    for (let i = 0; i <= NB_RUBAN; i++) {
-      const p = courbe.getPointAt(i / NB_RUBAN);
+    const N = 180;
+    for (let i = 0; i <= N; i++) {
+      const s = i / N;
+      const p = courbe.getPointAt(s);
       const radial = new Vector3(p.x, 0, p.z).normalize();
-      const a = p.clone().addScaledVector(radial, -0.45).addScaledVector(haut, -0.15);
-      const b = p.clone().addScaledVector(radial, 0.5).addScaledVector(haut, -0.15);
+      const a = p.clone().addScaledVector(radial, interieur(s)).addScaledVector(haut, y(s));
+      const b = p.clone().addScaledVector(radial, exterieur(s)).addScaledVector(haut, y(s));
       sommets.push(a.x, a.y, a.z, b.x, b.y, b.z);
-      if (i < NB_RUBAN) {
+      if (i < N) {
         const k = i * 2;
         indices.push(k, k + 1, k + 2, k + 1, k + 3, k + 2);
       }
     }
-    const geoRuban = new BufferGeometry();
-    geoRuban.setAttribute('position', new Float32BufferAttribute(sommets, 3));
-    geoRuban.setIndex(indices);
-    geoRuban.computeVertexNormals();
-    const ruban = new Mesh(
-      geoRuban,
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new Float32BufferAttribute(sommets, 3));
+    geo.setIndex(indices);
+    geo.computeVertexNormals();
+    const mesh = new Mesh(geo, materiau);
+    jetables.push(geo, materiau);
+    return mesh;
+  }
+
+  function planter(spirale: Vector3[]) {
+    const courbe = new CatmullRomCurve3(spirale);
+    const haut = new Vector3(0, 1, 0);
+    // Gradient base → apex : ×0,8 à la base, ×1,6 à l'apex (stéréocils, corps, largeur).
+    const gradient = (s: number) => 0.8 + 0.8 * s;
+    const SOL = -0.15;
+    const hauteurCce3 = HAUTEURS_CCE[HAUTEURS_CCE.length - 1] ?? 0.34;
+
+    // Membrane basilaire : s'élargit de la base vers l'apex.
+    monde.add(
+      ruban(
+        courbe,
+        (s) => -0.3 - 0.15 * gradient(s),
+        (s) => 0.35 + 0.2 * gradient(s),
+        () => SOL,
+        new MeshStandardMaterial({
+          color: new Color('#b98a8f'),
+          roughness: 0.8,
+          side: DoubleSide,
+          transparent: true,
+          opacity: 0.55,
+        }),
+      ),
+    );
+
+    // Membrane tectoriale : gel posé sur les touffes des CCE, du limbe à la 3e rangée.
+    const tectoriale = ruban(
+      courbe,
+      () => -0.5,
+      () => 0.06 + 2 * 0.2 + 0.14,
+      (s) => SOL + hauteurCce3 * gradient(s) + 0.03,
       new MeshStandardMaterial({
-        color: new Color('#b98a8f'),
-        roughness: 0.8,
+        color: new Color('#f0dfb3'),
+        roughness: 0.35,
         side: DoubleSide,
         transparent: true,
-        opacity: 0.55,
+        opacity: 0.16,
+        depthWrite: false,
       }),
     );
-    monde.add(ruban);
-    jetables.push(geoRuban, ruban.material);
+    tectoriale.renderOrder = 3;
+    monde.add(tectoriale);
 
     cils = [];
     corps = [];
+    const piliers: { base: Vector3; sommet: Vector3 }[] = [];
+
     for (let i = 0; i < NB_STATIONS; i++) {
       const s = (i + 0.5) / NB_STATIONS;
+      const g = gradient(s);
       const p = courbe.getPointAt(s);
       const tangente = courbe.getTangentAt(s).setY(0).normalize();
       const radial = new Vector3(p.x, 0, p.z).normalize();
-      const sol = p.clone().addScaledVector(haut, -0.15);
+      const plancher = p.clone().addScaledVector(haut, SOL);
 
-      // Cellule interne (côté modiolus) : arc ouvert vers la paroi, deux rangs.
-      const cci = sol.clone().addScaledVector(radial, -0.3);
-      corps.push({ base: cci, s, externe: false });
+      // Cellule interne (côté modiolus) : arc peu profond ouvert vers la paroi,
+      // trois rangs en escalier, le plus haut du côté de la paroi.
+      const cci = plancher.clone().addScaledVector(radial, -0.28);
+      corps.push({ base: cci, s, interne: true, rangee: 0, longueur: 0.34 });
       HAUTEURS_CCI.forEach((h, rang) => {
         for (let k = 0; k < PAR_RANG; k++) {
           const u = (k - (PAR_RANG - 1) / 2) / ((PAR_RANG - 1) / 2); // -1 … 1
           const base = cci
             .clone()
-            .addScaledVector(tangente, u * 0.13)
-            .addScaledVector(radial, 0.045 * (1 - u * u) - 0.045 * rang);
-          cils.push({ base, axe: tangente.clone(), hauteur: h, s, phase: i * 1.7 + k * 0.4, rang });
+            .addScaledVector(tangente, u * 0.14)
+            .addScaledVector(radial, -0.04 * (1 - u * u) + 0.045 * rang);
+          cils.push({
+            base,
+            axeTangent: tangente.clone(),
+            axeRadial: radial.clone(),
+            hauteur: h * g,
+            s,
+            interne: true,
+            rangee: 0,
+            rang,
+            phase: i * 1.7 + k * 0.4,
+            desordre: bruit(i, k),
+          });
         }
       });
 
-      // Trois cellules externes : touffes en V, pointe vers la paroi, trois rangs en escalier.
+      // Tunnel de Corti : pilier interne et pilier externe qui se rejoignent au sommet.
+      const sommetTunnel = plancher
+        .clone()
+        .addScaledVector(radial, -0.06)
+        .addScaledVector(haut, 0.2 * g);
+      piliers.push({ base: plancher.clone().addScaledVector(radial, -0.16), sommet: sommetTunnel });
+      piliers.push({ base: plancher.clone().addScaledVector(radial, 0.0), sommet: sommetTunnel });
+
+      // Trois cellules externes : touffes en V, pointe vers la paroi, trois rangs
+      // en escalier (courts côté modiolus, longs côté paroi).
       for (let c = 0; c < 3; c++) {
-        const cce = sol.clone().addScaledVector(radial, 0.02 + c * 0.2);
-        corps.push({ base: cce, s, externe: true });
+        const cce = plancher.clone().addScaledVector(radial, 0.06 + c * 0.2);
+        corps.push({ base: cce, s, interne: false, rangee: c, longueur: 0.3 * g });
         HAUTEURS_CCE.forEach((h, rang) => {
           for (let k = 0; k < PAR_RANG; k++) {
             const u = (k - (PAR_RANG - 1) / 2) / ((PAR_RANG - 1) / 2); // -1 … 1
-            // V : la pointe (u = 0) est la plus proche de la paroi ; les rangs
-            // courts sont vers le modiolus, les longs vers la paroi.
             const base = cce
               .clone()
               .addScaledVector(tangente, u * 0.12)
-              .addScaledVector(radial, 0.07 - 0.085 * Math.abs(u) + 0.045 * rang);
-            cils.push({ base, axe: tangente.clone(), hauteur: h, s, phase: i * 1.7 + c * 2.1 + k * 0.4, rang });
+              .addScaledVector(radial, 0.075 - 0.09 * Math.abs(u) + 0.04 * rang);
+            cils.push({
+              base,
+              axeTangent: tangente.clone(),
+              axeRadial: radial.clone(),
+              hauteur: h * g,
+              s,
+              interne: false,
+              rangee: c,
+              rang,
+              phase: i * 1.7 + c * 2.1 + k * 0.4,
+              desordre: bruit(i + 3, c * PAR_RANG + k),
+            });
           }
         });
       }
     }
 
     const geoCil = new CapsuleGeometry(RAYON_CIL, 1, 2, 6);
-    // Capsule centrée : on la décale pour que son pied soit à l'origine.
-    geoCil.translate(0, 0.5, 0);
+    geoCil.translate(0, 0.5, 0); // pied à l'origine
     const matCil = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.45 });
     meshCils = new InstancedMesh(geoCil, matCil, cils.length);
     monde.add(meshCils);
     jetables.push(geoCil, matCil);
 
-    const geoCorps = new CylinderGeometry(0.08, 0.065, 1, 10);
-    geoCorps.translate(0, -0.5, 0);
+    const geoCorps = new CylinderGeometry(0.075, 0.06, 1, 10);
+    geoCorps.translate(0, -0.5, 0); // suspendu sous la plaque cuticulaire
     const matCorps = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 });
     meshCorps = new InstancedMesh(geoCorps, matCorps, corps.length);
     monde.add(meshCorps);
     jetables.push(geoCorps, matCorps);
+
+    // Piliers (cellules de soutien) : cylindres fins inclinés, instanciés.
+    const geoPilier = new CylinderGeometry(0.02, 0.025, 1, 6);
+    geoPilier.translate(0, 0.5, 0);
+    const matPilier = new MeshStandardMaterial({ color: new Color('#d8c7c0'), roughness: 0.7 });
+    const meshPiliers = new InstancedMesh(geoPilier, matPilier, piliers.length);
+    const objet = new Object3D();
+    piliers.forEach((pl, i) => {
+      const dir = pl.sommet.clone().sub(pl.base);
+      objet.position.copy(pl.base);
+      objet.quaternion.setFromUnitVectors(haut, dir.clone().normalize());
+      objet.scale.set(1, dir.length(), 1);
+      objet.updateMatrix();
+      meshPiliers.setMatrixAt(i, objet.matrix);
+    });
+    meshPiliers.instanceMatrix.needsUpdate = true;
+    monde.add(meshPiliers);
+    jetables.push(geoPilier, matPilier);
+
+    // Repères de fréquence (Greenwood), posés juste hors de la coquille.
+    for (const f of REPERES_HZ) {
+      const s = 1 - positionGreenwood(f);
+      const p = courbe.getPointAt(Math.min(0.995, Math.max(0.005, s)));
+      const radial = new Vector3(p.x, 0, p.z).normalize();
+      const r = Math.hypot(p.x, p.z);
+      const sp = etiquette(f >= 1000 ? `${f / 1000} kHz` : `${f} Hz`, f === 4000);
+      sp.position
+        .copy(p)
+        .addScaledVector(radial, r / 0.62 - r + 0.9)
+        .addScaledVector(haut, 0.35);
+      monde.add(sp);
+      const mat = sp.material;
+      jetables.push(mat);
+      if (mat.map) jetables.push(mat.map);
+    }
+
     couleursAJour = false;
   }
 
@@ -329,64 +475,69 @@ export function creerScene(
   let rotationManuelle = 0.4;
   let inclinaisonManuelle = 0;
   let horloge = 0;
-  let couleursAJour = false;
 
   const fictif = new Object3D();
   const q = new Quaternion();
+  const q2 = new Quaternion();
   const m4 = new Matrix4();
   const couleur = new Color();
   const pos = new Vector3();
   const echelle = new Vector3();
 
   function appliquer(temps: number, forcerCouleurs = false) {
+    const majCouleurs = forcerCouleurs || !couleursAJour;
     if (meshCils) {
       const mc = meshCils;
       cils.forEach((c, i) => {
-        const d = dommage(1 - c.s, niveau);
+        const d = dommageCellule(c.interne, c.rangee, c.s, niveau);
         // Ondulation : douce quand sain, agitée sous le bruit, figée si détruit.
         const agitation = animer
           ? Math.sin(temps * 3 + c.phase) * (0.04 + niveau / 1200) * (1 - d)
           : 0;
-        // Couchage : la touffe s'affaisse et se désorganise avec le dommage.
-        const couche = d * (1.2 + 0.35 * Math.sin(c.phase * 3.1));
-        q.setFromAxisAngle(c.axe, couche + agitation);
-        // Stéréocil « cassé » : les derniers 20 % du dommage les font disparaître,
-        // les plus longs (les plus fragiles) d'abord.
+        // 1) Désorganisation (0,25 → 0,6) : les liens de bout cassés, chaque
+        //    stéréocil part de son côté, la touffe perd son escalier net.
+        const desordre = Math.min(1, Math.max(0, (d - 0.25) / 0.35));
+        // 2) Couchage (0,5 → 0,85) : la touffe s'affaisse vers la paroi et
+        //    fusionne — les stéréocils se collent (mêmes angles).
+        const couche = Math.min(1, Math.max(0, (d - 0.5) / 0.35));
+        q.setFromAxisAngle(c.axeTangent, agitation + desordre * (1 - couche) * 0.9 * c.desordre);
+        q2.setFromAxisAngle(c.axeRadial, -couche * 1.25);
+        q.multiply(q2);
+        // 3) Disparition (> 0,8) : les plus longs (les plus fragiles) d'abord.
         const seuil = 0.8 + (1 - c.rang / HAUTEURS_CCE.length) * 0.18;
         const visible = d < seuil ? 1 : 0;
         pos.copy(c.base);
         echelle.set(visible, c.hauteur * visible, visible);
         m4.compose(pos, q, echelle);
         mc.setMatrixAt(i, m4);
-        if (forcerCouleurs || !couleursAJour) {
-          if (d < 0.35) couleur.copy(VERT);
-          else if (d < 0.7) couleur.copy(VERT).lerp(JAUNE, (d - 0.35) / 0.35);
-          else couleur.copy(JAUNE).lerp(ROUGE, (d - 0.7) / 0.3);
+        if (majCouleurs) {
+          if (d < 0.25) couleur.copy(VERT);
+          else if (d < 0.6) couleur.copy(VERT).lerp(JAUNE, (d - 0.25) / 0.35);
+          else couleur.copy(JAUNE).lerp(ROUGE, Math.min(1, (d - 0.6) / 0.3));
           mc.setColorAt(i, couleur);
         }
       });
-      meshCils.instanceMatrix.needsUpdate = true;
-      if ((forcerCouleurs || !couleursAJour) && meshCils.instanceColor) {
-        meshCils.instanceColor.needsUpdate = true;
-      }
+      mc.instanceMatrix.needsUpdate = true;
+      if (majCouleurs && mc.instanceColor) mc.instanceColor.needsUpdate = true;
     }
-    if (meshCorps && (forcerCouleurs || !couleursAJour)) {
+    if (meshCorps && majCouleurs) {
       const mk = meshCorps;
       corps.forEach((c, i) => {
-        const d = dommage(1 - c.s, niveau);
-        // Le corps cellulaire se ratatine quand la cellule meurt.
-        const vie = 1 - 0.6 * Math.max(0, (d - 0.8) / 0.2);
+        const d = dommageCellule(c.interne, c.rangee, c.s, niveau);
+        // Mort cellulaire (> 0,8) : le corps se ratatine, la cicatrice des
+        // cellules de soutien prend la place.
+        const vie = 1 - 0.65 * Math.max(0, (d - 0.8) / 0.2);
         fictif.position.copy(c.base);
-        fictif.scale.set(vie, (c.externe ? 0.5 : 0.4) * vie, vie);
+        fictif.scale.set(vie, c.longueur * vie, vie);
         fictif.rotation.set(0, 0, 0);
         fictif.updateMatrix();
         mk.setMatrixAt(i, fictif.matrix);
-        couleur.set(c.externe ? '#f3dcc9' : '#efd2c4');
-        if (d > 0.8) couleur.lerp(new Color('#7a2b35'), (d - 0.8) / 0.2);
+        couleur.set(c.interne ? '#efd2c4' : '#f3dcc9');
+        if (d > 0.8) couleur.lerp(MORT, (d - 0.8) / 0.2);
         mk.setColorAt(i, couleur);
       });
-      meshCorps.instanceMatrix.needsUpdate = true;
-      if (meshCorps.instanceColor) meshCorps.instanceColor.needsUpdate = true;
+      mk.instanceMatrix.needsUpdate = true;
+      if (mk.instanceColor) mk.instanceColor.needsUpdate = true;
     }
     couleursAJour = true;
     monde.rotation.y = rotationManuelle + (animer ? temps * 0.1 : 0);

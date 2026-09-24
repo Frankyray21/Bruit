@@ -57,8 +57,14 @@ L'app (`src/anim3d/scene.ts`) plante le long de cette spirale l'organe de
 Corti reconstruit : par station, une cellule ciliée interne (touffe en arc,
 deux rangs) et trois externes (touffes en V pointées vers la paroi, trois
 rangs en escalier), corps cellulaires et membrane basilaire. Échelle des
-cellules exagérée (des micromètres rendus en dixièmes de millimètre). Sans
-le fichier, une spirale conique lisse prend le relais.
+cellules exagérée (des micromètres rendus en dixièmes de millimètre). S'y
+ajoutent la membrane tectoriale (gel translucide posé sur les touffes des
+CCE), les piliers du tunnel de Corti, les gradients base → apex (stéréocils
+et corps plus longs, membrane plus large vers l'apex) et des repères de
+fréquence placés selon la carte tonotopique de Greenwood (1990). Le modèle
+de dommage (encoche 3–6 kHz qui s'élargit, CCE avant CCI, première rangée
+d'abord) est dans `src/anim3d/tonotopie.ts`, avec ses références et ses
+tests. Sans le fichier, une spirale conique lisse prend le relais.
 
 ## Ajouter `cellules.glb`
 

@@ -92,17 +92,19 @@ export default function OreilleInterne() {
   }
 
   const etat =
-    niveau < 82
-      ? { texte: 'Cellules saines — stéréocils dressés', ton: 'vert' as const }
-      : niveau < 100
-        ? { texte: 'Cellules sous stress — les faisceaux s’affaissent', ton: 'jaune' as const }
-        : { texte: 'Cellules détruites — la zone des aigus s’efface', ton: 'rouge' as const };
+    niveau < 81
+      ? { texte: 'Cellules saines — stéréocils en escalier, liens de bout intacts', ton: 'vert' as const }
+      : niveau < 92
+        ? { texte: 'Premières atteintes — cellules externes de la zone 3–6 kHz, stéréocils désorganisés', ton: 'jaune' as const }
+        : niveau < 104
+          ? { texte: 'Cellules externes couchées et fusionnées ; les internes commencent à souffrir', ton: 'jaune' as const }
+          : { texte: 'Cellules détruites autour de 4 kHz, l’atteinte s’étend aux fréquences voisines', ton: 'rouge' as const };
 
   return (
     <Carte
       titre="La cochlée sous le bruit"
       source="diapos 11-12"
-      intro="La vraie cochlée, vue en transparence, avec ses cellules ciliées le long de la spirale : une interne et trois externes par rangée, stéréocils en escalier. Fais glisser pour tourner. Monte le niveau de bruit et regarde — d’abord près de la base, la zone des aigus."
+      intro="La vraie cochlée, vue en transparence, avec son organe de Corti reconstruit le long de la spirale : une cellule ciliée interne et trois externes par rangée, stéréocils en escalier, membrane tectoriale, tunnel de Corti, repères de fréquence. Fais glisser pour tourner. Monte le niveau et regarde la zone de 4 kHz, près de la base."
     >
       <div
         ref={conteneur}
@@ -126,7 +128,11 @@ export default function OreilleInterne() {
         </li>
         <li>
           <span className="legende3d__pastille" style={{ background: '#e8b7bd' }} aria-hidden="true" />
-          Cochlée (base en bas = aigus, apex en haut = graves)
+          Cochlée (base = aigus, apex = graves ; repères 20 kHz → 250 Hz)
+        </li>
+        <li>
+          <span className="legende3d__pastille" style={{ background: '#f0dfb3' }} aria-hidden="true" />
+          Membrane tectoriale
         </li>
       </ul>
 
@@ -162,9 +168,12 @@ export default function OreilleInterne() {
       <Avertissement>
         Une cellule ciliée détruite <strong>ne repousse jamais</strong>. Ce que
         cette vue montre ne se répare pas — contrairement à une coupure ou une
-        fracture. C’est une illustration schématique, pas un examen médical, et
-        elle exagère l’échelle du temps : dans la réalité, la destruction se fait
-        sur des mois et des années d’exposition.
+        fracture. L’ordre est celui qu’on observe au microscope : cellules
+        externes avant les internes, première rangée d’abord, encoche à 3–6 kHz
+        qui s’élargit ensuite. Deux libertés : les cellules sont grossies (des
+        micromètres rendus en dixièmes de millimètre) et le temps est compressé
+        — dans la réalité, la destruction se fait sur des mois et des années
+        d’exposition, selon la dose (niveau × durée), pas le niveau seul.
       </Avertissement>
 
       <p className="carte__source carte__source--credit" style={{ marginTop: 12 }}>
@@ -173,8 +182,9 @@ export default function OreilleInterne() {
           Z-Anatomy
         </a>{' '}
         (CC BY-SA 4.0), d'après « Anatomy of the Inner Ear » (University of Dundee, CC BY-NC-SA
-        4.0, d'après 3D Ear, McGill) — usage non commercial. Organe de Corti reconstruit, échelle
-        exagérée.
+        4.0, d'après 3D Ear, McGill) — usage non commercial. Organe de Corti reconstruit d'après
+        l'histologie ; carte des fréquences : Greenwood (1990) ; ordre des atteintes : Bohne et
+        Harding (2000), Liberman et Dodds (1984) ; encoche 3–6 kHz : ISO 1999, NIOSH (1998).
       </p>
     </Carte>
   );
