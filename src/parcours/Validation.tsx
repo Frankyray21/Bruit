@@ -28,7 +28,21 @@ export function ValidationModule({ module }: { module: Module }) {
   const choisi = deja === undefined ? null : deja ? question.bonne : -1;
 
   return (
-    <Carte titre="Avant de terminer" source="question de validation">
+    <Carte
+      titre="Avant d'aller plus loin"
+      source="question de validation"
+      classe={`carte--validation${deja !== undefined ? ' carte--validation-faite' : ''}`}
+    >
+      <p className="validation__etat" role="status">
+        <span className={`validation__pastille${deja !== undefined ? ' validation__pastille--fait' : ''}`}>
+          {deja === undefined ? 'À faire pour terminer le module' : deja ? 'Fait ✓ — bonne réponse' : 'Fait ✓ — à retenir'}
+        </span>
+      </p>
+      <p className="carte__intro">
+        Une question pour vérifier que l'essentiel est passé. Le bouton
+        « Terminé » s'active dès que tu as répondu — bonne ou mauvaise réponse,
+        l'explication suit.
+      </p>
       <p className="quiz__question">{question.enonce}</p>
       {question.options.map((_, i) => (
         <OptionQuestion

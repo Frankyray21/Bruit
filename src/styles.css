@@ -2299,3 +2299,87 @@ h1.entete__titre {
     display: none !important;
   }
 }
+
+/* ---------- Question de validation : impossible à manquer ---------- */
+
+.carte--validation {
+  border: 2px solid var(--rouge);
+  background: color-mix(in srgb, var(--rouge) 9%, var(--fond-carte));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--rouge) 22%, transparent);
+  margin-top: 26px;
+}
+
+.carte--validation .carte__titre h2 {
+  font-size: 1.7rem;
+}
+
+.carte--validation .carte__titre h2::after {
+  width: 52px;
+  height: 4px;
+}
+
+.carte--validation .carte__source {
+  color: var(--rouge-clair);
+  font-weight: 700;
+}
+
+.carte--validation .quiz__question {
+  font-size: 1.25rem;
+}
+
+.carte--validation .quiz__option {
+  background: var(--fond-carte-haut);
+  border-color: color-mix(in srgb, var(--rouge-clair) 55%, var(--bordure-controle));
+}
+
+.validation__etat {
+  margin: -4px 0 12px;
+}
+
+.validation__pastille {
+  display: inline-block;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--g-rouge);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.validation__pastille--fait {
+  background: var(--vert);
+  color: #06210c;
+}
+
+.carte--validation-faite {
+  border-color: var(--vert);
+  background: color-mix(in srgb, var(--vert) 7%, var(--fond-carte));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--vert) 18%, transparent);
+}
+
+.carte--validation-faite .carte__source {
+  color: var(--vert);
+}
+
+.carte--validation-faite .quiz__option {
+  border-color: var(--bordure-controle);
+}
+
+/* Un léger battement à l'arrivée, seulement si le système accepte le mouvement. */
+@media (prefers-reduced-motion: no-preference) {
+  .carte--validation:not(.carte--validation-faite) {
+    animation: validation-appel 2.4s var(--ease) 2;
+  }
+  @keyframes validation-appel {
+    0%,
+    100% {
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--rouge) 22%, transparent);
+    }
+    50% {
+      box-shadow: 0 0 0 10px color-mix(in srgb, var(--rouge) 10%, transparent);
+    }
+  }
+}

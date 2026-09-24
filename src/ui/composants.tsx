@@ -50,6 +50,7 @@ export function Carte({
   source,
   intro,
   cache = false,
+  classe,
   children,
 }: {
   titre?: string;
@@ -57,10 +58,12 @@ export function Carte({
   intro?: string;
   /** Carte montée mais invisible (ex. : le temps qu'un modèle 3D se charge). */
   cache?: boolean;
+  /** Variante visuelle (ex. « carte--validation »). */
+  classe?: string;
   children: ReactNode;
 }) {
   return (
-    <section className="carte" hidden={cache}>
+    <section className={`carte${classe ? ` ${classe}` : ''}`} hidden={cache}>
       {titre && (
         <div className="carte__titre">
           <h2>{titre}</h2>

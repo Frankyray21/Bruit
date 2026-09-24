@@ -383,7 +383,8 @@ function ModulePage({
       <div className="module-fin">
         {!valide && (
           <p className="module-fin__aide" role="status">
-            Réponds à la question ci-dessus pour terminer le module.
+            Réponds à la question « Avant d'aller plus loin », juste au-dessus,
+            pour terminer le module.
           </p>
         )}
         <button type="button" className="bouton" disabled={!valide} onClick={onTerminer}>
