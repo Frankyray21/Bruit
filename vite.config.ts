@@ -1,10 +1,15 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// Estampille de version = moment du build (celui de la CI à chaque déploiement).
-// Affichée dans le site pour confirmer qu'on est sur la dernière version.
-const VERSION = new Date()
+// Estampille de version = numéro de package.json + moment du build (celui de
+// la CI à chaque déploiement). Affichée dans le site pour confirmer qu'on est
+// sur la dernière version : « 0.2.0 · 2026-09-24 09 h 12 ».
+const NUMERO = (JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {
+  version: string;
+}).version;
+const MOMENT = new Date()
   .toLocaleString('fr-CA', {
     timeZone: 'America/Toronto',
     day: '2-digit',
@@ -14,6 +19,7 @@ const VERSION = new Date()
     minute: '2-digit',
   })
   .replace(',', '');
+const VERSION = `${NUMERO} · ${MOMENT}`;
 
 // Le site est publié sur https://frankyray21.github.io/Bruit/ — d'où le base.
 // BASE_PATH=/ permet de servir la racine en local ou sur un autre hébergeur.
