@@ -34,6 +34,15 @@ import { entier, nb } from '../ui/format.js';
 // Modèle GLB optionnel : chargé à la demande comme la cochlée 3D.
 const ModeleGlb = lazy(() => import('../anim3d/ModeleGlb.js'));
 
+/** Couleurs des matériaux du fichier `public/models/oreille.glb`. */
+const LEGENDE_OREILLE = [
+  { couleur: '#fadbd1', nom: 'Tympan' },
+  { couleur: '#f5eed9', nom: 'Osselets (marteau, enclume, étrier)' },
+  { couleur: '#edb8ad', nom: 'Cochlée' },
+  { couleur: '#dbcca8', nom: 'Vestibule et canaux semi-circulaires' },
+  { couleur: '#f5c74d', nom: 'Nerf auditif (VIII)' },
+] as const;
+
 export interface Module {
   readonly id: string;
   readonly titre: string;
@@ -307,9 +316,21 @@ function ModuleDommages() {
       <Suspense fallback={null}>
         <ModeleGlb
           fichier="oreille.glb"
-          titre="Modèle 3D de l'oreille"
-          intro="Oreille externe et interne — fais glisser pour tourner le modèle."
-          aria="Modèle 3D anatomique de l'oreille, manipulable"
+          titre="L'oreille moyenne et interne, en vrai 3D"
+          intro="Modèle anatomique à l'échelle : le tympan, les trois osselets, la cochlée (l'escargot), le vestibule et le nerf auditif. Fais glisser pour tourner."
+          aria="Modèle 3D anatomique de l'oreille moyenne et interne, manipulable"
+          legende={LEGENDE_OREILLE}
+          credit={
+            <>
+              Modèle :{' '}
+              <a href="https://github.com/Z-Anatomy" target="_blank" rel="noopener noreferrer">
+                Z-Anatomy
+              </a>{' '}
+              (CC BY-SA 4.0), d'après BodyParts3D (DBCLS, CC BY-SA 2.1 JP) et « Anatomy of the
+              Inner Ear » (University of Dundee, CC BY-NC-SA 4.0, d'après 3D Ear, McGill).
+              Usage non commercial pour la cochlée, le vestibule, les osselets et le tympan.
+            </>
+          }
         />
       </Suspense>
 

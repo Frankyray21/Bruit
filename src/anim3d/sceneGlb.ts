@@ -81,7 +81,7 @@ export async function creerVisionneuse(
   const centre = boite.getCenter(new Vector3());
   const dmax = Math.max(taille.x, taille.y, taille.z) || 1;
   modele.position.sub(centre);
-  pivot.scale.setScalar(2.4 / dmax);
+  pivot.scale.setScalar(3 / dmax);
   pivot.add(modele);
   scene.add(pivot);
 

@@ -1,46 +1,50 @@
-# Modèles 3D d'oreille (optionnels)
+# Modèles 3D d'oreille
 
-Le site sait afficher **deux** modèles 3D `.glb`, chacun optionnel. Sans
-fichier, chaque emplacement affiche un repli propre (aucune erreur, aucune
-scène vide).
+Le site sait afficher **deux** modèles 3D `.glb` dans le module « Ce que le
+bruit détruit ». Sans fichier, l'emplacement n'affiche rien (aucune erreur,
+aucune scène vide).
 
-| Fichier | Où il apparaît | Ce qu'on y montre |
+| Fichier | Ce qu'on y montre | État |
 |---|---|---|
-| **`oreille.glb`** | Le module « Ce que le bruit détruit » | L'oreille complète : externe (pavillon, conduit, tympan) et interne (cochlée) |
-| **`cellules.glb`** | Le module « Ce que le bruit détruit » | Les cellules ciliées / l'organe de Corti — ce que le bruit détruit sans retour |
+| **`oreille.glb`** | Oreille moyenne et interne : tympan, marteau, enclume, étrier, cochlée, vestibule et canaux semi-circulaires, nerf auditif (VIII) | **présent** (voir ci-dessous) |
+| **`cellules.glb`** | Les cellules ciliées / l'organe de Corti — ce que le bruit détruit sans retour | absent (optionnel) |
 
-L'accueil, lui, n'affiche aucune 3D : un fond d'ondes sonores dessiné en code,
-pour s'ouvrir vite sur n'importe quel téléphone.
+## `oreille.glb` — provenance et licence
 
-## Où trouver un modèle libre et téléchargeable
+Modèle anatomique réel, à l'échelle (millimètres), assemblé à partir de
+[Z-Anatomy](https://github.com/Z-Anatomy) (Gauthier Kervyn et coll.,
+**CC BY-SA 4.0**), lui-même dérivé de :
 
-**NIH 3D — https://3d.nih.gov/** (recommandé)
-: modèles anatomiques souvent du **domaine public** (aucune attribution
-  requise), téléchargeables en `.glb`. Cherche `ear anatomy` pour l'oreille
-  complète, `cochlea` ou `organ of Corti` pour les cellules ciliées.
+- **BodyParts3D** (DBCLS, Université de Tokyo, CC BY-SA 2.1 JP) — os temporal, nerf ;
+- **« Anatomy of the Inner Ear »** (University of Dundee, d'après *3D Ear*,
+  McGill, **CC BY-NC-SA 4.0**) — cochlée, vestibule, osselets, tympan.
 
-**Sketchfab — https://sketchfab.com/** (filtre « Downloadable »)
-: beaucoup de modèles, mais **vérifie la licence** avant de télécharger.
-  CC-BY = attribution obligatoire ; CC-BY-NC = usage non commercial seulement ;
-  CC0 = libre. Quelques pistes repérées (licence à vérifier au moment du
-  téléchargement) :
-  - Oreille complète : « Ear Anatomy » de *brianj.seely*, « Human ear anatomy »
-    de *paihub*.
-  - Cellules ciliées : « Inner Hair Cell » de *kj6420*, « Cochlear Ear Cilia »
-    de *PARSONSARTS*, la collection « Organ of Corti » de *fluttershift*.
+Le nerf VIII de Z-Anatomy n'est qu'un filament tronqué au méat acoustique
+interne : il est remplacé par un tronc lisse à son calibre réel (3 mm de
+diamètre, 16 mm de long) qui part de la base de la cochlée (modiolus) dans la
+direction du filament d'origine.
 
-**Meshy — https://www.meshy.ai/tags/ear** : modèles CC0 générés, `.glb` direct.
+> **Attention licence.** Les pièces de Dundee sont sous clause **NC** : usage
+> non commercial seulement, décision assumée par le propriétaire du site
+> (formation interne). La ligne de crédit sous la visionneuse est
+> obligatoire ; ne pas la retirer. La chaîne de crédit est aussi inscrite
+> dans le champ `asset.copyright` du fichier.
 
-> Si le modèle choisi demande une attribution (CC-BY), indique-le : on peut
-> ajouter une ligne de crédit sous la visionneuse.
+Le modèle se refabrique avec l'outil `extraire.mjs` (décodage Draco des GLB
+Z-Anatomy, transformation des nœuds, écriture d'un GLB propre par structure),
+conservé hors dépôt.
 
-## Marche à suivre
+## Ajouter `cellules.glb`
 
-1. Télécharge un `.glb` (oreille complète, et/ou cellules ciliées).
-2. Renomme-le **`oreille.glb`** ou **`cellules.glb`** et dépose-le dans ce
-   dossier (`public/models/`).
-3. Reconstruis le site (`npm run build`) — ou pousse le fichier, le déploiement
-   automatique s'en charge. Le module 4 l'affiche tout seul.
+**NIH 3D — https://3d.nih.gov/** : modèles souvent du **domaine public**,
+téléchargeables en `.glb` (`organ of Corti`, `cochlea`).
+**Sketchfab** (filtre « Downloadable ») : vérifie la licence — CC-BY =
+attribution ; CC-BY-NC = non commercial ; CC0 = libre.
 
-Le fichier est empaqueté avec le site : une fois chargé, il est mis en cache et
-fonctionne **hors-ligne** comme le reste.
+1. Renomme le fichier **`cellules.glb`** et dépose-le dans `public/models/`.
+2. Pousse : le déploiement automatique s'en charge, le module 4 l'affiche.
+3. Si le modèle demande une attribution, ajoute la prop `credit` sur la carte
+   dans `src/parcours/modules.tsx`.
+
+Les fichiers sont empaquetés et précachés avec le site : une fois chargés,
+ils fonctionnent **hors-ligne** comme le reste.

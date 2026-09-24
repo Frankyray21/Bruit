@@ -12,7 +12,7 @@
  * est dans public/models/LISEZMOI.md, pour qui prépare le site.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { creerVisionneuse, type VisionneuseGlb } from './sceneGlb.js';
 import { Carte } from '../ui/composants.js';
 
@@ -31,6 +31,10 @@ export interface ModeleGlbProps {
   readonly intro: string;
   /** Étiquette d'accessibilité de la visionneuse. */
   readonly aria: string;
+  /** Légende : une pastille de couleur par structure du modèle. */
+  readonly legende?: readonly { readonly couleur: string; readonly nom: string }[];
+  /** Ligne de crédit (licence du modèle), affichée sous la visionneuse. */
+  readonly credit?: ReactNode;
 }
 
 export default function ModeleGlb({
@@ -38,6 +42,8 @@ export default function ModeleGlb({
   titre,
   intro,
   aria,
+  legende,
+  credit,
 }: ModeleGlbProps) {
   const conteneur = useRef<HTMLDivElement>(null);
   const [etat, setEtat] = useState<Etat>('chargement');
@@ -91,6 +97,21 @@ export default function ModeleGlb({
   return (
     <Carte titre={titre} source="modèle 3D" intro={intro} cache={etat !== 'pret'}>
       <div ref={conteneur} className="scene3d" role="img" aria-label={aria} />
+      {legende && (
+        <ul className="legende3d" aria-label="Légende du modèle">
+          {legende.map((l) => (
+            <li key={l.nom}>
+              <span className="legende3d__pastille" style={{ background: l.couleur }} aria-hidden="true" />
+              {l.nom}
+            </li>
+          ))}
+        </ul>
+      )}
+      {credit && (
+        <p className="carte__source carte__source--credit" style={{ marginTop: 12 }}>
+          {credit}
+        </p>
+      )}
     </Carte>
   );
 }
