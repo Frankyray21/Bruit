@@ -1,18 +1,51 @@
-import { useState } from 'react';
-import { Carte } from '../ui/composants.js';
-import { CreditSketchfab, SKETCHFAB_PAGE, SKETCHFAB_SRC, useSketchfab } from './sketchfab.js';
+/**
+ * Hero d'accueil — fond sobre (ondes sonores) + titre.
+ *
+ * Aucun objet 3D ici : l'accueil doit s'ouvrir vite, même sur un vieux
+ * téléphone, et ne pas charger Three.js avant qu'on en ait besoin (module 4).
+ * Le motif d'ondes concentriques est dessiné en SVG, donc léger et hors-ligne.
+ * `coin` permet de poser un élément en haut à droite (ex. : le code QR en
+ * projection).
+ */
 
-/** Le lecteur externe ne reçoit aucune requête avant une action explicite. */
-export function HeroOreille() {
-  const [actif, setActif] = useState(false);
-  const etat = useSketchfab(actif);
-  return <Carte titre="Explorer l’oreille complète" source="3D · ressource externe">
-    <p className="carte__intro">Le modèle anatomique Sketchfab nécessite une connexion et charge du contenu externe. La vue schématique de la cochlée reste disponible plus haut sans ce service.</p>
-    <button className="bouton bouton--secondaire" aria-expanded={actif} onClick={() => setActif(!actif)}>{actif ? 'Fermer le modèle externe' : 'Charger le modèle Sketchfab'}</button>
-    {actif && etat === 'verification' && <p role="status">Connexion au modèle…</p>}
-    {actif && etat === 'joignable' && <iframe className="modele-externe" title="Coupe de l’oreille en 3D — Sketchfab" src={SKETCHFAB_SRC} allowFullScreen allow="fullscreen" style={{ width: '100%', height: 400, border: 0, marginTop: 16 }} />}
-    {actif && etat === 'indisponible' && <p role="status">Le modèle externe ne répond pas. Vous pouvez continuer la formation ou réessayer plus tard.</p>}
-    {actif && <p><a href={SKETCHFAB_PAGE} target="_blank" rel="noopener noreferrer">Ouvrir directement sur Sketchfab ↗</a></p>}
-    <CreditSketchfab className="carte__source" />
-  </Carte>;
+import type { ReactNode } from 'react';
+
+export function HeroOreille({ children, coin }: { children: ReactNode; coin?: ReactNode }) {
+  return (
+    <section className="hero">
+      <div className="hero__media">
+        {/* Fond sobre : ondes sonores concentriques, motif de marque. */}
+        <svg
+          className="hero__ondes"
+          viewBox="0 0 400 300"
+          preserveAspectRatio="xMidYMid slice"
+          aria-hidden="true"
+        >
+          <defs>
+            <radialGradient id="hero-lueur" cx="72%" cy="45%" r="60%">
+              <stop offset="0%" stopColor="#d22325" stopOpacity="0.28" />
+              <stop offset="55%" stopColor="#d22325" stopOpacity="0.06" />
+              <stop offset="100%" stopColor="#d22325" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <rect width="400" height="300" fill="url(#hero-lueur)" />
+          <g
+            fill="none"
+            stroke="#ef5a5c"
+            strokeLinecap="round"
+            transform="translate(288 132)"
+          >
+            <path className="hero__onde ho1" d="M0 -34 A34 34 0 0 1 0 34" strokeWidth="3" opacity="0.9" />
+            <path className="hero__onde ho2" d="M0 -60 A60 60 0 0 1 0 60" strokeWidth="2.4" opacity="0.6" />
+            <path className="hero__onde ho3" d="M0 -88 A88 88 0 0 1 0 88" strokeWidth="2" opacity="0.4" />
+            <path className="hero__onde ho4" d="M0 -118 A118 118 0 0 1 0 118" strokeWidth="1.6" opacity="0.25" />
+          </g>
+          <circle cx="288" cy="132" r="6" fill="#ef5a5c" />
+        </svg>
+        <div className="hero__voile" />
+      </div>
+      {coin && <div className="hero__coin">{coin}</div>}
+      <div className="hero__contenu">{children}</div>
+    </section>
+  );
 }

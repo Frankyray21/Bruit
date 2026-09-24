@@ -46,12 +46,12 @@ describe('lecture validée', () => {
     const { lireStockage } = await import('../stockage.js');
     expect(lireStockage('facteur-bouchons', 0.6)).toBe(valeur);
   });
-  it('valide les routes de reprise et les booléens', async () => {
-    donnees.set('bruit:dernier-module', '"inconnu"');
+  it('valide les booléens et les objets', async () => {
     donnees.set('bruit:presentation', '"false"');
+    donnees.set('bruit:profil', '[1,2]');
     const { lireStockage } = await import('../stockage.js');
-    expect(lireStockage<string | null>('dernier-module', null)).toBeNull();
     expect(lireStockage('presentation', false)).toBe(false);
+    expect(lireStockage('profil', { nom: '' })).toEqual({ nom: '' });
   });
 });
 
@@ -71,7 +71,7 @@ describe('stockage indisponible et remise à zéro', () => {
   });
   it('n’efface que la formation et préserve calculs, présentation et autres sites', async () => {
     const { ecrireStockage, lireStockage, reinitialiserFormation } = await import('../stockage.js');
-    for (const cle of ['nom', 'modules-faits', 'quiz-v1', 'dernier-module']) ecrireStockage(cle, 'ancien');
+    for (const cle of ['profil', 'nom', 'modules-faits', 'validations', 'quiz-resultat', 'quiz-etat']) ecrireStockage(cle, 'ancien');
     ecrireStockage('facteur-bouchons', 0.7);
     ecrireStockage('presentation', true);
     ecrireStockage('installer-masque', true);
@@ -88,7 +88,7 @@ describe('stockage indisponible et remise à zéro', () => {
     window.addEventListener(EVENEMENT_STOCKAGE, (evt) => evenements.push((evt as CustomEvent<{ cles: string[] }>).detail.cles));
     ecrireStockage('nom', 'Test');
     reinitialiserFormation();
-    expect(evenements).toEqual([['nom'], ['modules-faits', 'nom', 'quiz-v1', 'dernier-module']]);
+    expect(evenements).toEqual([['nom'], ['profil', 'nom', 'modules-faits', 'validations', 'quiz-resultat', 'quiz-etat']]);
     expect(donnees.has('nom')).toBe(false);
   });
 });

@@ -7,12 +7,12 @@
  *   • `videoplayback.mp4` — « Le voyage du son » (NIDCD/NIH, domaine public)
  *   • `cellules.mp4`      — « Le bruit détruit la cellule ciliée »
  *
- * Si le fichier est absent ou illisible, la carte bascule sur un lien externe :
- * jamais de lecteur cassé.
+ * Si le fichier est absent ou illisible, la carte bascule sur un lien externe
+ * (jamais de lecteur cassé) — ou, pour un clip optionnel, ne s'affiche pas.
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { Carte } from '../ui/composants.js';
+import { Avertissement, Carte } from '../ui/composants.js';
 
 export interface AnimationSonProps {
   /** Nom du fichier dans `public/videos/` (ex. `videoplayback.mp4`). */
@@ -29,6 +29,8 @@ export interface AnimationSonProps {
   readonly lienNom: string;
   /** Fin de la ligne de crédit (ex. « domaine public »). */
   readonly note: string;
+  /** Clip facultatif : sans fichier, la carte disparaît au lieu d'un lien. */
+  readonly optionnel?: boolean;
 }
 
 export function AnimationSon({
@@ -39,6 +41,7 @@ export function AnimationSon({
   lien,
   lienNom,
   note,
+  optionnel = false,
 }: AnimationSonProps) {
   // Repli sur le lien si le fichier est absent ou illisible : jamais de player
   // cassé. On met la source directement sur <video> pour que `onError` se
@@ -63,6 +66,7 @@ export function AnimationSon({
     document.addEventListener('visibilitychange', arreter);
     return () => { io.disconnect(); document.removeEventListener('visibilitychange', arreter); el.pause(); };
   }, [erreur]);
+  if (erreur && optionnel) return null;
 
   return (
     <Carte titre={titre} source={source} intro={intro}>
@@ -78,18 +82,19 @@ export function AnimationSon({
           onError={() => setErreur(true)}
         />
       ) : (
-        <a
-          className="bouton"
-          href={lien}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ display: 'grid', placeItems: 'center', textDecoration: 'none' }}
-        >
-          Voir l'animation sur {lienNom} ↗
-        </a>
+        <Avertissement>
+          La vidéo ne peut pas être lue sur cet appareil. Le message reste le
+          même : le son fait vibrer le tympan, puis les cellules ciliées de la
+          cochlée — celles que le bruit détruit. Avec du réseau, tu peux la voir
+          sur{' '}
+          <a href={lien} target="_blank" rel="noopener noreferrer">
+            {lienNom}
+          </a>
+          .
+        </Avertissement>
       )}
 
-      <p className="carte__source" style={{ marginTop: 12, display: 'block' }}>
+      <p className="carte__source carte__source--credit" style={{ marginTop: 12 }}>
         Source :{' '}
         <a href={lien} target="_blank" rel="noopener noreferrer">
           {lienNom}

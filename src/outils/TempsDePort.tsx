@@ -3,27 +3,38 @@
  *
  * Diapo 16. L'entrée est en MINUTES DE RETRAIT et non en pourcentage :
  * « 98 % » est abstrait, « j'ai enlevé mes bouchons 10 minutes » est vécu.
+ * Le curseur part à 10 minutes : le choc doit être visible au premier regard.
  */
 
-import { useState } from 'react';
 import {
   attenuationEffective,
   attenuationReelle,
 } from '../domain/protection.js';
-import { bouchons, protecteurParId } from '../data/index.js';
 import { useConfig } from '../etat/config.js';
-import { Carte, Champ, Curseur, Declic, Resultat, Selecteur } from '../ui/composants.js';
+import { useStockage } from '../etat/stockage.js';
+import { useTravailleur } from '../etat/travailleur.js';
+import { Carte, Champ, Curseur, Declic, Resultat } from '../ui/composants.js';
+import { ChampProtecteur } from '../ui/ProfilChamps.js';
 import { nb } from '../ui/format.js';
 
 const QUART_MIN = 8 * 60;
 
-export function TempsDePort() {
-  const { facteurBouchons } = useConfig();
-  const [protecteurId, setProtecteurId] = useState('howard-leight-max');
-  const [minutesRetrait, setMinutesRetrait] = useState(0);
+/** Les lignes de la diapo 16, en minutes de retrait — à un appui. */
+export const RETRAITS_RAPIDES = [
+  { valeur: 0, label: 'jamais' },
+  { valeur: 10, label: '10 min' },
+  { valeur: 24, label: '24 min' },
+  { valeur: 48, label: '48 min' },
+  { valeur: 240, label: '4 h' },
+] as const;
 
-  const protecteur = protecteurParId(protecteurId) ?? bouchons[0]!;
-  const nominale = attenuationReelle(protecteur.nrr, facteurBouchons);
+export function TempsDePort() {
+  const { facteurPour } = useConfig();
+  const { protecteur } = useTravailleur();
+  // Conservé : réglé dans le module, retrouvé dans la boîte à outils.
+  const [minutesRetrait, setMinutesRetrait] = useStockage('temps-de-port-min', 10);
+
+  const nominale = attenuationReelle(protecteur.nrr, facteurPour(protecteur));
 
   const tempsDePort = 1 - minutesRetrait / QUART_MIN;
   const effective = attenuationEffective(nominale, tempsDePort);
@@ -36,14 +47,7 @@ export function TempsDePort() {
       source="diapo 16"
       intro="Enlever sa protection quelques minutes ne coûte pas quelques minutes de protection. L'énergie sonore reçue pendant ce laps de temps écrase tout le reste du quart."
     >
-      <Champ etiquette="Protecteur">
-        <Selecteur
-          options={bouchons}
-          valeur={protecteurId}
-          onChange={setProtecteurId}
-          format={(p) => `${p.nom} — NRR ${p.nrr}`}
-        />
-      </Champ>
+      <ChampProtecteur etiquette="Protecteur" />
 
       <Champ etiquette="Temps sans protection sur un quart de 8 h">
         <Curseur
@@ -53,14 +57,20 @@ export function TempsDePort() {
           valeur={minutesRetrait}
           onChange={setMinutesRetrait}
           affichage={formatMinutes(minutesRetrait)}
-          legende={`porté ${nb((tempsDePort * 100), 1)} % du quart`}
+          legende={`porté ${nb(tempsDePort * 100, 1)} % du quart`}
+          etiquette="Temps sans protection, en minutes"
+          valeursRapides={RETRAITS_RAPIDES}
         />
       </Champ>
 
       <Resultat
         etiquette="Protection réellement obtenue"
         valeur={`${nb(effective, 1)} dB`}
-        note={`au lieu de ${nb(nominale, 1)} dB si le protecteur est porté en tout temps`}
+        note={
+          minutesRetrait === 0
+            ? `${nb(nominale, 1)} dB, c'est le maximum de ce protecteur sur le terrain (NRR ${protecteur.nrr} à ${nb(facteurPour(protecteur) * 100, 0)} % d'efficacité) — glisse le curseur pour voir ce qu'un retrait coûte`
+            : `au lieu de ${nb(nominale, 1)} dB si le protecteur est porté en tout temps (NRR ${protecteur.nrr} à ${nb(facteurPour(protecteur) * 100, 0)} % d'efficacité)`
+        }
         ton={partPerdue > 50 ? 'rouge' : partPerdue > 25 ? 'jaune' : 'vert'}
       />
 

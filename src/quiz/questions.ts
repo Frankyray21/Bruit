@@ -20,7 +20,7 @@ export const QUESTIONS: readonly Question[] = [
     options: ['de plus en plus âgés', 'de plus en plus jeunes', 'du même âge qu’avant'],
     bonne: 1,
     explication:
-      'Diapo 3. C’est le constat le plus solide de la section : la surdité professionnelle ne touche plus seulement les fins de carrière.',
+      'C’est le constat le plus solide de la formation : la surdité professionnelle ne touche plus seulement les fins de carrière (diapo 3).',
   },
   {
     module: 'decibel',
@@ -28,7 +28,7 @@ export const QUESTIONS: readonly Question[] = [
     options: ['98 dBA', '190 dBA', '95 dBA', '100 dBA'],
     bonne: 0,
     explication:
-      'Le bruit ne s’additionne pas arithmétiquement. Doubler l’énergie sonore ajoute exactement 3 dBA — c’est la règle de la diapo 4.',
+      'Le bruit ne s’additionne pas comme des dollars : doubler l’énergie sonore ajoute exactement 3 dBA. C’est la règle des 3 dBA (diapo 4).',
   },
   {
     module: 'decibel',
@@ -36,14 +36,15 @@ export const QUESTIONS: readonly Question[] = [
     options: ['Elle ne change pas', 'Elle diminue de 3 heures', 'Elle est divisée par deux'],
     bonne: 2,
     explication:
-      'Diapo 6 : 85 dBA → 8 h, 88 dBA → 4 h, 91 dBA → 2 h, 94 dBA → 1 h.',
+      'Chaque tranche de 3 dBA divise le temps permis par deux : 85 dBA → 8 h, 88 → 4 h, 91 → 2 h, 94 → 1 h (table du RSST, diapo 6).',
   },
   {
     module: 'decibel',
     enonce: 'Quelle est la limite d’exposition au Québec pour un quart de 8 heures ?',
     options: ['80 dBA', '85 dBA', '90 dBA', '94 dBA'],
     bonne: 1,
-    explication: 'Diapo 5, article 137 du RSST.',
+    explication:
+      'C’est la limite du Règlement sur la santé et la sécurité du travail (article 137) : 85 dBA pour 8 heures, et moins de temps dès que le niveau monte (diapo 5).',
   },
   {
     module: 'exposition',
@@ -51,7 +52,7 @@ export const QUESTIONS: readonly Question[] = [
     options: ['29 secondes', '29 minutes', '1 heure', '4 heures'],
     bonne: 0,
     explication:
-      'La table réglementaire s’arrête à 94 dBA. Extrapolée, la règle des 3 dBA donne 29 secondes.',
+      'La table du règlement s’arrête à 94 dBA. En continuant la règle des 3 dBA jusqu’à 114,9 dBA, il reste 29 secondes — le jackleg consomme la dose du quart avant même d’avoir commencé.',
   },
   {
     module: 'exposition',
@@ -59,7 +60,7 @@ export const QUESTIONS: readonly Question[] = [
     options: ['La moitié', 'Un quart', 'Rien du tout — elles ajoutent 0,3 %'],
     bonne: 2,
     explication:
-      'Le silence ne rembourse pas le bruit. La dose ne fait que s’accumuler ; une période calme ajoute simplement très peu.',
+      'Le silence ne rembourse pas le bruit. La dose ne fait que monter ; une période calme ajoute simplement très peu (0,3 % pour deux heures à 66 dBA).',
   },
   {
     module: 'dommages',
@@ -67,7 +68,7 @@ export const QUESTIONS: readonly Question[] = [
     options: ['La surdité brutale', 'La surdité progressive', 'L’hyperacousie'],
     bonne: 1,
     explication:
-      'Diapo 12. Elle résulte d’une exposition continue et détruit les cellules ciliées de façon irréversible.',
+      'La surdité progressive vient d’une exposition continue : elle détruit les cellules ciliées, et cette perte est irréversible (diapo 12).',
   },
   {
     module: 'dommages',
@@ -78,7 +79,8 @@ export const QUESTIONS: readonly Question[] = [
       'ne repoussent jamais',
     ],
     bonne: 2,
-    explication: 'Diapo 12 : la perte auditive qui en résulte est irréversible.',
+    explication:
+      'Une cellule ciliée détruite ne repousse jamais — contrairement à une coupure ou à une fracture. La perte auditive est définitive (diapo 12).',
   },
   {
     module: 'choisir',
@@ -86,14 +88,15 @@ export const QUESTIONS: readonly Question[] = [
     options: ['57 dB', 'Environ 24 dB', '32 dB', '28,5 dB'],
     bonne: 1,
     explication:
-      'Diapo 14 : les atténuations ne s’additionnent pas. On part du meilleur NRR dératé et on ajoute environ 5 dB.',
+      'Les atténuations ne s’additionnent pas. On part du meilleur des deux NRR, on applique l’efficacité réelle sur le terrain, et on ajoute environ 5 dB pour le second protecteur (diapo 14).',
   },
   {
     module: 'choisir',
     enonce: 'Au-delà de quel niveau la double protection est-elle recommandée ?',
     options: ['85 dBA', '94 dBA', '105 dBA', '115 dBA'],
     bonne: 2,
-    explication: 'Diapo 14, sources ODYO et CCHST.',
+    explication:
+      'Au-delà de 105 dBA, un seul protecteur ne suffit plus : bouchons et coquilles ensemble (diapo 14, d’après ODYO et le CCHST).',
   },
   {
     module: 'porter',
@@ -105,7 +108,7 @@ export const QUESTIONS: readonly Question[] = [
     ],
     bonne: 1,
     explication:
-      'Diapo 15. C’est le seul critère de vérification objectif de toute la formation.',
+      'Un bouchon bien enfoncé ne se voit pas de face. C’est le seul critère de vérification objectif de toute la formation — regarde-toi dans un miroir (diapo 15).',
   },
   {
     module: 'porter',
@@ -113,7 +116,7 @@ export const QUESTIONS: readonly Question[] = [
     options: ['29 dB', '25 dB', '17 dB', '30 dB'],
     bonne: 2,
     explication:
-      'Diapo 16. Deux pour cent du quart sans protection font perdre près de la moitié de la protection de la journée.',
+      'Dix minutes, c’est 2 % du quart — et près de la moitié de la protection de la journée envolée. L’énergie reçue pendant le retrait écrase tout le reste (diapo 16).',
   },
   {
     module: 'porter',
@@ -121,7 +124,7 @@ export const QUESTIONS: readonly Question[] = [
     options: ['15 dB', '10 dB', '3 dB', 'La moitié du NRR'],
     bonne: 2,
     explication:
-      'Diapo 16. Passé un certain retrait, le choix du protecteur ne compte plus du tout.',
+      'À 50 % de port, il ne reste que 3 dB, quel que soit le protecteur. Passé un certain retrait, le choix du modèle ne compte plus du tout (diapo 16).',
   },
   {
     module: 'porter',

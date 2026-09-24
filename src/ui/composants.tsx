@@ -3,22 +3,67 @@
  * texte libre dans le parcours principal.
  */
 
-import { createContext, useContext, useId, type ReactNode } from 'react';
+import { Component, createContext, useContext, useId, type ErrorInfo, type ReactNode } from 'react';
 import type { NiveauVerdict } from '../domain/verdict.js';
+
+/**
+ * Une partie de l'écran qui plante (3D, vidéo, un calcul sur une donnée
+ * inattendue) ne doit pas emporter tout le site : on affiche un repli à sa
+ * place, et le reste continue de fonctionner.
+ */
+export class FrontiereErreur extends Component<
+  { children: ReactNode; quoi?: string },
+  { erreur: boolean }
+> {
+  override state = { erreur: false };
+
+  static getDerivedStateFromError() {
+    return { erreur: true };
+  }
+
+  override componentDidCatch(erreur: unknown, info: ErrorInfo) {
+    console.error(erreur, info.componentStack);
+  }
+
+  override render() {
+    if (!this.state.erreur) return this.props.children;
+    return (
+      <Carte titre="Cette partie n'a pas pu s'afficher">
+        <Avertissement>
+          Un imprévu a bloqué l'affichage {this.props.quoi ?? 'de cette section'}.
+          Le reste du site fonctionne normalement.
+        </Avertissement>
+        <button
+          type="button"
+          className="bouton bouton--secondaire"
+          onClick={() => this.setState({ erreur: false })}
+        >
+          Réessayer
+        </button>
+      </Carte>
+    );
+  }
+}
 
 export function Carte({
   titre,
   source,
   intro,
+  cache = false,
+  classe,
   children,
 }: {
   titre?: string;
   source?: string;
   intro?: string;
+  /** Carte montée mais invisible (ex. : le temps qu'un modèle 3D se charge). */
+  cache?: boolean;
+  /** Variante visuelle (ex. « carte--validation »). */
+  classe?: string;
   children: ReactNode;
 }) {
   return (
-    <section className="carte">
+    <section className={`carte${classe ? ` ${classe}` : ''}`} hidden={cache}>
       {titre && (
         <div className="carte__titre">
           <h2>{titre}</h2>
@@ -94,7 +139,7 @@ export function Selecteur<T extends { id: string; nom: string }>({
   valeur: string;
   onChange: (id: string) => void;
   format?: (option: T) => string;
-  /** Précise le contrôle, notamment lorsqu'un champ en contient plusieurs. */
+  /** Étiquette pour le lecteur d'écran quand le champ n'en a pas de visible. */
   etiquette?: string;
 }) {
   const etiquetteChamp = useContext(EtiquetteChamp);
@@ -124,6 +169,7 @@ export function Curseur({
   affichage,
   legende,
   etiquette,
+  valeursRapides,
 }: {
   min: number;
   max: number;
@@ -132,13 +178,19 @@ export function Curseur({
   onChange: (valeur: number) => void;
   affichage: string;
   legende?: string;
+  /** Ce que règle le curseur, pour le lecteur d'écran (ex. « Niveau de bruit »). */
   etiquette?: string;
+  /**
+   * Valeurs à un appui, sous la piste : avec des gants, viser « 10 min » sur
+   * 240 crans est impossible ; un gros bouton, non.
+   */
+  valeursRapides?: readonly { valeur: number; label: string }[];
 }) {
   const etiquetteChamp = useContext(EtiquetteChamp);
   const idLegende = useId();
   return (
     <>
-      <div className="curseur__valeur">
+      <div className="curseur__valeur" aria-hidden="true">
         <span className="curseur__nombre">{affichage}</span>
         {legende && <span className="carte__source" id={idLegende}>{legende}</span>}
       </div>
@@ -149,10 +201,31 @@ export function Curseur({
         step={pas}
         value={valeur}
         aria-label={etiquette ?? (etiquetteChamp ? undefined : 'Régler la valeur')}
-        aria-labelledby={etiquette ? undefined : [etiquetteChamp, legende ? idLegende : undefined].filter(Boolean).join(' ') || undefined}
+        aria-labelledby={
+          etiquette
+            ? undefined
+            : [etiquetteChamp, legende ? idLegende : undefined].filter(Boolean).join(' ') || undefined
+        }
+        // « 97,8 dBA » ou « 10 min » plutôt que « 97.8 » ou « 10 » ; la légende
+        // est reliée par aria-labelledby.
         aria-valuetext={affichage}
         onChange={(e) => onChange(Number(e.target.value))}
       />
+      {valeursRapides && (
+        <div className="choix choix--rapides" role="group" aria-label="Valeurs rapides">
+          {valeursRapides.map((v) => (
+            <button
+              key={v.valeur}
+              type="button"
+              className={`choix__option${v.valeur === valeur ? ' choix__option--actif' : ''}`}
+              aria-pressed={v.valeur === valeur}
+              onClick={() => onChange(v.valeur)}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
+      )}
     </>
   );
 }

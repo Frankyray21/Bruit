@@ -5,13 +5,14 @@
  * décroissant : un NRR 20 gardé en permanence bat un NRR 33 enlevé 48 minutes.
  */
 
-import { useState } from 'react';
 import {
   attenuationEffective,
   attenuationReelle,
 } from '../domain/protection.js';
 import { bouchons, protecteurParId, protecteurs } from '../data/index.js';
 import { useConfig } from '../etat/config.js';
+import { useStockage } from '../etat/stockage.js';
+import { useTravailleur } from '../etat/travailleur.js';
 import {
   Carte,
   Champ,
@@ -20,20 +21,31 @@ import {
   Resultat,
   Selecteur,
 } from '../ui/composants.js';
-import { formatMinutes } from './TempsDePort.js';
+import { formatMinutes, RETRAITS_RAPIDES } from './TempsDePort.js';
 import { nb } from '../ui/format.js';
 
 const QUART_MIN = 8 * 60;
 
 export function Comparateur() {
-  const { facteurBouchons } = useConfig();
-  const [idA, setIdA] = useState('howard-leight-max');
-  const [retraitA, setRetraitA] = useState(48);
-  const [idB, setIdB] = useState('arceau-bleu');
-  const [retraitB, setRetraitB] = useState(0);
+  const { facteurPour } = useConfig();
+  const { protecteur } = useTravailleur();
+  // A = ton protecteur, retiré 48 minutes ; B = l'arceau le plus modeste,
+  // jamais retiré. Le renversement se voit au premier regard. Les réglages
+  // sont conservés d'un écran à l'autre.
+  const [reglages, setReglages] = useStockage('comparateur', () => ({
+    idA: protecteur.id,
+    retraitA: 48,
+    idB: protecteur.id === 'arceau-bleu' ? 'arceau-noir' : 'arceau-bleu',
+    retraitB: 0,
+  }));
+  const { idA, retraitA, idB, retraitB } = reglages;
+  const setIdA = (idA: string) => setReglages({ ...reglages, idA });
+  const setRetraitA = (retraitA: number) => setReglages({ ...reglages, retraitA });
+  const setIdB = (idB: string) => setReglages({ ...reglages, idB });
+  const setRetraitB = (retraitB: number) => setReglages({ ...reglages, retraitB });
 
-  const a = evalue(idA, retraitA, facteurBouchons);
-  const b = evalue(idB, retraitB, facteurBouchons);
+  const a = evalue(idA, retraitA, facteurPour);
+  const b = evalue(idB, retraitB, facteurPour);
   const gagnant = a.effective >= b.effective ? a : b;
   const perdant = gagnant === a ? b : a;
   const renversement = gagnant.nrr < perdant.nrr;
@@ -42,7 +54,7 @@ export function Comparateur() {
     <Carte
       titre="Lequel protège vraiment ?"
       source="diapos 13 et 16"
-      intro="La diapo 13 classe les protecteurs par NRR. Mais le NRR suppose un port parfait. Compare deux protecteurs tels qu'ils sont réellement portés."
+      intro="Le catalogue classe les protecteurs par NRR. Mais le NRR suppose un port parfait. Compare deux protecteurs tels qu'ils sont réellement portés."
     >
       <Ligne
         titre="Protecteur A"
@@ -65,7 +77,7 @@ export function Comparateur() {
         etiquette="Le mieux protégé"
         valeur={gagnant.nom}
         note={`${nb(gagnant.effective, 1)} dB contre ${nb(perdant.effective, 1)} dB — un écart de ${nb(Math.abs(a.effective - b.effective), 1)} dB`}
-        ton={renversement ? 'jaune' : 'vert'}
+        ton="vert"
       />
 
       {renversement && (
@@ -82,9 +94,13 @@ export function Comparateur() {
   );
 }
 
-function evalue(id: string, retraitMin: number, facteur: number) {
+function evalue(
+  id: string,
+  retraitMin: number,
+  facteurPour: (p: { type: 'bouchons' | 'coquilles' }) => number,
+) {
   const protecteur = protecteurParId(id) ?? bouchons[0]!;
-  const nominale = attenuationReelle(protecteur.nrr, facteur);
+  const nominale = attenuationReelle(protecteur.nrr, facteurPour(protecteur));
   return {
     nom: protecteur.nom,
     nrr: protecteur.nrr,
@@ -114,6 +130,7 @@ function Ligne({
         valeur={id}
         onChange={onId}
         format={(p) => `${p.nom} — NRR ${p.nrr}`}
+        etiquette={titre}
       />
       <Curseur
         min={0}
@@ -123,6 +140,8 @@ function Ligne({
         onChange={onRetrait}
         affichage={formatMinutes(retrait)}
         legende="temps sans protection"
+        etiquette={`${titre} — temps sans protection, en minutes`}
+        valeursRapides={RETRAITS_RAPIDES}
       />
     </Champ>
   );

@@ -1,78 +1,547 @@
-/** Quiz et attestation locale. Questions, réponses et seuil conservés. */
-import { useEffect, useRef } from 'react';
-import { QUESTIONS } from './questions.js';
-import { avancerQuiz, bonnesReponses, etatQuizValide, nouveauQuiz, repondreQuiz, SEUIL_REUSSITE } from './etatQuiz.js';
+/**
+ * Outils #23 et #24 — Quiz de validation et attestation.
+ *
+ * L'état du quiz est mémorisé sur l'appareil : changer d'onglet pour vérifier
+ * une valeur, ou se faire recharger par une mise à jour, ne renvoie plus à la
+ * question 1. Le résultat est conservé avec sa date, et chaque erreur renvoie
+ * au module à revoir.
+ *
+ * L'attestation est déclarative et générée sur l'appareil : elle ne constitue
+ * pas un registre opposable. Si le comité SST exige une traçabilité formelle,
+ * il faudra un serveur.
+ */
+
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { QUESTIONS, type Question } from './questions.js';
+import {
+  dessinerAttestation,
+  exporterAttestation,
+  nomFichierAttestation,
+  type IssueExport,
+} from './attestation.js';
+import { MODULES } from '../parcours/modules.js';
 import { useStockage } from '../etat/stockage.js';
+import { useTravailleur, type ResultatQuiz } from '../etat/travailleur.js';
 import { Avertissement, Carte } from '../ui/composants.js';
 
-const QUIZ_VIDE = nouveauQuiz();
-export function Quiz() {
-  const [etat, setEtat] = useStockage('quiz-v1', QUIZ_VIDE, etatQuizValide);
-  const [nom, setNom] = useStockage('nom', '');
-  const titre = useRef<HTMLHeadingElement>(null);
-  const retour = useRef<HTMLDivElement>(null);
-  const question = QUESTIONS[etat.index]!;
-  const choisi = etat.reponses[etat.index] ?? null;
-  const bonnes = bonnesReponses(etat);
-  const score = bonnes / QUESTIONS.length;
-  const reussi = score >= SEUIL_REUSSITE;
-  useEffect(() => { if (choisi === null || etat.termineLe) titre.current?.focus({ preventScroll: true }); }, [etat.index, etat.termineLe, choisi]);
-  useEffect(() => { if (choisi !== null && !etat.termineLe) retour.current?.focus(); }, [choisi, etat.termineLe]);
-  function recommencer() {
-    if (window.confirm('Effacer les réponses de ce quiz et recommencer ?')) setEtat(nouveauQuiz());
+export const SEUIL_REUSSITE = 0.8;
+
+/** Nombre de bonnes réponses requis pour réussir. 80 % de 14, c'est 12. */
+export const BONNES_REQUISES = Math.ceil(SEUIL_REUSSITE * QUESTIONS.length);
+
+interface EtatQuiz {
+  /** Position courante dans `ordre` (0 = première question posée). */
+  readonly index: number;
+  /**
+   * Ordre de passage : `ordre[position]` = index de la question dans la
+   * banque. Tiré au sort à chaque tentative, pour que le quiz ne s'apprenne
+   * pas par cœur ; conservé avec l'état pour survivre à un rechargement.
+   */
+  readonly ordre: readonly number[];
+  /** Réponse choisie par question de la banque (index de l'option), `null` si pas répondu. */
+  readonly reponses: readonly (number | null)[];
+  readonly termine: boolean;
+}
+
+/** Une permutation des indices de la banque (Fisher-Yates). */
+function tirerOrdre(): number[] {
+  const ordre = QUESTIONS.map((_, i) => i);
+  for (let i = ordre.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ordre[i], ordre[j]] = [ordre[j]!, ordre[i]!];
   }
-  if (etat.termineLe) return (
+  return ordre;
+}
+
+function etatInitial(): EtatQuiz {
+  return {
+    index: 0,
+    ordre: tirerOrdre(),
+    reponses: QUESTIONS.map(() => null),
+    termine: false,
+  };
+}
+
+function ordreValide(ordre: readonly number[] | undefined): boolean {
+  return (
+    Array.isArray(ordre) &&
+    ordre.length === QUESTIONS.length &&
+    new Set(ordre).size === QUESTIONS.length &&
+    ordre.every((i) => Number.isInteger(i) && i >= 0 && i < QUESTIONS.length)
+  );
+}
+
+export function formaterDate(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? '—'
+    : d.toLocaleDateString('fr-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function pluriel(n: number, un: string, plusieurs: string): string {
+  return `${n} ${n > 1 ? plusieurs : un}`;
+}
+
+function titreModule(id: string): string {
+  return MODULES.find((m) => m.id === id)?.titre ?? id;
+}
+
+/** Une option de réponse, colorée une fois la question répondue. */
+export function OptionQuestion({
+  question,
+  i,
+  choisi,
+  provisoire = null,
+  onChoisir,
+}: {
+  question: Question;
+  i: number;
+  choisi: number | null;
+  /** Choix retenu mais pas encore révélé (projection). */
+  provisoire?: number | null;
+  onChoisir: (i: number) => void;
+}) {
+  const repondu = choisi !== null;
+  const juste = repondu && i === question.bonne;
+  const faux = repondu && i === choisi && i !== question.bonne;
+  const retenu = !repondu && provisoire === i;
+  // Une fois répondu, seuls comptent la bonne réponse et, le cas échéant, la
+  // tienne : les autres s'estompent.
+  const ecarte = repondu && !juste && !faux;
+  const classe = [
+    'reponse',
+    juste && 'reponse--juste',
+    faux && 'reponse--faux',
+    retenu && 'reponse--retenu',
+    ecarte && 'reponse--ecarte',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const option = question.options[i]!;
+  // La lettre reste ; l'état est dit par une étiquette, pas seulement par la
+  // couleur.
+  const etiquette = juste ? 'Bonne réponse' : faux ? 'Ta réponse' : retenu ? 'Ton choix' : null;
+  return (
+    <button
+      type="button"
+      className={classe}
+      onClick={() => onChoisir(i)}
+      disabled={repondu}
+      aria-pressed={repondu ? choisi === i : provisoire === i}
+    >
+      <span className="reponse__lettre" aria-hidden="true">
+        {juste ? '✓' : faux ? '✕' : String.fromCharCode(65 + i)}
+      </span>
+      <span className="reponse__texte">{option}</span>
+      {etiquette && <span className="reponse__etiquette">{etiquette}</span>}
+    </button>
+  );
+}
+
+/** La liste des choix, avec sa consigne. */
+export function ListeReponses({
+  consigne,
+  children,
+}: {
+  consigne?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="reponses" role="group" aria-label="Choix de réponse">
+      {consigne && <p className="reponses__consigne">{consigne}</p>}
+      {children}
+    </div>
+  );
+}
+
+export function Quiz({
+  onRevoir,
+  onFormation,
+  revelation = false,
+}: {
+  /** Ouvre un module à revoir. */
+  onRevoir: (moduleId: string) => void;
+  /** Retourne à la liste des modules. */
+  onFormation: () => void;
+  /**
+   * En projection : le premier appui ne fait que retenir un choix, un bouton
+   * « Révéler » dévoile la réponse — le formateur peut faire voter la salle.
+   */
+  revelation?: boolean;
+}) {
+  const { profil, majProfil, faits, resultatQuiz, setResultatQuiz } = useTravailleur();
+  const [etatBrut, setEtat] = useStockage<EtatQuiz>('quiz-etat', etatInitial);
+  const [provisoire, setProvisoire] = useState<number | null>(null);
+  const refQuestion = useRef<HTMLParagraphElement>(null);
+
+  // Une sauvegarde d'une version précédente (sans ordre, ou avec un autre
+  // nombre de questions), corrompue, ou terminée sans résultat (progression
+  // remise à zéro) serait incohérente : on repart proprement, avec un état
+  // de repli tiré une seule fois et aussitôt persisté.
+  const [repli] = useState(etatInitial);
+  const etatValide =
+    Array.isArray(etatBrut?.reponses) &&
+    etatBrut.reponses.length === QUESTIONS.length &&
+    ordreValide(etatBrut.ordre) &&
+    !(etatBrut.termine && !resultatQuiz);
+  const etat: EtatQuiz = etatValide ? etatBrut : repli;
+  useEffect(() => {
+    if (!etatValide) setEtat(repli);
+  }, [etatValide, repli, setEtat]);
+  const { reponses, ordre } = etat;
+  const index = Math.min(etat.index, QUESTIONS.length - 1);
+  const numero = ordre[index]!;
+  const question = QUESTIONS[numero]!;
+  const choisi = reponses[numero] ?? null;
+  const bonnes = reponses.filter((r, i) => r !== null && r === QUESTIONS[i]!.bonne).length;
+
+  // Après « Question suivante », le focus va sur la nouvelle question : au
+  // clavier ou au lecteur d'écran, on ne reste pas sur un bouton disparu.
+  useEffect(() => {
+    if (!etat.termine) refQuestion.current?.focus();
+    setProvisoire(null);
+  }, [index, etat.termine]);
+
+  function valider(i: number) {
+    setEtat({
+      ...etat,
+      reponses: reponses.map((r, j) => (j === numero ? i : r)),
+    });
+    setProvisoire(null);
+  }
+
+  function repondre(i: number) {
+    if (choisi !== null) return;
+    // En projection, un appui ne fait que déplacer le vote ; seul le bouton
+    // « Révéler » dévoile la réponse.
+    if (revelation) {
+      setProvisoire(i);
+      return;
+    }
+    valider(i);
+  }
+
+  function suivante() {
+    if (index + 1 >= QUESTIONS.length) {
+      const modulesRates = [
+        ...new Set(QUESTIONS.filter((q, i) => reponses[i] !== q.bonne).map((q) => q.module)),
+      ];
+      const resultat: ResultatQuiz = {
+        bonnes,
+        total: QUESTIONS.length,
+        reussi: bonnes >= BONNES_REQUISES,
+        date: new Date().toISOString(),
+        modulesRates,
+        modulesFaits: faits.length,
+      };
+      setResultatQuiz(resultat);
+      setEtat({ ...etat, termine: true });
+    } else {
+      setEtat({ ...etat, index: index + 1 });
+    }
+  }
+
+  function recommencer() {
+    setEtat(etatInitial());
+  }
+
+  if (etat.termine && resultatQuiz) {
+    return (
+      <Resultat
+        resultat={resultatQuiz}
+        reponses={reponses}
+        ordre={ordre}
+        nom={profil.nom}
+        onNom={(nom) => majProfil({ nom })}
+        modulesFaits={resultatQuiz.modulesFaits ?? faits.length}
+        onRecommencer={recommencer}
+        onRevoir={onRevoir}
+      />
+    );
+  }
+
+  const suivanteEstDerniere = index + 1 >= QUESTIONS.length;
+
+  return (
     <>
-      <h1 ref={titre} tabIndex={-1}>Résultat du quiz</h1>
+      {index === 0 && choisi === null && (
+        <Carte titre="Le quiz" source="14 questions">
+          <p className="carte__intro" style={{ marginBottom: 0 }}>
+            Une question à la fois, avec l'explication après chaque réponse. Il
+            faut <strong>{BONNES_REQUISES} bonnes réponses sur {QUESTIONS.length}</strong>{' '}
+            pour obtenir l'attestation. Tu peux quitter et revenir : ta place est
+            gardée.
+          </p>
+          {faits.length < MODULES.length && (
+            <p className="carte__intro" style={{ marginTop: 10, marginBottom: 0 }}>
+              Tu as fait {faits.length} module{faits.length > 1 ? 's' : ''} sur{' '}
+              {MODULES.length}.{' '}
+              <button type="button" className="lien" onClick={onFormation}>
+                Finir la formation d'abord
+              </button>
+            </p>
+          )}
+        </Carte>
+      )}
+
       <Carte>
-        <div className="attestation">
-          <div className="attestation__score">{Math.round(score * 100)} %</div>
-          <p>{bonnes} bonnes réponses sur {QUESTIONS.length}</p>
-          <h2>{reussi ? 'Formation réussie' : 'Seuil de 80 % non atteint'}</h2>
-          <p>Quiz terminé le {new Date(etat.termineLe).toLocaleDateString('fr-CA')}.</p>
-          {reussi && <>
-            <label htmlFor="quiz-nom">Ton nom pour l'attestation</label>
-            <input id="quiz-nom" className="choix__select" autoComplete="name" value={nom} onChange={(evt) => setNom(evt.target.value)} />
-            {nom.trim() && <p><strong>{nom}</strong><br />Formation « Protection auditive » complétée le {new Date(etat.termineLe).toLocaleDateString('fr-CA')}.</p>}
-          </>}
+        <div
+          className="quiz__barre"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={QUESTIONS.length}
+          aria-valuenow={index}
+          aria-label="Avancement du quiz"
+        >
+          <span style={{ width: `${(index / QUESTIONS.length) * 100}%` }} />
         </div>
-        <div className="barre-boutons" style={{ marginTop: 16 }}>
-          <button type="button" className="bouton bouton--secondaire" onClick={recommencer}>Refaire le quiz</button>
-          {reussi && nom.trim() && <button type="button" className="bouton" onClick={() => window.print()}>Imprimer l'attestation</button>}
-        </div>
-        <Avertissement>Cette attestation est <strong>générée sur ton appareil</strong> et repose sur une saisie déclarative. Elle ne constitue pas un registre de formation opposable. Vérifie avec ton comité SST ce qu'il exige.</Avertissement>
+        <p className="quiz__progression">
+          Question {index + 1} sur {QUESTIONS.length} ·{' '}
+          {pluriel(bonnes, 'bonne réponse', 'bonnes réponses')} jusqu'ici
+        </p>
+        <p className="quiz__question" ref={refQuestion} tabIndex={-1}>
+          {question.enonce}
+        </p>
+
+        <ListeReponses
+          consigne={
+            choisi !== null
+              ? undefined
+              : revelation
+                ? 'Touche un choix, puis « Révéler »'
+                : 'Touche ta réponse'
+          }
+        >
+          {question.options.map((_, i) => (
+            <OptionQuestion
+              key={i}
+              question={question}
+              i={i}
+              choisi={choisi}
+              provisoire={provisoire}
+              onChoisir={repondre}
+            />
+          ))}
+        </ListeReponses>
+
+        {revelation && choisi === null && provisoire !== null && (
+          <button type="button" className="bouton" onClick={() => valider(provisoire)}>
+            Révéler la réponse
+          </button>
+        )}
+
+        {choisi !== null && (
+          <>
+            <div className="declic" role="status">
+              <strong>{choisi === question.bonne ? 'Bonne réponse. ' : 'Pas tout à fait. '}</strong>
+              {question.explication}
+            </div>
+            <button type="button" className="bouton" onClick={suivante}>
+              {suivanteEstDerniere ? 'Voir mon résultat' : 'Question suivante'}
+            </button>
+          </>
+        )}
       </Carte>
     </>
   );
+}
+
+function Resultat({
+  resultat,
+  reponses,
+  ordre,
+  nom,
+  onNom,
+  modulesFaits,
+  onRecommencer,
+  onRevoir,
+}: {
+  resultat: ResultatQuiz;
+  reponses: readonly (number | null)[];
+  ordre: readonly number[];
+  nom: string;
+  onNom: (nom: string) => void;
+  modulesFaits: number;
+  onRecommencer: () => void;
+  onRevoir: (moduleId: string) => void;
+}) {
+  const { bonnes, total, reussi } = resultat;
+  const score = Math.round((bonnes / total) * 100);
+  const refCanvas = useRef<HTMLCanvasElement>(null);
+  const [exportEtat, setExportEtat] = useState<'repos' | 'en-cours' | IssueExport | 'echec'>('repos');
+
+  async function enregistrerImage() {
+    const canvas = refCanvas.current;
+    if (!canvas) return;
+    setExportEtat('en-cours');
+    try {
+      await dessinerAttestation(
+        canvas,
+        {
+          nom,
+          date: resultat.date,
+          bonnes,
+          total,
+          modulesSuivis: modulesFaits,
+          modulesTotal: MODULES.length,
+        },
+        formaterDate,
+      );
+      setExportEtat(await exporterAttestation(canvas, nomFichierAttestation(nom, resultat.date)));
+    } catch {
+      setExportEtat('echec');
+    }
+  }
+  // Dans l'ordre où les questions ont été posées, numérotées ainsi.
+  const ratees = ordre
+    .map((numero, position) => ({
+      q: QUESTIONS[numero]!,
+      i: position,
+      choisi: reponses[numero] ?? null,
+    }))
+    .filter(({ q, choisi }) => choisi !== q.bonne);
+
   return (
     <>
-      <h1>Quiz de validation</h1>
-      <p className="carte__intro">{QUESTIONS.length} questions. Seuil de réussite : 80 %. Choisis une réponse, puis lis l'explication.</p>
-      <p className="carte__source">Reprise automatique sur cet appareil si le stockage est disponible.</p>
       <Carte>
-        <p className="quiz__progression">Question {etat.index + 1} sur {QUESTIONS.length}</p>
-        <progress max={QUESTIONS.length} value={etat.index} aria-label="Questions terminées" />
-        <h2 className="quiz__question" ref={titre} tabIndex={-1}>{question.enonce}</h2>
-        {question.options.map((option, i) => {
-          let classe = 'quiz__option';
-          if (choisi !== null) {
-            if (i === question.bonne) classe += ' quiz__option--juste';
-            else if (i === choisi) classe += ' quiz__option--faux';
-          }
-          return <button key={i} type="button" className={classe} disabled={choisi !== null} onClick={() => setEtat((precedent) => repondreQuiz(precedent, i))}>
-            {choisi !== null && i === question.bonne ? '✓ ' : choisi === i ? '✕ ' : ''}{option}
-          </button>;
-        })}
-        {choisi !== null && <>
-          <div className="declic" role="status" ref={retour} tabIndex={-1}>
-            <strong>{choisi === question.bonne ? 'Bonne réponse. ' : 'À revoir. '}</strong>{question.explication}
+        <div className={`attestation${reussi ? '' : ' attestation--echec'}`}>
+          <p className="attestation__kicker">
+            {reussi ? 'Attestation de formation' : 'Résultat du quiz'}
+          </p>
+          <div className="attestation__score">{score} %</div>
+          <p>
+            {pluriel(bonnes, 'bonne réponse', 'bonnes réponses')} sur {total}
+          </p>
+          <p style={{ marginTop: 12, fontWeight: 700 }}>
+            {reussi
+              ? 'Formation réussie'
+              : `Il faut ${BONNES_REQUISES} bonnes réponses — il t'en manque ${BONNES_REQUISES - bonnes}`}
+          </p>
+
+          {reussi && (
+            <>
+              <input
+                className="choix__select"
+                style={{ marginTop: 18, textAlign: 'center' }}
+                aria-label="Ton nom, pour l'attestation"
+                placeholder="Ton nom, pour l'attestation"
+                autoComplete="name"
+                value={nom}
+                onChange={(e) => onNom(e.target.value)}
+              />
+              <div className="attestation__texte">
+                {nom.trim() !== '' && (
+                  <p>
+                    <strong>{nom}</strong>
+                  </p>
+                )}
+                <p>
+                  Formation « Protection auditive » — Machines Roger International
+                  <br />
+                  complétée le <strong>{formaterDate(resultat.date)}</strong>
+                </p>
+                <p className="attestation__detail">
+                  Quiz : {bonnes} / {total} · Modules suivis : {modulesFaits} / {MODULES.length}
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+
+        {!reussi && resultat.modulesRates.length > 0 && (
+          <div className="a-revoir">
+            <p className="champ__etiquette">À revoir avant de réessayer</p>
+            {resultat.modulesRates.map((id) => (
+              <button
+                key={id}
+                type="button"
+                className="bouton bouton--secondaire"
+                onClick={() => onRevoir(id)}
+              >
+                Revoir « {titreModule(id)} »
+              </button>
+            ))}
           </div>
-          <button type="button" className="bouton" onClick={() => setEtat((precedent) => avancerQuiz(precedent))}>
-            {etat.index + 1 === QUESTIONS.length ? 'Voir mon résultat' : 'Question suivante'}
+        )}
+
+        {reussi && nom.trim() !== '' && (
+          <>
+            <button
+              type="button"
+              className="bouton"
+              onClick={enregistrerImage}
+              disabled={exportEtat === 'en-cours'}
+            >
+              {exportEtat === 'en-cours' ? 'Préparation…' : "Enregistrer l'attestation (image)"}
+            </button>
+            {exportEtat === 'telechargement' && (
+              <p className="champ__aide" role="status">
+                Image envoyée aux téléchargements — vérifie la notification ou
+                l'app Fichiers.
+              </p>
+            )}
+            {exportEtat === 'echec' && (
+              <p className="champ__aide" role="status">
+                L'image n'a pas pu être produite sur cet appareil — utilise « Imprimer ».
+              </p>
+            )}
+            {/* Le canvas ne sert qu'à produire le fichier : jamais affiché. */}
+            <canvas ref={refCanvas} hidden aria-hidden="true" />
+          </>
+        )}
+
+        <div className="barre-boutons" style={{ marginTop: 10 }}>
+          <button
+            type="button"
+            className={`bouton${reussi ? ' bouton--secondaire' : ''}`}
+            onClick={onRecommencer}
+          >
+            Refaire le quiz
           </button>
-        </>}
-        {etat.reponses.length > 0 && <button type="button" className="bouton bouton--secondaire" style={{ marginTop: 12 }} onClick={recommencer}>Recommencer le quiz</button>}
+          {reussi && nom.trim() !== '' && (
+            <button type="button" className="bouton bouton--secondaire" onClick={() => window.print()}>
+              Imprimer
+            </button>
+          )}
+        </div>
+
+        <Avertissement>
+          Cette attestation est <strong>générée sur ton appareil</strong>, à
+          partir de ce que tu as déclaré. Garde-la : c'est ton employeur et le
+          comité SST qui tiennent le registre officiel de formation, et ils
+          peuvent te demander de la présenter.
+        </Avertissement>
       </Carte>
+
+      {ratees.length > 0 && (
+        <Carte titre="Mes erreurs" source={pluriel(ratees.length, 'question', 'questions')}>
+          <p className="carte__intro">
+            La bonne réponse est en vert, la tienne en rouge. Chaque explication
+            renvoie à la diapo de la formation.
+          </p>
+          {ratees.map(({ q, i, choisi }) => (
+            <details key={i} className="relecture">
+              <summary>
+                <span className="relecture__num">{i + 1}</span>
+                {q.enonce}
+              </summary>
+              <ListeReponses>
+                {q.options.map((_, j) => (
+                  <OptionQuestion key={j} question={q} i={j} choisi={choisi} onChoisir={() => {}} />
+                ))}
+              </ListeReponses>
+              <div className="declic">{q.explication}</div>
+              <button
+                type="button"
+                className="bouton bouton--secondaire"
+                onClick={() => onRevoir(q.module)}
+              >
+                Revoir « {titreModule(q.module)} »
+              </button>
+            </details>
+          ))}
+        </Carte>
+      )}
     </>
   );
 }

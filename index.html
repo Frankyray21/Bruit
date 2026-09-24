@@ -153,20 +153,40 @@
 
         function montrer() {
           var racine = document.getElementById('root');
-          if (racine && racine.childElementCount === 0) {
-            document.getElementById('secours').style.display = 'block';
+          var secours = document.getElementById('secours');
+          if (racine && secours && racine.childElementCount === 0) {
+            secours.style.display = 'block';
           }
         }
 
         // Si l'application n'a rien monté après 5 secondes, on affiche le
-        // message plutôt qu'une page vide.
+        // message plutôt qu'une page vide — et on le retire dès qu'elle monte,
+        // même tard (téléphone lent, première visite).
         setTimeout(montrer, 5000);
+        var racineObs = document.getElementById('root');
+        if (racineObs && window.MutationObserver) {
+          new MutationObserver(function (_, obs) {
+            if (racineObs.childElementCount > 0) {
+              var secours = document.getElementById('secours');
+              if (secours) secours.style.display = 'none';
+              obs.disconnect();
+            }
+          }).observe(racineObs, { childList: true });
+        }
 
         // Le stockage de l'origine est partagé avec TMS et les autres apps.
         // Vite remplace BASE_URL par le chemin de CETTE livraison (/Bruit/).
         // Workbox ajoute registration.scope aux noms de ses caches par défaut.
         // Une portée voisine, racine ou enfant n'appartient pas à cette app.
         document.getElementById('reinitialiser').addEventListener('click', function () {
+          // Sous terre, vider le cache reviendrait à effacer l'app sans pouvoir
+          // la retélécharger : on refuse tant qu'il n'y a pas de réseau.
+          if (navigator.onLine === false) {
+            noter(
+              'Pas de réseau : ce bouton a besoin du Wi-Fi de la surface. Pour l’instant, touche « Simplement recharger ».',
+            );
+            return;
+          }
           var bouton = document.getElementById('reinitialiser');
           if (bouton.disabled) return;
           bouton.disabled = true;

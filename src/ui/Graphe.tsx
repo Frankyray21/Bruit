@@ -25,10 +25,10 @@ export interface GraduationY {
   readonly label: string;
 }
 
-const L = 44; // marge gauche (étiquettes Y)
+const L = 56; // marge gauche (étiquettes Y : « 200 % », « ×1000 » en 14 px)
 const R = 14; // marge droite
-const T = 16; // marge haute
-const B = 26; // marge basse (étiquettes X)
+const T = 18; // marge haute
+const B = 28; // marge basse (étiquettes X)
 const LARG = 360;
 const HAUT = 196;
 const PL = LARG - L - R; // largeur du tracé
@@ -358,15 +358,29 @@ export interface SommetDose {
   readonly dose: number;
 }
 
-const DOSE_PLAFOND = 200; // % : au-delà, la courbe est écrasée (signalé)
+/**
+ * Échelle verticale de l'horloge de dose : elle s'adapte à la dose réelle du
+ * quart pour montrer la courbe au complet, avec des graduations rondes (au
+ * plus cinq). Une dose de 347 % s'affiche sur 0-400 %, une dose de 100 000 %
+ * (jackleg, 8 h) sur 0-125 000 % — et la ligne des 100 % se retrouve alors
+ * collée à l'axe : c'est exactement ce que le chiffre veut dire.
+ */
+export function echelleDose(doseTotale: number): { max: number; pas: number } {
+  const cible = Math.max(100, doseTotale);
+  const pas =
+    [25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000, 25000, 50000, 100000].find(
+      (p) => cible / p <= 5,
+    ) ?? 100000;
+  return { max: Math.max(pas, Math.ceil(cible / pas) * pas), pas };
+}
 
 /**
  * Horloge de dose — dose cumulée d'un quart en fonction des heures écoulées.
  *
  * Honnête par construction : axe X en HEURES ÉCOULÉES (pas en heure murale — la
- * pile de tâches n'est pas horodatée) ; plafond 200 % ÉTIQUETÉ (la vraie dose,
- * souvent bien plus haute, est affichée à part) ; le franchissement des 100 %
- * est marqué ; la courbe cumulée ne redescend jamais.
+ * pile de tâches n'est pas horodatée) ; échelle Y adaptée à la dose réelle,
+ * pour que la courbe soit toujours entière ; le franchissement des 100 % est
+ * marqué ; la courbe cumulée ne redescend jamais.
  */
 export function HorlogeDose({
   sommets,
@@ -386,10 +400,11 @@ export function HorlogeDose({
   const id = useId().replace(/:/g, '');
   const heures = sommets.length ? sommets[sommets.length - 1]!.h : 8;
   const xMax = Math.max(8, Math.min(12, Math.ceil(heures)));
-  const depasse = doseTotale > DOSE_PLAFOND;
+  const sommetMax = sommets.reduce((m, s) => Math.max(m, s.dose), doseTotale);
+  const { max: yMax, pas } = echelleDose(sommetMax);
 
   const projX = (h: number) => L + (Math.min(h, xMax) / xMax) * PL;
-  const projY = (d: number) => T + (1 - Math.min(d, DOSE_PLAFOND) / DOSE_PLAFOND) * PH;
+  const projY = (d: number) => T + (1 - Math.min(d, yMax) / yMax) * PH;
 
   const ligne = sommets
     .map((s, i) => `${i ? 'L' : 'M'}${projX(s.h).toFixed(1)} ${projY(s.dose).toFixed(1)}`)
@@ -397,7 +412,8 @@ export function HorlogeDose({
   const aire = `${ligne} L${projX(heures).toFixed(1)} ${(T + PH).toFixed(1)} L${projX(0).toFixed(1)} ${(T + PH).toFixed(1)} Z`;
 
   const y100 = projY(100);
-  const gradY = [0, 50, 100, 150, 200];
+  const gradY: number[] = [];
+  for (let v = 0; v <= yMax; v += pas) gradY.push(v);
   const ticksX = [];
   for (let h = 0; h <= xMax; h += 2) ticksX.push(h);
 
@@ -416,7 +432,7 @@ export function HorlogeDose({
           <g key={`y-${v}`}>
             <line className="graphe__grille" x1={L} y1={y} x2={L + PL} y2={y} />
             <text className="graphe__gradY" x={L - 8} y={y} dominantBaseline="middle" textAnchor="end">
-              {v === 0 ? '0' : `${v} %`}
+              {v === 0 ? '0' : `${entier(v)} %`}
             </text>
           </g>
         );
@@ -449,10 +465,11 @@ export function HorlogeDose({
         <g>
           <circle className="graphe__halo" cx={projX(momentLimite)} cy={y100} r="8" />
           <circle className="graphe__point graphe__point--rouge" cx={projX(momentLimite)} cy={y100} r="5.5" />
+          {/* L'étiquette passe au-dessus quand la ligne des 100 % touche le bas. */}
           <text
             className="graphe__valeur"
             x={projX(momentLimite) + 10}
-            y={y100 + 20}
+            y={y100 > T + PH - 24 ? y100 - 10 : y100 + 20}
             textAnchor="start"
           >
             {momentLabel}
@@ -460,10 +477,15 @@ export function HorlogeDose({
         </g>
       )}
 
-      {/* Vraie dose, quand elle sort de l'échelle */}
-      {depasse && (
-        <text className="graphe__hors" x={L + PL} y={T + 14} textAnchor="end">
-          ↑ dose réelle {Math.round(doseTotale)} % (hors échelle)
+      {/* Dose finale, posée près du dernier sommet. */}
+      {sommets.length > 1 && (
+        <text
+          className="graphe__hors"
+          x={projX(heures) - 6}
+          y={Math.max(T + 12, projY(sommets[sommets.length - 1]!.dose) - 8)}
+          textAnchor="end"
+        >
+          {entier(doseTotale)} % en fin de quart
         </text>
       )}
     </svg>

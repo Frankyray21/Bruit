@@ -154,46 +154,70 @@ comité SST.
 - [x] Données de référence structurées en JSON (RSST, métiers, tâches, protecteurs, statistiques)
 - [x] Relevé des incohérences de la source (voir §7)
 
-### Phase 1 — Moteur de calcul
+### Phase 1 — Moteur de calcul ✅ *(terminée)*
 
-- [ ] `domain/rsst.ts` : durée permise, dose cumulée, Lex,8h
-- [ ] `domain/protection.ts` : dérating, double protection, temps de port
-- [ ] `domain/verdict.ts` : seuils et couleurs
-- [ ] Tests unitaires reproduisant **chaque ligne** des tables des diapos 6, 14 et 16
-- [ ] Configuration du facteur de dérating (défaut 60 %, ajustable)
+- [x] `domain/rsst.ts` : durée permise, dose cumulée, Lex,8h
+- [x] `domain/protection.ts` : dérating, double protection, temps de port
+- [x] `domain/verdict.ts` : seuils et couleurs
+- [x] Tests unitaires reproduisant **chaque ligne** des tables des diapos 6, 14 et 16
+- [x] Configuration du facteur de dérating (défaut 60 %, ajustable — réglages du formateur)
 
 *Livrable : un moteur testé, indépendant de toute interface.*
 
-### Phase 2 — Coquille PWA
+### Phase 2 — Coquille PWA ✅ *(terminée)*
 
-- [ ] Projet Vite + React + TypeScript
-- [ ] Service worker, manifeste, installation sur écran d'accueil
-- [ ] Vérification hors-ligne réelle (mode avion)
-- [ ] Système de composants « terrain » : boutons ≥ 64 px, thème sombre, contrastes
-- [ ] Déploiement continu sur GitHub Pages
+- [x] Projet Vite + React + TypeScript
+- [x] Service worker, manifeste, installation sur écran d'accueil
+- [ ] Vérification hors-ligne réelle (mode avion) — *à faire sur un vrai téléphone*
+- [x] Système de composants « terrain » : boutons ≥ 64 px, thème sombre, contrastes
+- [x] Déploiement continu sur GitHub Pages
 
 *Livrable : une app installable et vide, mais déployée et testable sur téléphone.*
 
-### Phase 3 — Calculateur
+### Phase 3 — Calculateur ✅ *(terminée)*
 
-- [ ] Écran « Mon quart » : sélection par métier
-- [ ] Composition de tâches multiples avec durées (dose cumulée)
-- [ ] Écran « Ma protection » : sélection du protecteur, atténuation réelle
-- [ ] **Curseur de temps de port** — l'écran signature
-- [ ] Simulation de double protection avec l'avertissement « ça ne s'additionne pas »
-- [ ] Écran de verdict avec code couleur
+- [x] Écran « Mon quart » : sélection par métier
+- [x] Composition de tâches multiples avec durées (dose cumulée)
+- [x] Écran « Ma protection » : sélection du protecteur, atténuation réelle
+- [x] **Curseur de temps de port** — l'écran signature
+- [x] Simulation de double protection avec l'avertissement « ça ne s'additionne pas »
+- [x] Écran de verdict avec code couleur
 
 *Livrable : le premier pilier, utilisable sur le terrain.*
 
-### Phase 4 — Formation et quiz
+### Phase 4 — Formation et quiz ✅ *(terminée)*
 
-- [ ] 6 modules à partir de `docs/formation-source.md`
-- [ ] Illustrations : schéma de l'oreille, cellules ciliées, gestes d'installation
-- [ ] Banque de questions et moteur de quiz
-- [ ] Attestation locale exportable
-- [ ] Suivi de progression (modules complétés)
+- [x] 6 modules à partir de `docs/formation-source.md`
+- [x] Illustrations : coupe animée de l'oreille, cochlée 3D, gestes d'installation
+- [x] Banque de questions et moteur de quiz
+- [x] Attestation locale imprimable
+- [x] Suivi de progression (modules complétés)
 
 *Livrable : le second pilier. Application fonctionnellement complète.*
+
+### Phase 4 bis — Expérience de formation ✅ *(terminée)*
+
+Revue UX complète en vue de l'usage en formation de travailleurs.
+
+- [x] Question de validation à la fin de chaque module, « Terminé » conditionné
+- [x] Enchaînement « module suivant », bouton « Continuer », prochain module
+      mis en évidence, durée estimée, en-tête « Module n / 6 »
+- [x] Profil du travailleur (nom, poste, protecteur) repris par tous les outils
+- [x] Boîte à outils organisée autour des trois questions du §Objectif
+- [x] Quiz persistant (place gardée), ordre tiré au sort, relecture des
+      erreurs avec renvoi au module, résultat mémorisé avec sa date
+- [x] Zone et module ouverts mémorisés ; mise à jour automatique sans perte
+- [x] Espace « Réglages du formateur » (projection, facteur d'efficacité,
+      réinitialisation de l'appareil) — plus rien de « à trancher » dans
+      les écrans du travailleur
+- [x] Cartes optionnelles (modèles 3D, clip) invisibles si le fichier manque
+- [x] Mobile : défilement remis en haut à chaque écran, scène 3D et courbes
+      qui ne piègent plus le balayage, débordement horizontal du module 4
+      corrigé, pouce de curseur 32 px, contours de contrôles à 3:1, textes
+      secondaires agrandis
+- [x] Accessibilité : curseurs annoncés (aria-valuetext), bascules
+      aria-pressed, ✓/✕ en plus de la couleur au quiz, h1 par module, titre
+      d'onglet par écran, focus géré, minuteur annoncé
 
 ### Phase 5 — Validation terrain
 

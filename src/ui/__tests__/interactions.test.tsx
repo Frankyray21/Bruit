@@ -5,15 +5,15 @@ import { Champ, Curseur, Selecteur, Resultat, Verdict } from '../composants.js';
 
 describe('Repère tactile du graphique', () => {
   it.each([0.65, 1, 1.5, 2.8])('conserve 85 dBA au même point après un redimensionnement ×%s', (zoom) => {
-    // L'axe 80–116 est dessiné entre x=44 et x=346 dans le viewBox.
-    const x85 = 44 + ((85 - 80) / 36) * 302;
+    // L'axe 80–116 est dessiné entre x=56 et x=346 dans le viewBox (L = 56, PL = 290).
+    const x85 = 56 + ((85 - 80) / 36) * 290;
     const matrice = { a: zoom, b: 0, c: 0, d: zoom, e: 27, f: 140 };
     expect(niveauDepuisPointeur(27 + x85 * zoom, 140 + 50 * zoom, matrice, 80, 116)).toBe(85);
   });
 
   it('le début du tracé signifie 85, pas une fraction de la largeur du cadre', () => {
     const matrice = { a: 2, b: 0, c: 0, d: 2, e: 13, f: 70 };
-    expect(niveauDepuisPointeur(13 + 44 * 2, 90, matrice, 85, 115)).toBe(85);
+    expect(niveauDepuisPointeur(13 + 56 * 2, 90, matrice, 85, 115)).toBe(85);
     expect(niveauDepuisPointeur(13 + 346 * 2, 90, matrice, 85, 115)).toBe(115);
   });
 
@@ -25,7 +25,7 @@ describe('Repère tactile du graphique', () => {
 
   it('respecte également une transformation inclinée', () => {
     const matrice = { a: 1.6, b: 0.2, c: 0.3, d: 1.8, e: 40, f: 90 };
-    const x = 44 + ((94 - 85) / 30) * 302;
+    const x = 56 + ((94 - 85) / 30) * 290;
     const y = 70;
     expect(niveauDepuisPointeur(matrice.a * x + matrice.c * y + matrice.e,
       matrice.b * x + matrice.d * y + matrice.f, matrice, 85, 115)).toBe(94);

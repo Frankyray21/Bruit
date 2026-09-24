@@ -6,7 +6,6 @@
  * souvent finie au sens réglementaire avant la pause-café.
  */
 
-import { useState } from 'react';
 import {
   dose,
   formaterDuree,
@@ -16,7 +15,9 @@ import {
 } from '../domain/rsst.js';
 import { verdictDose } from '../domain/verdict.js';
 import { taches } from '../data/index.js';
-import { Carte, Declic, Ligne, Resultat, Verdict } from '../ui/composants.js';
+import { useStockage } from '../etat/stockage.js';
+import { useTravailleur } from '../etat/travailleur.js';
+import { Carte, Champ, Declic, Ligne, Resultat, Verdict } from '../ui/composants.js';
 import { HorlogeDose, type SommetDose } from '../ui/Graphe.js';
 import { nb, pourcent } from '../ui/format.js';
 
@@ -27,16 +28,31 @@ interface LigneQuart extends TacheDomaine {
 
 const QUART_DEBUT_H = 7;
 
-let prochaineCle = 0;
-
+/** L'exemple d'atelier de la formation (diapo 8). */
 const DEPART: LigneQuart[] = [
-  { cle: prochaineCle++, nom: 'Meulage', niveauDBA: 95, dureeH: 2 },
-  { cle: prochaineCle++, nom: 'Marteau aiguille', niveauDBA: 92, dureeH: 1.5 },
-  { cle: prochaineCle++, nom: 'Ambiant en pause', niveauDBA: 66, dureeH: 2 },
+  { cle: 1, nom: 'Meulage', niveauDBA: 95, dureeH: 2 },
+  { cle: 2, nom: 'Marteau aiguille', niveauDBA: 92, dureeH: 1.5 },
+  { cle: 3, nom: 'Ambiant en pause', niveauDBA: 66, dureeH: 2 },
 ];
 
 export function ComposeurQuart() {
-  const [lignes, setLignes] = useState<LigneQuart[]>(DEPART);
+  const { poste } = useTravailleur();
+  // Le quart composé est conservé : réglé dans le module, retrouvé dans la
+  // boîte à outils, et encore là le lendemain.
+  const [lignes, setLignes] = useStockage<LigneQuart[]>('quart', DEPART);
+  const cleSuivante = () => lignes.reduce((max, l) => Math.max(max, l.cle), 0) + 1;
+
+  const monQuart: LigneQuart[] = [
+    { cle: 1, nom: poste.nom, niveauDBA: poste.niveau_dBA, dureeH: 8 },
+  ];
+  const estMonQuart =
+    lignes.length === 1 &&
+    lignes[0]!.nom === poste.nom &&
+    lignes[0]!.dureeH === 8 &&
+    lignes[0]!.niveauDBA === poste.niveau_dBA;
+  const estExemple =
+    lignes.length === DEPART.length &&
+    lignes.every((l, i) => l.nom === DEPART[i]!.nom && l.dureeH === DEPART[i]!.dureeH);
 
   const total = dose(lignes);
   const lex = niveauEquivalent8h(total);
@@ -63,7 +79,7 @@ export function ComposeurQuart() {
     setLignes([
       ...lignes,
       {
-        cle: prochaineCle++,
+        cle: cleSuivante(),
         nom: tache.nom,
         niveauDBA: tache.niveau_dBA,
         dureeH: 1,
@@ -85,6 +101,27 @@ export function ComposeurQuart() {
       source="diapos 7 et 8"
       intro="Empile tes tâches de la journée. La dose se cumule : 100 %, c'est la limite réglementaire du quart."
     >
+      <Champ etiquette="Point de départ">
+        <div className="choix">
+          <button
+            type="button"
+            className={`choix__option${estMonQuart ? ' choix__option--actif' : ''}`}
+            aria-pressed={estMonQuart}
+            onClick={() => setLignes(monQuart)}
+          >
+            Mon poste, 8 h
+          </button>
+          <button
+            type="button"
+            className={`choix__option${estExemple ? ' choix__option--actif' : ''}`}
+            aria-pressed={estExemple}
+            onClick={() => setLignes(DEPART)}
+          >
+            L'exemple d'atelier
+          </button>
+        </div>
+      </Champ>
+
       {lignes.map((l, i) => (
         <Ligne
           key={l.cle}
@@ -135,9 +172,9 @@ export function ComposeurQuart() {
           momentLimite={moment}
           momentLabel={moment !== null ? formaterDuree(moment) : ''}
           doseTotale={total}
-          aria={`Dose cumulée du quart en fonction des heures écoulées : elle franchit la limite des 100 %${
-            moment !== null ? ` après ${formaterDuree(moment)}` : ''
-          } et atteint ${Math.round(total)} % en fin de quart. La dose ne redescend jamais ; les heures sont comptées dans l'ordre des tâches, en partant de zéro.`}
+          aria={`Dose cumulée du quart en fonction des heures écoulées${
+            moment !== null ? ` : elle franchit la limite des 100 % après ${formaterDuree(moment)}` : ''
+          } et atteint ${Math.round(total)} % en fin de quart. L'échelle s'adapte à la dose ; la dose ne redescend jamais ; les heures sont comptées dans l'ordre des tâches, en partant de zéro.`}
         />
       )}
 

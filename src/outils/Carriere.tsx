@@ -5,11 +5,12 @@
  * Il ne prédit PAS de perte auditive.
  */
 
-import { useState } from 'react';
 import { cumulCarriere } from '../domain/carriere.js';
 import { dureePermise, formaterDuree } from '../domain/rsst.js';
 import { energieRelative } from '../domain/sources.js';
-import { metierParId, metiers, taches } from '../data/index.js';
+import { taches } from '../data/index.js';
+import { useStockage } from '../etat/stockage.js';
+import { useTravailleur } from '../etat/travailleur.js';
 import {
   Avertissement,
   Carte,
@@ -17,15 +18,14 @@ import {
   Curseur,
   Declic,
   Resultat,
-  Selecteur,
 } from '../ui/composants.js';
+import { ChampPoste } from '../ui/ProfilChamps.js';
 import { entier, nb } from '../ui/format.js';
 
 export function Carriere() {
-  const [metierId, setMetierId] = useState('foreur-long-trou');
-  const [annees, setAnnees] = useState(25);
+  const { poste: metier } = useTravailleur();
+  const [annees, setAnnees] = useStockage('carriere-annees', 25);
 
-  const metier = metierParId(metierId) ?? metiers[0]!;
   const cumul = cumulCarriere(
     [{ niveauDBA: metier.niveau_dBA, dureeH: 8 }],
     annees,
@@ -34,17 +34,10 @@ export function Carriere() {
   return (
     <Carte
       titre="Sur une carrière"
-      source="hors formation"
+      source="complément"
       intro="Un quart de huit heures à ce poste, sans protection, consomme plusieurs fois la dose quotidienne permise. Voici ce que ça donne sur une carrière."
     >
-      <Champ etiquette="Mon poste">
-        <Selecteur
-          options={metiers}
-          valeur={metierId}
-          onChange={setMetierId}
-          format={(m) => `${m.nom} — ${m.niveau_dBA} dBA`}
-        />
-      </Champ>
+      <ChampPoste />
 
       <Champ etiquette="Années à ce poste">
         <Curseur
@@ -55,6 +48,7 @@ export function Carriere() {
           onChange={setAnnees}
           affichage={`${annees} ans`}
           legende="240 jours travaillés par an"
+          etiquette="Années à ce poste"
         />
       </Champ>
 
@@ -74,8 +68,8 @@ export function Carriere() {
       <Avertissement>
         <strong>Ce n'est pas un pronostic médical.</strong> C'est le compteur du
         règlement, prolongé dans le temps. Projeter une perte auditive réelle
-        demanderait la norme ISO 1999 — le site ne le fait pas, et ne le fera
-        pas avec des coefficients approximés.
+        demanderait une norme spécialisée (ISO 1999) : ce compteur ne le fait
+        pas.
       </Avertissement>
     </Carte>
   );
@@ -91,7 +85,7 @@ export function Substitution() {
     <Carte
       titre="Changer d'outil, pas juste de bouchons"
       source="diapo 8"
-      intro="La formation ne parle que d'équipement de protection. Mais ses propres mesures montrent qu'un changement d'outil vaut mieux qu'un meilleur bouchon."
+      intro="Les mesures de la mine le montrent : changer d'outil fait parfois plus qu'un meilleur bouchon."
     >
       {paires.map(({ avant, apres }) => {
         const a = taches.find((t) => t.id === avant)!;

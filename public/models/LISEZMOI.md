@@ -1,49 +1,82 @@
-# Modèles 3D d'oreille (optionnels)
+# Modèles 3D d'oreille
 
-Le site sait afficher **deux** modèles 3D `.glb`, chacun optionnel. Sans
-fichier, chaque emplacement affiche un repli propre (aucune erreur, aucune
-scène vide).
+Le site sait afficher **deux** modèles 3D `.glb` dans le module « Ce que le
+bruit détruit ». Sans fichier, l'emplacement n'affiche rien (aucune erreur,
+aucune scène vide).
 
-| Fichier | Où il apparaît | Ce qu'on y montre |
+| Fichier | Ce qu'on y montre | État |
 |---|---|---|
-| **`oreille.glb`** | Le hero d'accueil **et** le module « Ce que le bruit détruit » | L'oreille complète : externe (pavillon, conduit, tympan) et interne (cochlée) |
-| **`cellules.glb`** | Le module « Ce que le bruit détruit » | Les cellules ciliées / l'organe de Corti — ce que le bruit détruit sans retour |
+| **`oreille.glb`** | Oreille complète : pavillon, conduit auditif, tympan, marteau, enclume, étrier, cochlée, vestibule et canaux semi-circulaires, nerf auditif (VIII) | **présent** (voir ci-dessous) |
+| **`cochlee.glb`** | La cochlée seule, dans la carte « La cochlée sous le bruit » : coquille en transparence, spirale du canal cochléaire enregistrée dans le fichier, organe de Corti reconstruit en code | **présent** (voir ci-dessous) |
+| **`cellules.glb`** | Les cellules ciliées / l'organe de Corti en gros plan — emplacement optionnel | absent (optionnel) |
 
-Le hero d'accueil montre d'abord le modèle Sketchfab « Ear cross-section »
-(annoté, il tourne tout seul) — mais celui-là vient du réseau. **Sans réseau**,
-le hero bascule sur `oreille.glb` s'il est déposé ici, sinon sur la cochlée
-générée en code, sur un fond d'ondes sonores. Déposer le `.glb` est donc ce qui
-donne un vrai modèle 3D au fond de la mine.
+## `oreille.glb` — provenance et licence
 
-## Où trouver un modèle libre et téléchargeable
+Modèle anatomique réel, à l'échelle (millimètres), assemblé à partir de
+[Z-Anatomy](https://github.com/Z-Anatomy) (Gauthier Kervyn et coll.,
+**CC BY-SA 4.0**), lui-même dérivé de :
 
-**NIH 3D — https://3d.nih.gov/** (recommandé)
-: modèles anatomiques souvent du **domaine public** (aucune attribution
-  requise), téléchargeables en `.glb`. Cherche `ear anatomy` pour l'oreille
-  complète, `cochlea` ou `organ of Corti` pour les cellules ciliées.
+- **BodyParts3D** (DBCLS, Université de Tokyo, CC BY-SA 2.1 JP) — pavillon
+  (fusion des régions de l'auricule gauche du fichier « Regions of human
+  body » : hélix, anthélix, tragus, antitragus, conque, scapha, fosse
+  triangulaire, lobule…), os temporal, nerf ;
+- **« Anatomy of the Inner Ear »** (University of Dundee, d'après *3D Ear*,
+  McGill, **CC BY-NC-SA 4.0**) — cochlée, vestibule, osselets, tympan.
 
-**Sketchfab — https://sketchfab.com/** (filtre « Downloadable »)
-: beaucoup de modèles, mais **vérifie la licence** avant de télécharger.
-  CC-BY = attribution obligatoire ; CC-BY-NC = usage non commercial seulement ;
-  CC0 = libre. Quelques pistes repérées (licence à vérifier au moment du
-  téléchargement) :
-  - Oreille complète : « Ear Anatomy » de *brianj.seely*, « Human ear anatomy »
-    de *paihub*.
-  - Cellules ciliées : « Inner Hair Cell » de *kj6420*, « Cochlear Ear Cilia »
-    de *PARSONSARTS*, la collection « Organ of Corti » de *fluttershift*.
+Le **conduit auditif externe** n'existe dans aucune des sources : c'est un
+tube lisse reconstruit (∅ 7 mm, courbure en S légère) du centre du tympan au
+fond de la conque, soit 21 mm, la longueur réelle une fois la conque comprise.
 
-**Meshy — https://www.meshy.ai/tags/ear** : modèles CC0 générés, `.glb` direct.
+Le nerf VIII de Z-Anatomy n'est qu'un filament tronqué au méat acoustique
+interne : il est remplacé par un tronc lisse à son calibre réel (3 mm de
+diamètre, 16 mm de long) qui part de la base de la cochlée (modiolus) dans la
+direction du filament d'origine.
 
-> Si le modèle choisi demande une attribution (CC-BY), indique-le : on peut
-> ajouter une ligne de crédit sous la visionneuse.
+> **Attention licence.** Les pièces de Dundee sont sous clause **NC** : usage
+> non commercial seulement, décision assumée par le propriétaire du site
+> (formation interne). La ligne de crédit sous la visionneuse est
+> obligatoire ; ne pas la retirer. La chaîne de crédit est aussi inscrite
+> dans le champ `asset.copyright` du fichier.
 
-## Marche à suivre
+Le modèle se refabrique avec l'outil `extraire.mjs` (décodage Draco des GLB
+Z-Anatomy, lecture du FBX des régions, transformation des nœuds, écriture
+d'un GLB propre par structure), conservé hors dépôt.
 
-1. Télécharge un `.glb` (oreille complète, et/ou cellules ciliées).
-2. Renomme-le **`oreille.glb`** ou **`cellules.glb`** et dépose-le dans ce
-   dossier (`public/models/`).
-3. Reconstruis le site (`npm run build`) — ou pousse le fichier, le déploiement
-   automatique s'en charge. Le hero et le module 4 l'affichent tout seuls.
+## `cochlee.glb` — la cochlée de l'animation « sous le bruit »
 
-Le fichier est empaqueté avec le site : une fois chargé, il est mis en cache et
-fonctionne **hors-ligne** comme le reste.
+Même cochlée (Dundee via Z-Anatomy, **CC BY-NC-SA 4.0**, usage non
+commercial), replacée dans un repère canonique en millimètres : origine au
+centre, **Y = axe du modiolus** (apex vers le haut), X vers le vestibule
+(côté de la base). Le nœud porte dans ses `extras` la **spirale du canal
+cochléaire** (200 points, base → apex, 2,5 tours, 38 mm) : à chaque angle,
+le rayon vaut 0,62 × celui de la paroi externe à cette hauteur (l'organe de
+Corti est à mi-chemin entre le modiolus et la paroi), lissé pour rester dans
+la coquille. Le sens d'enroulement est une convention, pas une mesure.
+
+L'app (`src/anim3d/scene.ts`) plante le long de cette spirale l'organe de
+Corti reconstruit : par station, une cellule ciliée interne (touffe en arc,
+deux rangs) et trois externes (touffes en V pointées vers la paroi, trois
+rangs en escalier), corps cellulaires et membrane basilaire. Échelle des
+cellules exagérée (des micromètres rendus en dixièmes de millimètre). S'y
+ajoutent la membrane tectoriale (gel translucide posé sur les touffes des
+CCE), les piliers du tunnel de Corti, les gradients base → apex (stéréocils
+et corps plus longs, membrane plus large vers l'apex) et des repères de
+fréquence placés selon la carte tonotopique de Greenwood (1990). Le modèle
+de dommage (encoche 3–6 kHz qui s'élargit, CCE avant CCI, première rangée
+d'abord) est dans `src/anim3d/tonotopie.ts`, avec ses références et ses
+tests. Sans le fichier, une spirale conique lisse prend le relais.
+
+## Ajouter `cellules.glb`
+
+**NIH 3D — https://3d.nih.gov/** : modèles souvent du **domaine public**,
+téléchargeables en `.glb` (`organ of Corti`, `cochlea`).
+**Sketchfab** (filtre « Downloadable ») : vérifie la licence — CC-BY =
+attribution ; CC-BY-NC = non commercial ; CC0 = libre.
+
+1. Renomme le fichier **`cellules.glb`** et dépose-le dans `public/models/`.
+2. Pousse : le déploiement automatique s'en charge, le module 4 l'affiche.
+3. Si le modèle demande une attribution, ajoute la prop `credit` sur la carte
+   dans `src/parcours/modules.tsx`.
+
+Les fichiers sont empaquetés et précachés avec le site : une fois chargés,
+ils fonctionnent **hors-ligne** comme le reste.

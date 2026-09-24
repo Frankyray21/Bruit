@@ -3,65 +3,40 @@
  *
  * Répond à la question que le curseur de temps de port fait naître sans y
  * répondre : « alors, combien de temps ai-je le droit de les enlever ? »
- * La sortie est un budget de minutes, pas une consigne morale.
+ * La sortie est un budget de minutes, pas une consigne morale. Poste et
+ * protecteur viennent du profil : ceux du travailleur, pas un exemple.
  */
 
-import { useState } from 'react';
 import { budgetRetrait } from '../domain/retrait.js';
 import { attenuationReelle } from '../domain/protection.js';
-import { bouchons, metierParId, metiers, protecteurParId } from '../data/index.js';
 import { useConfig } from '../etat/config.js';
-import {
-  Avertissement,
-  Carte,
-  Champ,
-  Resultat,
-  Selecteur,
-  Verdict,
-} from '../ui/composants.js';
+import { useTravailleur } from '../etat/travailleur.js';
+import { Avertissement, Carte, Resultat, Verdict } from '../ui/composants.js';
+import { ChampPoste, ChampProtecteur } from '../ui/ProfilChamps.js';
 import { formatMinutes } from './TempsDePort.js';
 import { nb } from '../ui/format.js';
 
 export function BudgetRetrait() {
-  const { facteurBouchons } = useConfig();
-  const [metierId, setMetierId] = useState('foreur-long-trou');
-  const [protecteurId, setProtecteurId] = useState('laser-lite');
-
-  const metier = metierParId(metierId) ?? metiers[0]!;
-  const protecteur = protecteurParId(protecteurId) ?? bouchons[0]!;
-  const nominale = attenuationReelle(protecteur.nrr, facteurBouchons);
+  const { facteurPour } = useConfig();
+  const { poste: metier, protecteur } = useTravailleur();
+  const nominale = attenuationReelle(protecteur.nrr, facteurPour(protecteur));
   const budget = budgetRetrait(metier.niveau_dBA, nominale);
 
   return (
     <Carte
       titre="Ton budget de retrait"
-      source="diapo 16, inversée"
+      source="d'après la diapo 16"
       intro="« Porter la protection en tout temps » est un slogan que personne n'applique à la lettre : tout le monde enlève ses bouchons pour parler. Voici combien de temps tu peux le faire sans dépasser la norme."
     >
-      <Champ etiquette="Mon poste">
-        <Selecteur
-          options={metiers}
-          valeur={metierId}
-          onChange={setMetierId}
-          format={(m) => `${m.nom} — ${m.niveau_dBA} dBA`}
-        />
-      </Champ>
-
-      <Champ etiquette="Mon protecteur">
-        <Selecteur
-          options={bouchons}
-          valeur={protecteurId}
-          onChange={setProtecteurId}
-          format={(p) => `${p.nom} — NRR ${p.nrr}`}
-        />
-      </Champ>
+      <ChampPoste />
+      <ChampProtecteur />
 
       {budget.realisable ? (
         <>
           <Resultat
             etiquette="Retrait toléré sur ton quart"
             valeur={formatMinutes(Math.floor(budget.minutesDeRetrait))}
-            note={`soit un port de ${nb((budget.tempsDePortMinimal * 100), 1)} % du temps`}
+            note={`soit un port de ${nb(budget.tempsDePortMinimal * 100, 1)} % du temps`}
             ton={budget.minutesDeRetrait < 30 ? 'jaune' : 'vert'}
           />
           <Verdict
@@ -88,8 +63,8 @@ export function BudgetRetrait() {
           <Avertissement>
             <strong>Ce n'est pas un problème de discipline.</strong> Aucun temps
             de port ne suffit ici : il faut une double protection, une rotation
-            de poste, ou une réduction du bruit à la source. À signaler au
-            comité SST.
+            de poste, ou une réduction du bruit à la source. Parles-en à ton
+            superviseur ou au comité SST.
           </Avertissement>
         </>
       )}

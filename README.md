@@ -34,10 +34,7 @@ Installable sur téléphone depuis le menu du navigateur (« Ajouter à l'écran
 d'accueil »), et fonctionnel **sans réseau** une fois installé.
 
 Le workflow `.github/workflows/deploy.yml` rejoue les tests, construit le site et
-publie le résultat sur la branche `gh-pages` après une poussée sur `main`
-(ou sur une branche historique `claude/**`). Les améliorations passent par une
-pull request vers **`main`**, la source de la version déployée, même si GitHub
-affiche une autre branche par défaut.
+publie le résultat sur la branche `gh-pages` à chaque poussée.
 
 > **Une manipulation est requise une seule fois**, dans
 > **Réglages → Pages → Build and deployment** : choisir la source
@@ -50,40 +47,79 @@ affiche une autre branche par défaut.
 
 ## État du projet
 
-Site fonctionnel : 6 modules de formation, une boîte à outils, un quiz de
-14 questions avec attestation, un mode présentation pour le formateur. Les
-76 tests du moteur reproduisent les tableaux de la formation ; des tests
-supplémentaires couvrent navigation, stockage, quiz, contrôles et récupération.
+Site fonctionnel : 6 modules de formation, chacun fermé par une question de
+validation, une boîte à outils organisée autour des trois questions ci-dessus,
+un quiz de 14 questions avec attestation, et un espace « Réglages du
+formateur ». Le moteur de calcul est couvert par 76 tests qui reproduisent
+chaque ligne des tableaux de la formation (142 tests au total).
 
-### Version 0.6.0 — interface et fiabilité
+### Le parcours du travailleur
 
-- Accueil repensé et navigation adaptée au téléphone, à la tablette et au bureau.
-- Six modules accessibles par lien direct, retour navigateur et reprise du parcours.
-- Dix entrées dans la boîte à outils : recherche et catégories, un outil à la fois.
-  Les réglages des outils ouverts sont conservés en mémoire pendant la visite,
-  mais pas après rechargement (sauf préférences de calcul déjà persistantes).
-- Quiz sauvegardé sur cet appareil, y compris la réponse courante et la date du
-  résultat. Attestation imprimable après réussite ; seuil et questions inchangés.
-- Réinitialisation avec confirmation, limitée au nom, au parcours et au quiz.
-- Stockage validé ; fonctionnement en mémoire lorsque le navigateur le refuse.
-- Mise à jour installable seulement après confirmation, sans recharge automatique
-  du quiz en cours. Le bouton de secours ne nettoie que le cache de Bruit.
-- Vues 3D à la demande, vidéo sans lecture automatique, modèle externe Sketchfab
-  chargé uniquement sur demande. Aucun appel aux médias optionnels absents.
-- Repères tactiles des graphiques corrigés, contrôles nommés et navigation clavier.
+1. **Dis-moi ton poste** — poste et protecteur choisis une fois (à l'accueil ou
+   dans « Moi »), repris par tous les calculateurs : « Mon poste » n'est plus
+   demandé cinq fois.
+2. **Six modules dans l'ordre** — bouton « Commencer / Continuer », prochain
+   module mis en évidence, durée estimée, en-tête « Module n / 6 ». Chaque
+   module se termine par **une question de validation** : « Terminé » ne
+   s'active qu'après réponse, puis enchaîne sur le module suivant.
+3. **Le quiz** — 14 questions dans un ordre tiré au sort, 12 bonnes réponses
+   requises, place gardée si on quitte l'app. En cas d'échec, la liste des
+   modules à revoir et la relecture de chaque erreur ; en cas de réussite,
+   l'attestation (nom, date, score, modules suivis), imprimable.
+4. **« Moi »** — profil, progression (modules faits, questions ratées,
+   résultat du quiz), installation de l'app, et les réglages du formateur.
 
-Les données de référence, le moteur de calcul et les 14 questions sont conservés.
+Tout est mémorisé sur l'appareil : la zone et le module ouverts, la
+progression, le quiz en cours. Une mise à jour automatique ne fait rien
+perdre.
+
+### L'espace du formateur
+
+Dans « Moi › Réglages du formateur » : le mode **Projeter** (gros caractères,
+une carte par écran, flèches ← → pour avancer, Échap pour la liste, F pour le
+plein écran, et au quiz un bouton « Révéler » pour faire voter la salle avant
+de dévoiler la réponse), le **facteur d'efficacité des bouchons** (60 % par
+défaut, voir §7 du plan), et **Réinitialiser cet appareil** pour un téléphone
+ou une tablette de prêt.
+
+En projection, l'accueil affiche un **code QR** vers le site : chacun le scanne
+et installe l'app pendant la séance. Le QR est un SVG versionné
+(`public/qr.svg`), régénéré par `npm run qr` si l'adresse change — rien n'est
+chargé depuis le réseau. Le même QR et un bouton « Partager le lien à un
+collègue » sont dans « Moi ». Ouvert depuis Messenger, Teams ou un SMS (un
+navigateur intégré qui ne sait pas installer d'app), le site le détecte et
+propose de copier le lien pour l'ouvrir dans Chrome ou Safari.
+
+L'attestation de réussite s'imprime, ou s'**enregistre en image** (PNG) pour
+la garder sur le téléphone ou l'envoyer — sans imprimante ni réseau.
 
 ```bash
-npm ci
+npm install
 npm run dev      # développement
-npm test         # calculs, interface et fiabilité
+npm test         # 82 tests (moteur de calcul, attestation, détection de navigateur)
 npm run build    # typecheck + build de production
+npm run qr       # régénère public/qr.svg (npm run qr -- https://autre.adresse/)
 ```
 
-Voir **[PLAN.md](PLAN.md)** pour le plan par phases et
+Voir **[PLAN.md](PLAN.md)** pour le plan par phases,
 **[docs/catalogue-outils.md](docs/catalogue-outils.md)** pour l'inventaire des
-29 outils interactifs et la sélection retenue pour la v1.
+29 outils interactifs et la sélection retenue pour la v1, et
+**[docs/audit-ux.md](docs/audit-ux.md)** pour l'audit d'expérience mené en vue
+de la formation des travailleurs (méthode, diagnostic, corrections, points à
+trancher).
+
+### Deux lignes de travail réunies (v0.8.0)
+
+Entre juillet et septembre 2026, deux lignes ont avancé en parallèle : celle de
+l'audit UX et des modèles anatomiques (v0.2 → v0.7, publiée), et une refonte
+« interface et fiabilité » sur `main` (hero Sketchfab, catalogue d'outils,
+mise à jour sur demande). La fusion garde la ligne publiée pour tout ce qui
+se voit, et reprend de l'autre ce qui est autonome : nettoyage de cache limité
+à la portée de l'app (page de secours), inventaire des médias au build,
+vidéos sans lecture automatique, étiquetage accessible des champs, courbe
+réglable au clavier, stockage local validé, et leurs 44 tests. Le lecteur
+Sketchfab (réseau obligatoire) et le hero 3D ne sont pas repris : le site
+reste entièrement hors-ligne.
 
 ## Structure du dépôt
 
@@ -92,32 +128,36 @@ PLAN.md                       Plan de réalisation par phases
 docs/formation-source.md      Contenu intégral de la formation, diapo par diapo
 docs/modele-de-calcul.md      Les 8 formules, leur validation et leurs limites
 docs/catalogue-outils.md      Les 29 outils interactifs, priorisés
+docs/audit-ux.md              Audit UX pour la formation : diagnostic et corrections
 data/rsst-art137.json         Table réglementaire des durées permises
 data/metiers.json             Niveaux mesurés par métier et par tâche
 data/protecteurs.json         Protecteurs auditifs et leur NRR
 data/statistiques-cnesst.json Données de surdité professionnelle au Québec
 src/domain/                   Moteur de calcul, pur et sans dépendance UI
 src/domain/__tests__/         Un test par ligne des diapos 6, 14 et 16
+src/etat/                     Profil, progression, quiz et réglages (localStorage)
+src/parcours/                 Les 6 modules et la question de validation
+src/quiz/                     Banque de questions, quiz, attestation
+src/outils/                   Les calculateurs
+src/ui/                       Composants « terrain », graphiques SVG, champs du profil
 src/anim3d/                   Cochlée 3D interactive (Three.js, chargée à la demande)
 ```
+
+L'accueil est volontairement léger : un fond d'ondes sonores dessiné en SVG,
+aucune 3D — Three.js n'est chargé qu'au module 4.
 
 Le module « Ce que le bruit détruit » contient une **vue 3D de la cochlée** :
 on la tourne au doigt, et un curseur de bruit couche puis détruit les cellules
 ciliées — d'abord dans la zone des aigus, comme dans la réalité. Three.js est
-embarqué en local et son rendu n'est activé qu'au clic sur « Ouvrir la vue 3D ».
-Le service worker télécharge aussi ce bundle pour préparer le hors-ligne. C'est une
+embarqué dans le bundle (aucun chargement externe) et n'est téléchargé qu'à
+l'ouverture du module, pour ne pas ralentir les calculateurs. C'est une
 illustration schématique, pas un examen médical.
 
-Le même module renvoie à l'animation **« Le voyage du son »** de la NIDCD
-(NIH), du **domaine public**. La vidéo locale `public/videos/videoplayback.mp4`
-est incluse dans le précache. L'autre animation reste un lien externe tant que
-son fichier optionnel n'est pas présent. L'inventaire des vidéos et modèles GLB
-est produit à la construction : reconstruire après ajout d'un média.
-
-La préparation hors ligne doit être terminée avant de couper le réseau ; le
-site affiche son état. Le lecteur externe Sketchfab et les liens vers des
-ressources externes ne sont pas disponibles hors ligne. Un modèle optionnel de
-plus de 6 Mo doit faire l'objet d'une décision explicite sur le budget de cache.
+Le même module joue l'animation **« Le voyage du son »** de la NIDCD (NIH),
+du **domaine public**, embarquée dans `public/videos/`. Deux emplacements
+supplémentaires (un clip sur les cellules ciliées, deux modèles 3D `.glb`)
+restent **optionnels** : ils n'apparaissent à l'écran que si le fichier est
+déposé — voir `public/videos/LISEZMOI.md` et `public/models/LISEZMOI.md`.
 
 Le moteur `src/domain/` est **vérifiable sans démarrer le site**. C'est
 volontaire : les formules sont la valeur réelle du projet et le formateur doit

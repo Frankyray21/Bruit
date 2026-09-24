@@ -1,17 +1,19 @@
+import { readdirSync, readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-import paquet from './package.json' with { type: 'json' };
-import { readdirSync } from 'node:fs';
 
 // Inventaire à la construction : ne jamais réclamer un média optionnel absent.
 const fichiers = (dossier: string, extension: string) =>
-  readdirSync(new URL(`./public/${dossier}/`, import.meta.url)).filter(nom => nom.endsWith(extension));
+  readdirSync(new URL(`./public/${dossier}/`, import.meta.url)).filter((nom) => nom.endsWith(extension));
 
-// Version affichée = numéro du paquet + moment du build (celui de la CI à
-// chaque déploiement). Le numéro dit quelle livraison est en ligne, l'heure
-// confirme que le navigateur n'a pas gardé une vieille copie en cache.
-const HORODATAGE = new Date()
+// Estampille de version = numéro de package.json + moment du build (celui de
+// la CI à chaque déploiement). Affichée dans le site pour confirmer qu'on est
+// sur la dernière version : « 0.2.0 · 2026-09-24 09 h 12 ».
+const NUMERO = (JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {
+  version: string;
+}).version;
+const MOMENT = new Date()
   .toLocaleString('fr-CA', {
     timeZone: 'America/Toronto',
     day: '2-digit',
@@ -21,8 +23,7 @@ const HORODATAGE = new Date()
     minute: '2-digit',
   })
   .replace(',', '');
-
-const VERSION = `${paquet.version} · ${HORODATAGE}`;
+const VERSION = `${NUMERO} · ${MOMENT}`;
 
 // Le site est publié sur https://frankyray21.github.io/Bruit/ — d'où le base.
 // BASE_PATH=/ permet de servir la racine en local ou sur un autre hébergeur.
@@ -36,7 +37,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
         name: 'Bruit — Protection auditive',
@@ -47,7 +48,7 @@ export default defineConfig({
         theme_color: '#c8102e',
         background_color: '#0d1117',
         display: 'standalone',
-        orientation: 'portrait',
+        orientation: 'any',
         start_url: '.',
         icons: [
           { src: 'icone-192.png', sizes: '192x192', type: 'image/png' },
@@ -72,7 +73,7 @@ export default defineConfig({
         // peuvent servir des fichiers qui n'existent plus — d'où une page vide.
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: false,
+        skipWaiting: true,
       },
     }),
   ],

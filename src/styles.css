@@ -13,6 +13,9 @@
   --fond-carte-haut: #1a2332;
   --fond-2: #0d1320;
   --bordure: #1e293b;
+  /* Contour des contrôles (options, sélecteurs, boutons) : assez clair pour
+     que la limite du composant se voie sous une lampe frontale. */
+  --bordure-controle: #5d7096;
   --texte: #f1f5f9;
   --texte-doux: #9aa7bd;
   --texte-faible: #8694ad;
@@ -239,7 +242,8 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  min-height: 60px;
+  padding: 8px 16px;
   border-bottom: 1px solid var(--bordure);
   background: var(--fond);
   position: sticky;
@@ -321,9 +325,10 @@ button {
 
 .carte__titre {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
+  gap: 4px 12px;
   margin-bottom: 14px;
 }
 
@@ -348,17 +353,28 @@ button {
 /* La source (« diapo 11 ») devient un kicker rouge en capitales. */
 .carte__source {
   font-family: var(--font-display);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--rouge-clair);
+  color: var(--texte-faible);
   white-space: nowrap;
+}
+
+/* Le kicker court (« diapo 11 ») ne se coupe pas ; une ligne de crédit entière
+   (source d'une vidéo, d'un modèle) doit au contraire se replier : en nowrap,
+   elle élargissait la page à 680 px et faisait dézoomer tout le module 4 sur
+   téléphone. */
+.carte__source--credit {
+  display: block;
+  white-space: normal;
+  letter-spacing: 0.06em;
+  overflow-wrap: anywhere;
 }
 
 .carte__intro {
   color: var(--texte-doux);
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   margin-bottom: 16px;
 }
 
@@ -384,10 +400,10 @@ button {
 }
 
 .choix__option {
-  min-height: 52px;
+  min-height: 56px;
   padding: 10px 16px;
   border-radius: 10px;
-  border: 1px solid var(--bordure);
+  border: 1px solid var(--bordure-controle);
   background: var(--fond-carte-haut);
   font-size: 0.95rem;
   flex: 1 1 auto;
@@ -399,22 +415,74 @@ button {
   font-weight: 600;
 }
 
-select.choix__select {
+/* Sélecteur natif et champ de saisie : même gabarit, même cible de 64 px. */
+select.choix__select,
+input.choix__select {
+  display: block;
   width: 100%;
   min-height: var(--cible);
   padding: 0 14px;
   border-radius: 10px;
-  border: 1px solid var(--bordure);
+  border: 1px solid var(--bordure-controle);
   background: var(--fond-carte-haut);
   color: var(--texte);
+  font: inherit;
   font-size: 1rem;
 }
 
+input.choix__select::placeholder {
+  color: var(--texte-faible);
+}
+
 input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   height: var(--cible);
+  margin: 0;
   accent-color: var(--rouge);
   background: transparent;
+  cursor: pointer;
+}
+
+/* Pouce de 32 px sur une piste de 8 px : le doigt ganté le trouve. */
+input[type='range']::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--bordure-controle);
+}
+input[type='range']::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--bordure-controle);
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 32px;
+  height: 32px;
+  margin-top: -12px;
+  border-radius: 50%;
+  background: var(--rouge-clair);
+  border: 3px solid var(--fond);
+  box-shadow: 0 0 0 1px var(--rouge-clair);
+}
+input[type='range']::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--rouge-clair);
+  border: 3px solid var(--fond);
+  box-shadow: 0 0 0 1px var(--rouge-clair);
+}
+input[type='range']:focus-visible {
+  outline: none;
+}
+input[type='range']:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px var(--bleu);
+}
+input[type='range']:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 4px var(--bleu);
 }
 
 .curseur__valeur {
@@ -459,7 +527,7 @@ input[type='range'] {
 }
 
 .resultat__note {
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   color: var(--texte-doux);
   margin-top: 6px;
 }
@@ -517,7 +585,7 @@ input[type='range'] {
   background: color-mix(in srgb, var(--orange) 10%, transparent);
   padding: 12px 14px;
   border-radius: 0 8px 8px 0;
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   color: var(--texte-doux);
   margin-top: 14px;
 }
@@ -569,6 +637,10 @@ input[type='range'] {
 .barre--ok {
   border-left-color: var(--vert);
 }
+.barre--neutre {
+  border-left-color: var(--bordure);
+  color: var(--texte-doux);
+}
 .barre--actif {
   outline: 2px solid var(--rouge);
 }
@@ -581,7 +653,7 @@ input[type='range'] {
 
 .barre__note {
   grid-column: 1 / -1;
-  font-size: 0.8rem;
+  font-size: 0.86rem;
   color: var(--texte-doux);
 }
 
@@ -619,7 +691,7 @@ input[type='range'] {
 }
 
 .ligne__note {
-  font-size: 0.8rem;
+  font-size: 0.86rem;
   color: var(--texte-doux);
   margin-top: 4px;
 }
@@ -631,16 +703,16 @@ input[type='range'] {
 }
 
 .ligne__bouton {
-  min-height: 48px;
+  min-height: 56px;
   flex: 1;
   border-radius: 8px;
-  border: 1px solid var(--bordure);
+  border: 1px solid var(--bordure-controle);
   background: var(--fond-carte);
   font-size: 0.9rem;
 }
 
 .ligne__bouton--retirer {
-  flex: 0 0 56px;
+  flex: 0 0 64px;
   color: var(--rouge-clair);
   font-size: 1.2rem;
 }
@@ -667,47 +739,6 @@ input[type='range'] {
   border-radius: 12px;
   background: #000;
   border: 1px solid var(--bordure);
-}
-
-/* ---------- Intégration Sketchfab ---------- */
-
-/*
- * Le lecteur Sketchfab n'a pas de hauteur propre : sans ce cadre, l'iframe
- * s'écrase à la hauteur par défaut (150 px). Le ratio garde la même allure du
- * téléphone à la projection en salle.
- */
-.sketchfab-embed-wrapper {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  max-height: 70vh;
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--fond);
-  border: 1px solid var(--bordure);
-}
-
-.sketchfab-embed-wrapper__attente {
-  margin: 0;
-  color: var(--texte-doux);
-  font-size: 0.9rem;
-}
-
-.sketchfab-embed-wrapper iframe {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.sketchfab-embed-wrapper iframe.est-chargee {
-  opacity: 1;
 }
 
 /* ---------- Bannière « installer l'app » ---------- */
@@ -758,8 +789,9 @@ input[type='range'] {
 
 .installer-banniere__fermer {
   flex: 0 0 auto;
-  width: 36px;
-  height: 36px;
+  width: 56px;
+  height: 56px;
+  margin-left: 2px;
   border-radius: 8px;
   color: var(--texte-doux);
   font-size: 1.3rem;
@@ -794,7 +826,9 @@ input[type='range'] {
 /* On peut aussi régler le niveau en glissant sur la courbe : cible large,
    utilisable avec des gants ; le glissement ne fait pas défiler la page. */
 .graphe--interactif {
-  touch-action: none;
+  /* pan-y : le doigt qui balaie vers le bas fait défiler la page ; le
+     glissement horizontal règle le niveau. */
+  touch-action: pan-y;
   cursor: pointer;
 }
 
@@ -806,9 +840,9 @@ input[type='range'] {
 
 .graphe__gradY,
 .graphe__gradX {
-  fill: var(--texte-faible);
+  fill: var(--texte-doux);
   font-family: system-ui, sans-serif;
-  font-size: 12px;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -849,7 +883,7 @@ input[type='range'] {
   fill: var(--texte);
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 15px;
+  font-size: 18px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -864,7 +898,7 @@ input[type='range'] {
 .graphe__seuil-lbl {
   fill: var(--texte-doux);
   font-family: system-ui, sans-serif;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 /* Valeur qui sort de l'échelle (dose réelle au-delà du plafond). */
@@ -872,7 +906,7 @@ input[type='range'] {
   fill: var(--rouge-clair);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 /* ---------- Échelle des métiers (dot plot HTML) ---------- */
@@ -893,7 +927,7 @@ input[type='range'] {
 .echelle__repere {
   position: absolute;
   transform: translateX(-50%);
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   color: var(--texte-faible);
   white-space: nowrap;
 }
@@ -921,8 +955,10 @@ input[type='range'] {
   outline: 2px solid var(--rouge);
 }
 
-.echelle__ligne:hover {
-  background: color-mix(in srgb, var(--rouge) 6%, var(--fond-carte-haut));
+@media (hover: hover) {
+  .echelle__ligne:hover {
+    background: color-mix(in srgb, var(--rouge) 6%, var(--fond-carte-haut));
+  }
 }
 
 .echelle__nom {
@@ -952,12 +988,12 @@ input[type='range'] {
   top: -3px;
   bottom: -3px;
   width: 2px;
-  background: var(--texte-faible);
-  opacity: 0.6;
+  background: var(--texte-doux);
+  opacity: 0.9;
 }
 
 .echelle__norme--faible {
-  opacity: 0.3;
+  opacity: 0.45;
 }
 
 /* Le point encode la POSITION (dBA), pas une longueur : pas de faux ratio. */
@@ -983,7 +1019,7 @@ input[type='range'] {
 
 .echelle__note {
   grid-column: 1 / -1;
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   color: var(--texte-doux);
 }
 
@@ -991,45 +1027,112 @@ input[type='range'] {
   color: var(--texte);
 }
 
-/* ---------- Hero d'accueil (modèle 3D d'oreille) ---------- */
+/* ---------- Coupe anatomique animée (SVG) ---------- */
 
-/*
- * Le hero déborde de la colonne de contenu, jusqu'à ses bords : c'est une
- * image, elle n'a pas de marge à respecter. Rien ne se superpose au modèle —
- * titre et crédit sont posés dessous, dans `.hero__legende`.
- */
-.hero {
-  position: relative;
-  overflow: hidden;
-  background: #000;
-  /* Grand, mais jamais au point d'avaler l'écran : sur un portable bas de
-     plafond, la borne en `vh` garde le début des modules visible. */
-  min-height: min(420px, 52vh);
-  margin: -20px -16px 0;
-  display: flex;
+.oreille-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: var(--fond);
+  border: 1px solid var(--bordure);
+  border-radius: 12px;
+  padding: 8px;
 }
 
-/* Entre la tablette et le grand écran, le hero grandit déjà. */
-@media (min-width: 980px) {
-  .hero {
-    min-height: min(520px, 64vh);
+.oreille-etiq text {
+  font-family: system-ui, sans-serif;
+}
+
+/* L'onde parcourt la spirale : un tiret court sur une longue période. */
+.oreille-fluide {
+  stroke-dasharray: 60 470;
+  opacity: 0.95;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .onde {
+    animation: onde-entre 2.4s ease-in-out infinite;
+  }
+  .onde2 {
+    animation-delay: 0.3s;
+  }
+  .onde3 {
+    animation-delay: 0.6s;
+  }
+  @keyframes onde-entre {
+    0% {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+    40% {
+      opacity: 0.9;
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(10px);
+    }
+  }
+
+  /* Le tympan vibre (légère variation de bombé), les osselets basculent
+     autour de la tête du marteau, l'étrier pousse la fenêtre ovale. */
+  .oreille-tympan {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: tympan-vibre 0.5s ease-in-out infinite;
+  }
+  @keyframes tympan-vibre {
+    0%, 100% { transform: scaleX(1); }
+    50% { transform: scaleX(0.62); }
+  }
+
+  .oreille-osselets {
+    transform-box: fill-box;
+    transform-origin: 22% 12%;
+    animation: osselets-bascule 0.5s ease-in-out infinite;
+  }
+  @keyframes osselets-bascule {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(2.2deg); }
+  }
+
+  .oreille-etrier {
+    animation: etrier-pousse 0.5s ease-in-out infinite;
+  }
+  @keyframes etrier-pousse {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(1.6px); }
+  }
+
+  /* L'onde de pression parcourt la spirale, de la base vers l'apex. */
+  .oreille-fluide {
+    animation: fluide-parcourt 2.4s linear infinite;
+  }
+  @keyframes fluide-parcourt {
+    from { stroke-dashoffset: 530; }
+    to { stroke-dashoffset: 0; }
+  }
+
+  .oreille-nerf {
+    stroke-dasharray: 6 8;
+    animation: nerf-file 1.2s linear infinite;
+  }
+  @keyframes nerf-file {
+    to { stroke-dashoffset: -14; }
   }
 }
 
-/*
- * Le lecteur Sketchfab occupe tout le cadre et reste manipulable au doigt.
- * Son fond est transparent (`transparent=1`) : le noir affiché derrière le
- * modèle est celui de `.hero`, pas celui du modèle.
- */
-.hero__sketchfab {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0;
-  border: 0;
+/* ---------- Hero d'accueil (ondes sonores en fond) ---------- */
+
+.hero {
+  position: relative;
+  border-radius: var(--rayon);
+  overflow: hidden;
+  border: 1px solid var(--bordure);
+  min-height: 340px;
+  margin-bottom: 22px;
+  display: flex;
 }
 
-/* Repli hors-ligne : ondes sonores et, si la 3D locale existe, le modèle. */
 .hero__media {
   position: absolute;
   inset: 0;
@@ -1040,20 +1143,6 @@ input[type='range'] {
   inset: 0;
   width: 100%;
   height: 100%;
-}
-
-.hero__gl {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  transition: opacity 0.6s var(--ease);
-}
-
-.hero__gl canvas {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -1082,22 +1171,60 @@ input[type='range'] {
   }
 }
 
-/* Titre de la page et crédit d'auteur — sous le cadre, jamais devant. */
-.hero__legende {
-  padding: 20px 0 22px;
+/* Voile : sombre en bas et à gauche pour que le titre reste lisible. */
+.hero__voile {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to top,
+      var(--fond) 2%,
+      rgba(10, 14, 23, 0.4) 40%,
+      transparent 70%
+    ),
+    linear-gradient(to right, rgba(10, 14, 23, 0.75), transparent 65%);
 }
 
-.hero__credit {
-  margin: 10px 0 0;
-  font-size: 0.75rem;
-  color: var(--texte-faible);
+.hero__contenu {
+  position: relative;
+  z-index: 1;
+  align-self: flex-end;
+  padding: 22px;
+  width: 100%;
 }
 
-.hero__credit a {
-  color: var(--texte-doux);
+@media (min-width: 980px) {
+  .hero {
+    min-height: 420px;
+  }
 }
 
 /* ---------- Scène 3D ---------- */
+
+.legende3d {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 0.9rem;
+  color: var(--texte-doux);
+}
+
+.legende3d li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.legende3d__pastille {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  flex: none;
+}
 
 .scene3d {
   width: 100%;
@@ -1106,7 +1233,10 @@ input[type='range'] {
   overflow: hidden;
   background: var(--fond);
   border: 1px solid var(--bordure);
-  touch-action: none; /* le glissement tourne la cochlée, il ne défile pas */
+  /* pan-y : un balayage vertical fait défiler la page (sinon la scène, qui
+     occupe presque tout l'écran d'un téléphone, piégeait le défilement) ; un
+     glissement horizontal tourne la cochlée. */
+  touch-action: pan-y;
   cursor: grab;
 }
 
@@ -1188,8 +1318,26 @@ input[type='range'] {
 }
 
 .module-carte__sous {
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   color: var(--texte-doux);
+}
+
+.module-carte__meta {
+  font-size: 0.8rem;
+  color: var(--texte-faible);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+/* Le prochain module à faire se repère sans lire : bordure rouge. */
+.module-carte--suivant {
+  border-color: var(--rouge);
+  box-shadow: 0 0 0 1px var(--rouge) inset;
+}
+
+.module-carte--suivant .module-carte__meta {
+  color: var(--rouge-clair);
 }
 
 .module-carte__chevron {
@@ -1217,14 +1365,25 @@ input[type='range'] {
     box-shadow 0.2s var(--ease);
 }
 
-.bouton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(210, 35, 37, 0.35);
+@media (hover: hover) {
+  .bouton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(210, 35, 37, 0.35);
+  }
+}
+
+.bouton:active,
+.choix__option:active,
+.quiz__option:not(:disabled):active,
+.module-carte:active,
+.ligne__bouton:active {
+  transform: scale(0.985);
+  transition: transform 60ms;
 }
 
 .bouton--secondaire {
   background: var(--fond-carte-haut);
-  border: 1px solid var(--bordure);
+  border: 1px solid var(--bordure-controle);
   color: var(--texte);
 }
 
@@ -1257,7 +1416,7 @@ input[type='range'] {
   min-height: var(--cible);
   padding: 14px 16px;
   border-radius: 12px;
-  border: 1px solid var(--bordure);
+  border: 1px solid var(--bordure-controle);
   background: var(--fond-carte-haut);
   margin-bottom: 10px;
 }
@@ -1273,7 +1432,7 @@ input[type='range'] {
 }
 
 .quiz__progression {
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   color: var(--texte-doux);
   margin-bottom: 10px;
 }
@@ -1302,7 +1461,7 @@ input[type='range'] {
   border-radius: 12px;
   background: var(--fond-carte-haut);
   margin-bottom: 10px;
-  opacity: 0.45;
+  opacity: 0.62;
 }
 
 .etape--active {
@@ -1345,7 +1504,7 @@ input[type='range'] {
 .liste-puces {
   padding-left: 20px;
   color: var(--texte-doux);
-  font-size: 0.92rem;
+  font-size: 0.95rem;
 }
 
 .liste-puces li {
@@ -1369,95 +1528,11 @@ input[type='range'] {
 }
 
 .pied {
-  font-size: 0.78rem;
+  font-size: 0.84rem;
   color: var(--texte-doux);
   text-align: center;
   padding: 24px 8px 8px;
   line-height: 1.5;
-}
-
-/* ---------- Grand écran : occuper la largeur sans casser la lecture ---------- */
-
-/*
- * Le site est pensé au pouce, sur un téléphone à 400 px. Sur un écran
- * d'ordinateur, la même colonne de 720 px laissait les deux tiers de l'écran
- * vides — en salle de formation, projeté, ça donne un timbre-poste.
- *
- * Le compromis retenu : la page s'élargit, mais tout ne s'élargit pas avec
- * elle. Ce qui se lit (un module, le quiz) reste dans une colonne étroite,
- * parce qu'une ligne de 1100 px se lit mal. Ce qui se parcourt (la liste des
- * modules, les calculateurs) passe sur deux colonnes.
- */
-@media (min-width: 1200px) {
-  .contenu {
-    max-width: 1140px;
-    padding: 28px 32px 60px;
-  }
-
-  /* Colonne de lecture : le texte d'un module suit un fil, il ne se met pas
-     en colonnes. */
-  .lecture {
-    max-width: 760px;
-    margin: 0 auto;
-  }
-
-  .module-liste {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-  }
-
-  /* Les calculateurs sont indépendants les uns des autres : deux colonnes les
-     rendent comparables d'un coup d'œil au lieu d'un long défilement. */
-  .grille {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-    align-items: start;
-  }
-
-  .grille > .carte {
-    margin-bottom: 0;
-  }
-
-  /* Un « retour » large de 760 px sur un écran d'ordinateur ressemble à une
-     erreur : à la souris, on vise, on n'a pas besoin d'une cible au pouce. */
-  .bouton--retour {
-    width: auto;
-    min-width: 220px;
-  }
-
-  /* Le hero gagne en hauteur : le modèle 3D a besoin d'air pour être lisible. */
-  .hero {
-    min-height: min(620px, 68vh);
-    margin: -28px -32px 0;
-  }
-
-  h1 {
-    font-size: 2rem;
-  }
-}
-
-@media (min-width: 1600px) {
-  .contenu {
-    max-width: 1320px;
-  }
-
-  .hero {
-    min-height: min(720px, 72vh);
-  }
-}
-
-/* Mode présentation : une seule colonne, plus grosse — on projette, on ne
-   parcourt pas. */
-.app--presentation .grille,
-.app--presentation .module-liste {
-  display: flex;
-  flex-direction: column;
-}
-
-.app--presentation .grille > .carte {
-  margin-bottom: 16px;
 }
 
 /* ---------- Mode présentation ---------- */
@@ -1522,13 +1597,32 @@ input[type='range'] {
   }
 
   .entete,
+  .entete__progression,
+  .sidebar,
   .nav,
   .pied,
   .avertissement,
   .barre-boutons,
   .installer-banniere,
+  .a-revoir,
+  .relecture,
   .bouton {
     display: none !important;
+  }
+
+  /* Seule la carte de l'attestation s'imprime, pas la relecture des erreurs. */
+  .carte:not(:has(.attestation)) {
+    display: none !important;
+  }
+
+  .attestation__kicker,
+  .attestation__texte,
+  .attestation__detail {
+    color: #000;
+  }
+
+  .attestation input {
+    display: none;
   }
 
   .contenu {
@@ -1563,4 +1657,1085 @@ input[type='range'] {
     font-size: 10pt;
     color: #444;
   }
+}
+
+
+/* ---------- En-tête : retour, position dans le parcours ---------- */
+
+.entete__retour {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  margin-left: -8px;
+  border-radius: 10px;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--texte);
+}
+
+.entete__retour:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.entete__titre {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.entete__kicker {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  color: var(--rouge-clair);
+}
+
+/* Le bouton « Projeter » ne concerne que la salle : masqué sur téléphone,
+   où il se règle dans « Moi › Réglages du formateur ». */
+.entete__action--bureau {
+  display: none;
+}
+
+@media (min-width: 980px) {
+  .entete__action--bureau {
+    display: inline-block;
+  }
+}
+
+.entete__progression {
+  position: sticky;
+  top: 61px;
+  z-index: 9;
+  height: 3px;
+  background: var(--bordure);
+}
+
+.entete__progression span {
+  display: block;
+  height: 100%;
+  background: var(--g-rouge);
+  transition: width 0.3s var(--ease);
+}
+
+/* ---------- Module ouvert ---------- */
+
+.module__en-tete {
+  margin: 4px 2px 16px;
+}
+
+.module__en-tete .carte__source {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.module__objectif {
+  font-size: 1.02rem;
+  color: var(--texte);
+}
+
+.module-fin {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.module-fin__aide {
+  font-size: 0.9rem;
+  color: var(--texte-doux);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.bouton__sous {
+  display: block;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.82rem;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.9;
+}
+
+.bouton {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.bouton--danger {
+  background: var(--fond-carte-haut);
+  border: 1px solid var(--rouge-clair);
+  color: var(--rouge-clair);
+}
+
+.bouton--danger:hover {
+  box-shadow: none;
+}
+
+/* ---------- Hero : état et appel à l'action ---------- */
+
+.hero__etat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.hero__compteur {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--bordure);
+  background: rgba(10, 14, 23, 0.7);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.hero__compteur--ok {
+  border-color: var(--vert);
+  color: var(--vert);
+}
+
+.hero__cta {
+  margin-top: 0;
+}
+
+/* ---------- Boîte à outils : trois questions ---------- */
+
+.section-titre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 26px 0 12px;
+  font-size: 1.25rem;
+}
+
+.section-titre__num {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--g-rouge);
+  color: #fff;
+  font-size: 1rem;
+}
+
+.profil-rappel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--bordure);
+  background: var(--fond-carte);
+  font-size: 0.92rem;
+  color: var(--texte-doux);
+}
+
+.profil-rappel strong {
+  color: var(--texte);
+}
+
+.profil-rappel span {
+  flex: 1;
+  min-width: 0;
+}
+
+.profil-rappel__action {
+  flex: 0 0 auto;
+  min-height: 48px;
+  padding: 8px 16px;
+  border-radius: 9px;
+  border: 1px solid var(--bordure);
+  background: var(--fond-carte-haut);
+  color: var(--texte);
+  font-weight: 600;
+}
+
+.tag--moi {
+  margin-left: 8px;
+  border-color: var(--rouge);
+  color: var(--rouge-clair);
+}
+
+/* ---------- Quiz : avancement, lettres, relecture ---------- */
+
+.quiz__barre {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--fond-carte-haut);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.quiz__barre span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--g-rouge);
+  transition: width 0.3s var(--ease);
+}
+
+.quiz__question:focus-visible {
+  outline-offset: 6px;
+}
+
+.quiz__option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quiz__lettre {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--bordure);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--texte-doux);
+}
+
+.quiz__option--juste .quiz__lettre {
+  background: var(--vert);
+  border-color: var(--vert);
+  color: #06210c;
+}
+
+.quiz__option--faux .quiz__lettre {
+  background: var(--rouge-clair);
+  border-color: var(--rouge-clair);
+  color: #fff;
+}
+
+.quiz__option:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.lien {
+  display: inline;
+  padding: 0;
+  min-height: 0;
+  color: var(--rouge-clair);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 600;
+}
+
+.attestation__kicker {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--texte-doux);
+  margin-bottom: 4px;
+}
+
+.attestation--echec {
+  border-color: var(--jaune);
+}
+
+.attestation--echec .attestation__score {
+  color: var(--jaune);
+}
+
+.attestation__texte {
+  margin-top: 16px;
+  line-height: 1.5;
+}
+
+.attestation__detail {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--texte-doux);
+}
+
+.a-revoir {
+  margin-top: 16px;
+}
+
+.a-revoir .bouton {
+  margin-top: 8px;
+}
+
+.relecture {
+  border: 1px solid var(--bordure);
+  border-radius: 12px;
+  padding: 0 14px;
+  margin-bottom: 10px;
+  background: var(--fond-carte-haut);
+}
+
+.relecture summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--cible);
+  padding: 10px 0;
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+
+.relecture summary::-webkit-details-marker {
+  display: none;
+}
+
+.relecture__num {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--fond-carte);
+  border: 1px solid var(--bordure);
+  font-size: 0.9rem;
+  color: var(--rouge-clair);
+}
+
+.relecture[open] summary {
+  border-bottom: 1px solid var(--bordure);
+  margin-bottom: 12px;
+}
+
+.relecture .reponse {
+  background: var(--fond-carte);
+}
+
+.relecture .bouton {
+  margin-bottom: 14px;
+}
+
+/* ---------- Confirmation en place (aucune fenêtre modale) ---------- */
+
+.confirmation {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--rouge-clair);
+  background: color-mix(in srgb, var(--rouge-clair) 10%, transparent);
+}
+
+.confirmation p {
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+.confirmation .bouton {
+  margin-top: 0;
+}
+
+/* ---------- Réglages du formateur ---------- */
+
+.formateur {
+  border: 1px dashed var(--bordure);
+  border-radius: var(--rayon);
+  padding: 0 18px;
+  margin-bottom: 16px;
+}
+
+.formateur summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--cible);
+  padding: 12px 0;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--texte-doux);
+}
+
+.formateur summary::-webkit-details-marker {
+  display: none;
+}
+
+.formateur summary::before {
+  content: '›';
+  display: inline-block;
+  transition: transform 0.2s var(--ease);
+  font-size: 1.3rem;
+}
+
+.formateur[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.formateur[open] summary {
+  border-bottom: 1px solid var(--bordure);
+  margin-bottom: 16px;
+}
+
+.formateur > .carte {
+  margin-top: 14px;
+}
+
+.formateur > .bouton,
+.formateur > .confirmation {
+  margin-bottom: 16px;
+}
+
+.champ__aide {
+  margin-top: 8px;
+  font-size: 0.88rem;
+  color: var(--texte-doux);
+}
+
+/* Une carte masquée le reste même si un style lui donne un display. */
+.carte[hidden] {
+  display: none;
+}
+
+
+/* ---------- Divers (suite) ---------- */
+
+/* Texte pour le lecteur d'écran seulement. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Choix retenu mais pas encore révélé (vote de la salle en projection). */
+.quiz__option--provisoire {
+  border-color: var(--bleu);
+  box-shadow: 0 0 0 1px var(--bleu) inset;
+}
+
+.quiz__option--provisoire .quiz__lettre {
+  border-color: var(--bleu);
+  color: var(--texte);
+}
+
+h1.entete__titre {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.15;
+}
+
+/* Étiquettes de la coupe de l'oreille : un liseré sombre les détache du dessin. */
+.oreille-etiq text {
+  paint-order: stroke;
+  stroke: var(--fond);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+/* Valeurs rapides sous un curseur : une rangée de gros boutons. */
+.choix--rapides {
+  margin-top: 4px;
+}
+
+.choix--rapides .choix__option {
+  flex: 1 1 0;
+  min-height: 56px;
+  padding: 8px 6px;
+  font-size: 0.9rem;
+}
+
+/* Sommaire de la boîte à outils. */
+.sommaire {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 14px 0 6px;
+}
+
+.sommaire__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--cible);
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--bordure-controle);
+  background: var(--fond-carte);
+  text-align: left;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+}
+
+.sommaire__item .section-titre__num {
+  width: 30px;
+  height: 30px;
+  font-size: 0.9rem;
+}
+
+.section-titre {
+  scroll-margin-top: 80px;
+}
+
+.section-titre:focus-visible {
+  outline: none;
+}
+
+/* ---------- Premier lancement : trois étapes ---------- */
+
+.etapes-accueil {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.etapes-accueil__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: var(--cible);
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--bordure-controle);
+  background: var(--fond-carte-haut);
+  text-align: left;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.etapes-accueil__item strong {
+  color: var(--texte);
+}
+
+.etapes-accueil__num {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--g-rouge);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+
+.icone-partager {
+  vertical-align: -4px;
+  margin: 0 2px;
+}
+
+.installer-banniere__action {
+  min-height: 56px;
+}
+
+/* ---------- Projection : une carte par écran ---------- */
+
+.app--presentation .contenu > .carte {
+  min-height: calc(100dvh - 110px);
+  scroll-margin-top: 70px;
+  margin-bottom: 40px;
+}
+
+.app--presentation .contenu > .carte:has(.attestation),
+.app--presentation .contenu > .carte:has(.quiz__question) {
+  min-height: 0;
+}
+
+/* ---------- Code QR et partage ---------- */
+
+.hero__coin {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 1;
+}
+
+.qr {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff;
+  color: #0a0e17;
+  text-align: center;
+}
+
+.qr img {
+  display: block;
+  width: 120px;
+  height: 120px;
+}
+
+.qr figcaption {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
+.qr figcaption span {
+  color: #4b5563;
+  font-size: 0.74rem;
+  word-break: break-all;
+}
+
+.qr--grand {
+  padding: 16px;
+}
+
+.qr--grand img {
+  width: 220px;
+  height: 220px;
+}
+
+.qr--grand figcaption {
+  font-size: 1rem;
+}
+
+.partage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.partage .bouton {
+  flex: 1 1 200px;
+  margin-top: 0;
+}
+
+/* Sur téléphone, le QR de projection n'a pas de sens : le hero reste sobre. */
+@media (max-width: 979px) {
+  .hero__coin {
+    display: none;
+  }
+}
+
+/* En projection, le texte du hero laisse la colonne de droite au QR : un code
+   partiellement recouvert ne se scanne pas. */
+@media (min-width: 980px) {
+  .hero:has(.hero__coin) .hero__contenu {
+    padding-right: 300px;
+  }
+}
+
+@media print {
+  .qr,
+  .partage {
+    display: none !important;
+  }
+}
+
+/* ---------- Question de validation : impossible à manquer ---------- */
+
+.carte--validation {
+  border: 2px solid var(--rouge);
+  background: color-mix(in srgb, var(--rouge) 9%, var(--fond-carte));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--rouge) 22%, transparent);
+  margin-top: 26px;
+}
+
+.carte--validation .carte__titre h2 {
+  font-size: 1.7rem;
+}
+
+.carte--validation .carte__titre h2::after {
+  width: 52px;
+  height: 4px;
+}
+
+.carte--validation .carte__source {
+  color: var(--rouge-clair);
+  font-weight: 700;
+}
+
+.carte--validation .quiz__question {
+  font-size: 1.25rem;
+}
+
+.carte--validation .reponse {
+  border-color: color-mix(in srgb, var(--rouge-clair) 55%, var(--bordure-controle));
+}
+
+.validation__etat {
+  margin: -4px 0 12px;
+}
+
+.validation__pastille {
+  display: inline-block;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--g-rouge);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.validation__pastille--fait {
+  background: var(--vert);
+  color: #06210c;
+}
+
+.carte--validation-faite {
+  border-color: var(--vert);
+  background: color-mix(in srgb, var(--vert) 7%, var(--fond-carte));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--vert) 18%, transparent);
+}
+
+.carte--validation-faite .carte__source {
+  color: var(--vert);
+}
+
+.carte--validation-faite .reponse {
+  border-color: var(--bordure-controle);
+}
+
+/* Un léger battement à l'arrivée, seulement si le système accepte le mouvement. */
+@media (prefers-reduced-motion: no-preference) {
+  .carte--validation:not(.carte--validation-faite) {
+    animation: validation-appel 2.4s var(--ease) 2;
+  }
+  @keyframes validation-appel {
+    0%,
+    100% {
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--rouge) 22%, transparent);
+    }
+    50% {
+      box-shadow: 0 0 0 10px color-mix(in srgb, var(--rouge) 10%, transparent);
+    }
+  }
+}
+
+/* ---------- Choix de réponse (quiz, validation) ---------- */
+
+.reponses {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.reponses__consigne {
+  font-size: 0.85rem;
+  color: var(--texte-doux);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.reponse {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 68px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--bordure-controle);
+  background: var(--fond-carte-haut);
+  text-align: left;
+  font-size: 1.08rem;
+  line-height: 1.35;
+  transition:
+    border-color 0.15s var(--ease),
+    background-color 0.15s var(--ease),
+    opacity 0.2s var(--ease);
+}
+
+@media (hover: hover) {
+  .reponse:not(:disabled):hover {
+    border-color: var(--texte-doux);
+    background: color-mix(in srgb, var(--texte) 6%, var(--fond-carte-haut));
+  }
+}
+
+.reponse:not(:disabled):active {
+  transform: scale(0.985);
+}
+
+.reponse:disabled {
+  cursor: default;
+}
+
+/* La lettre : un vrai repère, lisible sous une lampe frontale. */
+.reponse__lettre {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--bordure-controle);
+  background: var(--fond-carte);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--texte);
+}
+
+.reponse__texte {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.reponse__etiquette {
+  flex: 0 0 auto;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+}
+
+/* Choix retenu, pas encore révélé (projection). */
+.reponse--retenu {
+  border-color: var(--bleu);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--bleu) 45%, transparent);
+}
+
+.reponse--retenu .reponse__lettre {
+  border-color: var(--bleu);
+  background: var(--bleu);
+  color: #fff;
+}
+
+.reponse--retenu .reponse__etiquette {
+  color: var(--bleu);
+}
+
+/* Bonne réponse : vert, lettre remplacée par ✓, étiquette. */
+.reponse--juste {
+  border-color: var(--vert);
+  background: color-mix(in srgb, var(--vert) 16%, var(--fond-carte-haut));
+  font-weight: 600;
+}
+
+.reponse--juste .reponse__lettre {
+  border-color: var(--vert);
+  background: var(--vert);
+  color: #06210c;
+}
+
+.reponse--juste .reponse__etiquette {
+  color: var(--vert);
+}
+
+/* Ta réponse, fausse : rouge, lettre remplacée par ✕, étiquette. */
+.reponse--faux {
+  border-color: var(--rouge-clair);
+  background: color-mix(in srgb, var(--rouge-clair) 14%, var(--fond-carte-haut));
+}
+
+.reponse--faux .reponse__lettre {
+  border-color: var(--rouge-clair);
+  background: var(--rouge-clair);
+  color: #fff;
+}
+
+.reponse--faux .reponse__etiquette {
+  color: var(--rouge-clair);
+}
+
+/* Les autres choix s'effacent une fois la réponse connue. */
+.reponse--ecarte {
+  opacity: 0.5;
+}
+
+/* Sur écran étroit, l'étiquette passe sous le texte plutôt que de l'écraser. */
+@media (max-width: 420px) {
+  .reponse {
+    flex-wrap: wrap;
+  }
+  .reponse__texte {
+    flex-basis: calc(100% - 54px);
+  }
+  .reponse__etiquette {
+    margin-left: 54px;
+  }
+}
+
+.app--presentation .reponse {
+  min-height: 76px;
+  font-size: 1.2rem;
+}
+
+/* ---------- Glossaire : termes cliquables et fiche en fenêtre ---------- */
+
+.terme {
+  all: unset;
+  font-weight: 700;
+  color: var(--texte);
+  text-decoration: underline dotted var(--rouge-clair);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  cursor: help;
+  border-radius: 3px;
+}
+
+.terme::after {
+  content: ' ⓘ';
+  font-size: 0.75em;
+  color: var(--rouge-clair);
+  font-weight: 600;
+}
+
+.terme:hover,
+.terme:focus-visible {
+  color: var(--rouge-clair);
+  outline: 2px solid var(--rouge-clair);
+  outline-offset: 2px;
+}
+
+.fenetre {
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: var(--fond-carte);
+  color: var(--texte);
+  padding: 0;
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(86vh, 720px);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+}
+
+.fenetre::backdrop {
+  background: rgba(4, 7, 14, 0.7);
+  backdrop-filter: blur(3px);
+}
+
+.fenetre__contenu {
+  padding: 20px 22px 18px;
+  overflow: auto;
+  max-height: min(86vh, 720px);
+}
+
+.fenetre__contenu p {
+  margin: 0 0 12px;
+  line-height: 1.55;
+  color: var(--texte-doux);
+}
+
+.fenetre__entete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.fenetre__sur {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rouge-clair);
+  margin: 0 0 2px !important;
+}
+
+.fenetre__titre {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  line-height: 1.05;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.fenetre__fermer {
+  all: unset;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--texte-doux);
+  background: var(--fond-carte-haut);
+  cursor: pointer;
+  flex: none;
+}
+
+.fenetre__fermer:hover,
+.fenetre__fermer:focus-visible {
+  color: var(--texte);
+  outline: 2px solid var(--rouge-clair);
+}
+
+.fenetre__court {
+  font-size: 1.08rem;
+  color: var(--texte) !important;
+  font-weight: 500;
+}
+
+.fenetre__complement {
+  border-left: 3px solid var(--bleu);
+  background: color-mix(in srgb, var(--bleu) 10%, transparent);
+  padding: 10px 12px;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.92rem;
+}
+
+.fenetre__complement strong,
+.fenetre__retenir strong {
+  color: var(--texte);
+}
+
+.fenetre__retenir {
+  border-left: 3px solid var(--rouge);
+  background: color-mix(in srgb, var(--rouge) 10%, transparent);
+  padding: 10px 12px;
+  border-radius: 0 8px 8px 0;
+}
+
+.fenetre__pied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+@media (max-width: 520px) {
+  .fenetre {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 88vh;
+    margin: auto 0 0;
+    border-radius: var(--rayon) var(--rayon) 0 0;
+    border-bottom: 0;
+  }
+
+  .fenetre__contenu {
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.projection .terme::after {
+  content: '';
 }

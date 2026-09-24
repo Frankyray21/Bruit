@@ -11,34 +11,50 @@
 
 import { lazy, Suspense, type ReactNode } from 'react';
 import { statistiques } from '../data/index.js';
+import { Terme } from '../ui/Glossaire.js';
 import { Avertissement, Carte, Declic } from '../ui/composants.js';
 
-// La 3D (Three.js) est rendue à la demande. Le précache télécharge également
-// son bundle pour préparer le hors-ligne, sans démarrer la scène.
+// La 3D (Three.js) n'est téléchargée qu'à l'ouverture du module 4 : elle ne
+// pèse pas sur le démarrage des calculateurs. Une fois chargée, elle est en
+// cache et fonctionne hors-ligne comme le reste.
 const OreilleInterne = lazy(() => import('../anim3d/OreilleInterne.js'));
 import { ComposeurQuart } from '../outils/ComposeurQuart.js';
 import { Comparateur } from '../outils/Comparateur.js';
 import { DureePermise, EchelleMetiers, PostesAtelier } from '../outils/DureePermise.js';
 import { EchelleEnergie, SommationSources } from '../outils/SommationSources.js';
 import { BudgetRetrait } from '../outils/BudgetRetrait.js';
-import { Carriere, Substitution } from '../outils/Carriere.js';
-import { FacteurDerating, Protection } from '../outils/Protection.js';
+import { Substitution } from '../outils/Carriere.js';
+import { Protection } from '../outils/Protection.js';
 import { PoseBouchons, Symptomes, VerifCoquilles } from '../outils/Pose.js';
 import { TempsDePort } from '../outils/TempsDePort.js';
+import { OreilleCoupe } from '../anim3d/OreilleCoupe.js';
 import { AnimationSon } from '../anim3d/AnimationSon.js';
-import { MediaADemande } from '../anim3d/MediaADemande.js';
-import { HeroOreille } from '../anim3d/HeroOreille.js';
 import { SerieAnnuelle } from '../ui/Graphe.js';
 import { entier, nb } from '../ui/format.js';
 
 // Modèle GLB optionnel : chargé à la demande comme la cochlée 3D.
 const ModeleGlb = lazy(() => import('../anim3d/ModeleGlb.js'));
 
+/** Couleurs des matériaux du fichier `public/models/oreille.glb`. */
+const LEGENDE_OREILLE = [
+  { couleur: '#e3a891', nom: 'Pavillon' },
+  { couleur: '#edbda9', nom: 'Conduit auditif' },
+  { couleur: '#fadbd1', nom: 'Tympan' },
+  { couleur: '#f5eed9', nom: 'Osselets (marteau, enclume, étrier)' },
+  { couleur: '#edb8ad', nom: 'Cochlée' },
+  { couleur: '#dbcca8', nom: 'Vestibule et canaux semi-circulaires' },
+  { couleur: '#f5c74d', nom: 'Nerf auditif (VIII)' },
+] as const;
+
 export interface Module {
   readonly id: string;
   readonly titre: string;
   readonly sousTitre: string;
   readonly diapos: string;
+  /** Durée honnête, mesurée en défilant le module sur un téléphone. */
+  readonly duree: string;
+  /** Ce que le travailleur doit retenir en sortant — une phrase. */
+  readonly objectif: string;
   readonly contenu: () => ReactNode;
 }
 
@@ -48,6 +64,9 @@ export const MODULES: readonly Module[] = [
     titre: 'Pourquoi ça compte',
     sousTitre: 'Les chiffres de la CNESST',
     diapos: 'diapos 2 et 3',
+    duree: '≈ 3 min',
+    objectif:
+      'Comprendre que la surdité professionnelle explose au Québec et touche des travailleurs de plus en plus jeunes.',
     contenu: () => <ModulePourquoi />,
   },
   {
@@ -55,6 +74,9 @@ export const MODULES: readonly Module[] = [
     titre: 'Comprendre le décibel',
     sousTitre: 'La règle des 3 dBA, démontrée',
     diapos: 'diapos 4 à 6 et 10',
+    duree: '≈ 8 min',
+    objectif:
+      'Retenir la règle des 3 dBA : trois décibels de plus, deux fois moins de temps permis.',
     contenu: () => <ModuleDecibel />,
   },
   {
@@ -62,6 +84,9 @@ export const MODULES: readonly Module[] = [
     titre: 'Mon métier, mon exposition',
     sousTitre: 'Ce que la mine a mesuré',
     diapos: 'diapos 7 à 9',
+    duree: '≈ 7 min',
+    objectif:
+      'Situer ton poste sur l’échelle et voir à quelle heure ta dose du quart est atteinte.',
     contenu: () => <ModuleExposition />,
   },
   {
@@ -69,6 +94,9 @@ export const MODULES: readonly Module[] = [
     titre: 'Ce que le bruit détruit',
     sousTitre: 'Irréversible',
     diapos: 'diapos 11 et 12',
+    duree: '≈ 6 min',
+    objectif:
+      'Voir ce que le bruit détruit dans l’oreille, et reconnaître les signes qui imposent d’aller consulter.',
     contenu: () => <ModuleDommages />,
   },
   {
@@ -76,6 +104,9 @@ export const MODULES: readonly Module[] = [
     titre: 'Choisir sa protection',
     sousTitre: 'NRR, dérating, double protection',
     diapos: 'diapos 13 et 14',
+    duree: '≈ 6 min',
+    objectif:
+      'Savoir ce que ton protecteur vaut vraiment sur le terrain, et quand la double protection s’impose.',
     contenu: () => <ModuleChoisir />,
   },
   {
@@ -83,6 +114,9 @@ export const MODULES: readonly Module[] = [
     titre: 'La porter correctement',
     sousTitre: 'Le geste, et le temps de port',
     diapos: 'diapos 15 à 17',
+    duree: '≈ 6 min',
+    objectif:
+      'Poser ses bouchons correctement, et mesurer ce que coûtent dix minutes sans protection.',
     contenu: () => <ModulePorter />,
   },
 ];
@@ -110,7 +144,7 @@ function ModulePourquoi() {
             { annee: sommet.annee, label: entier(sommet.cas), cote: 'haut' },
             { annee: 2020, label: '', cote: 'haut', attenue: true },
           ]}
-          aria={`Cas reconnus de surdité professionnelle par la CNESST, de ${entier(premier.cas)} en ${premier.annee} à un sommet de ${entier(sommet.cas)} en ${sommet.annee}, puis une baisse des réclamations déposées en 2020 (effet COVID sur le dépôt, non une baisse du risque) et un rebond en 2021. Cas reconnus, non l'incidence médicale ; relevé visuel, fiabilité faible.`}
+          aria={`Cas reconnus de surdité professionnelle par la CNESST, de ${entier(premier.cas)} en ${premier.annee} à un sommet de ${entier(sommet.cas)} en ${sommet.annee}, puis une baisse des réclamations déposées en 2020 (effet COVID sur le dépôt, non une baisse du risque) et un rebond en 2021. Cas reconnus par la CNESST, non l'incidence médicale.`}
         />
 
         <Declic>
@@ -156,12 +190,12 @@ function ModuleDecibel() {
       <Carte titre="Deux instruments, deux unités" source="diapo 4">
         <ul className="liste-puces">
           <li>
-            Le <strong>sonomètre</strong> mesure le bruit à l'instant même, en{' '}
+            Le <Terme id="sonometre">sonomètre</Terme> mesure le bruit à l'instant même, en{' '}
             <strong>décibels (dB)</strong>.
           </li>
           <li>
-            Le <strong>dosimètre</strong> mesure ce que l'oreille encaisse sur
-            une période, en <strong>décibels corrigés (dBA)</strong>. Ce sont
+            Le <Terme id="dosimetre">dosimètre</Terme> mesure ce que l'oreille encaisse sur
+            une période, en <Terme id="dba">décibels corrigés (dBA)</Terme>. Ce sont
             les mesures effectuées par la mine.
           </li>
           <li>
@@ -190,11 +224,11 @@ function ModuleDecibel() {
             <strong>Aérienne</strong> : le son se propage dans l'air.
           </li>
           <li>
-            <strong>Solidienne</strong> : il se transmet dans les éléments
+            <Terme id="solidienne">Solidienne</Terme> : il se transmet dans les éléments
             solides — plancher, murs, plafond.
           </li>
           <li>
-            <strong>Réverbération</strong> : il rebondit selon les matériaux.
+            <Terme id="reverberation">Réverbération</Terme> : il rebondit selon les matériaux.
             Une galerie en tôle nue renvoie tout ; un panneau absorbant poreux
             l'avale.
           </li>
@@ -202,9 +236,9 @@ function ModuleDecibel() {
         <Avertissement>
           Dans une galerie réverbérante, <strong>reculer ne sert presque à
           rien</strong> : le niveau reste quasi constant. L'intuition « je
-          m'éloigne un peu » vient de l'extérieur, où elle est vraie. Le site
-          n'affiche pas de chiffres ici — aucune mesure de la mine ne permet de
-          les valider.
+          m'éloigne un peu » vient de l'extérieur, où elle est vraie. Il n'y a
+          pas de chiffre à retenir ici : seule une mesure sur place peut le
+          dire.
         </Avertissement>
       </Carte>
     </>
@@ -214,10 +248,34 @@ function ModuleDecibel() {
 function ModuleExposition() {
   return (
     <>
+      <Carte
+        titre="Ce que la mine a mesuré"
+        intro="Trois étapes : trouve ton poste sur l'échelle, compose ton quart tâche par tâche, puis vérifie avec les postes d'atelier mesurés. Le chiffre à retenir : l'heure à laquelle ta dose du quart est atteinte."
+      >
+        <ul className="liste-puces">
+          <li>
+            <strong>Treize postes mesurés</strong>, tous au-dessus de la norme.
+          </li>
+          <li>
+            <strong>Neuf tâches</strong> pour composer ton quart et voir la dose
+            monter.
+          </li>
+          <li>
+            <strong>Six postes d'atelier</strong> pour vérifier que le calcul
+            colle à la réalité.
+          </li>
+        </ul>
+      </Carte>
       <EchelleMetiers />
       <ComposeurQuart />
       <PostesAtelier />
-      <Carriere />
+      <Declic>
+        <strong>À retenir :</strong> sans protection, aucun poste souterrain ne
+        tient huit heures, et une seule tâche bruyante peut consommer la dose
+        du quart avant la pause. Le silence n'efface rien — il ne fait que ne
+        rien ajouter. La suite : ce que ce bruit détruit, puis comment se
+        protéger.
+      </Declic>
     </>
   );
 }
@@ -225,28 +283,89 @@ function ModuleExposition() {
 function ModuleDommages() {
   return (
     <>
-      <MediaADemande titre="La cochlée sous le bruit · vue 3D">
+      <OreilleCoupe />
+
+      <AnimationSon
+        fichier="videoplayback.mp4"
+        titre="Le voyage du son"
+        source="NIDCD · NIH"
+        intro="Le son de l'oreille jusqu'au cerveau, cellules ciliées comprises. Touche la vidéo pour la lancer."
+        lien="https://www.nidcd.nih.gov/news/multimedia/journey-of-sound-video"
+        lienNom="le site de la NIDCD (NIH)"
+        note="domaine public"
+      />
+
+      <Suspense
+        fallback={
+          <div className="scene3d-chargement">Chargement de la vue 3D…</div>
+        }
+      >
         <OreilleInterne />
-      </MediaADemande>
+      </Suspense>
+
+      {/* Compléments optionnels : n'apparaissent que si le fichier est déposé
+          dans public/ (voir les LISEZMOI). Absents, rien ne s'affiche. */}
+      <AnimationSon
+        fichier="cellules.mp4"
+        titre="Le bruit détruit la cellule ciliée"
+        source="animation"
+        intro="Les cils de la cellule ciliée pliés puis rompus par le bruit — la lésion ne se répare pas."
+        lien="https://www.cochlea.eu/en/hair-cells/"
+        lienNom="cochlea.eu (NeurOreille)"
+        note="ressource pédagogique"
+        optionnel
+      />
+
+      <Suspense fallback={null}>
+        <ModeleGlb
+          fichier="oreille.glb"
+          titre="L'oreille complète, en vrai 3D"
+          intro="Modèle anatomique à l'échelle, du pavillon au nerf : le conduit, le tympan, les trois osselets, la cochlée (l'escargot) et le vestibule. Fais glisser pour tourner."
+          aria="Modèle 3D anatomique de l'oreille complète, manipulable"
+          legende={LEGENDE_OREILLE}
+          credit={
+            <>
+              Modèle :{' '}
+              <a href="https://github.com/Z-Anatomy" target="_blank" rel="noopener noreferrer">
+                Z-Anatomy
+              </a>{' '}
+              (CC BY-SA 4.0), d'après BodyParts3D (DBCLS, CC BY-SA 2.1 JP) et « Anatomy of the
+              Inner Ear » (University of Dundee, CC BY-NC-SA 4.0, d'après 3D Ear, McGill).
+              Usage non commercial pour la cochlée, le vestibule, les osselets et le tympan.
+              Conduit auditif reconstruit.
+            </>
+          }
+        />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <ModeleGlb
+          fichier="cellules.glb"
+          titre="Les cellules ciliées, de près"
+          intro="L'organe de Corti — ces cellules détruites par le bruit ne repoussent pas. Fais glisser pour tourner."
+          aria="Modèle 3D des cellules ciliées de la cochlée, manipulable"
+        />
+      </Suspense>
 
       <Carte titre="Les quatre atteintes" source="diapo 12">
         <ul className="liste-puces">
           <li>
-            <strong>Surdité brutale</strong> — un bruit soudain et intense, une
+            <Terme id="surdite-brutale">Surdité brutale</Terme> — un bruit soudain et intense, une
             déflagration : lésions immédiates et définitives, parfois déchirure
-            du tympan.
+            du <Terme id="tympan">tympan</Terme>.
           </li>
           <li>
-            <strong>Surdité progressive</strong> — fréquente chez les foreurs.
-            Exposition continue, destruction des cellules ciliées, perte{' '}
+            <Terme id="surdite-progressive">Surdité progressive</Terme> — fréquente chez les foreurs.
+            Exposition continue, destruction des{' '}
+            <Terme id="cellules-ciliees">cellules ciliées</Terme>, perte{' '}
             <strong>irréversible</strong>.
           </li>
           <li>
-            <strong>Acouphènes</strong> — bourdonnements ou sifflements
+            <Terme id="acouphenes">Acouphènes</Terme> — bourdonnements ou sifflements
             permanents, même dans le silence.
           </li>
           <li>
-            <strong>Hyperacousie</strong> — hypersensibilité anormale aux sons.
+            <Terme id="hyperacousie">Hyperacousie</Terme> — hypersensibilité anormale aux sons.
           </li>
         </ul>
       </Carte>
@@ -264,50 +383,6 @@ function ModuleDommages() {
       </Carte>
 
       <Symptomes />
-
-      <AnimationSon
-        fichier="videoplayback.mp4"
-        titre="Le voyage du son"
-        source="NIDCD · NIH"
-        intro="Le son de l'oreille jusqu'au cerveau, cellules ciliées comprises. Lance la vidéo quand tu es prêt ; le son est désactivé au départ."
-        lien="https://www.nidcd.nih.gov/news/multimedia/journey-of-sound-video"
-        lienNom="le site de la NIDCD (NIH)"
-        note="domaine public"
-      />
-
-      <AnimationSon
-        fichier="cellules.mp4"
-        titre="Le bruit détruit la cellule ciliée"
-        source="animation · optionnelle"
-        intro="Les cils de la cellule ciliée pliés puis rompus par le bruit — la lésion ne se répare pas. Ressource complémentaire à consulter en ligne."
-        lien="https://www.cochlea.eu/en/hair-cells/"
-        lienNom="cochlea.eu (NeurOreille)"
-        note="ressource pédagogique — vérifie la licence avant réutilisation"
-      />
-
-      <HeroOreille />
-
-      {__MODELES_LOCAUX__.includes('oreille.glb') && <Suspense fallback={<div className="scene3d-chargement">Chargement…</div>}>
-        <ModeleGlb
-          fichier="oreille.glb"
-          titre="Modèle 3D de l'oreille"
-          intro="Oreille externe et interne — fais glisser pour tourner le modèle."
-          sujet="de l'oreille complète (externe et interne)"
-          aria="Modèle 3D anatomique de l'oreille, manipulable"
-          recherche="ear anatomy"
-        />
-      </Suspense>}
-
-      {__MODELES_LOCAUX__.includes('cellules.glb') && <Suspense fallback={<div className="scene3d-chargement">Chargement…</div>}>
-        <ModeleGlb
-          fichier="cellules.glb"
-          titre="Les cellules ciliées, de près"
-          intro="L'organe de Corti — ces cellules détruites par le bruit ne repoussent pas. Fais glisser pour tourner."
-          sujet="des cellules ciliées (organe de Corti)"
-          aria="Modèle 3D des cellules ciliées de la cochlée, manipulable"
-          recherche="cochlea hair cells organ of Corti"
-        />
-      </Suspense>}
     </>
   );
 }
@@ -315,9 +390,26 @@ function ModuleDommages() {
 function ModuleChoisir() {
   return (
     <>
+      <Carte
+        titre="Ce que vaut vraiment un protecteur"
+        source="diapos 13 et 14"
+        intro="Le chiffre sur la boîte (NRR) vient d'un laboratoire. Sur le terrain, on en retire une partie seulement — et deux protecteurs ne s'additionnent pas. Trois outils pour voir ce que ta protection vaut à ton poste."
+      >
+        <ul className="liste-puces">
+          <li>
+            <strong>Bouchons</strong> : mousse (<Terme id="nrr">NRR</Terme> 32-33) ou sur arceau (NRR
+            17-20).
+          </li>
+          <li>
+            <strong>Coquilles</strong> montées sur casque (NRR 25).
+          </li>
+          <li>
+            <Terme id="double-protection">Double protection</Terme> recommandée au-delà de 105 dBA.
+          </li>
+        </ul>
+      </Carte>
       <Protection />
       <Comparateur />
-      <FacteurDerating />
       <Substitution />
     </>
   );
