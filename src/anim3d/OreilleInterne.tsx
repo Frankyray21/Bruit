@@ -1,9 +1,11 @@
 /**
  * Vue 3D interactive de la cochlée et des cellules ciliées.
  *
- * Module 4 (diapos 11-12). Le curseur de bruit couche puis détruit les cellules,
- * en commençant par la zone qui code les aigus — le mécanisme réel de la surdité
- * professionnelle, rendu visible.
+ * Module 4 (diapos 11-12). La coquille est le vrai modèle anatomique
+ * (`public/models/cochlee.glb`) ; l'organe de Corti est reconstruit le long de
+ * la spirale (1 cellule interne + 3 externes par station). Le curseur de bruit
+ * couche puis détruit les cellules, en commençant par la zone qui code les
+ * aigus — le mécanisme réel de la surdité professionnelle, rendu visible.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -33,7 +35,11 @@ export default function OreilleInterne() {
 
   useEffect(() => {
     if (!supporte || !conteneur.current) return;
-    const p = creerScene(conteneur.current, !REDUIT);
+    const p = creerScene(
+      conteneur.current,
+      !REDUIT,
+      `${import.meta.env.BASE_URL}models/cochlee.glb`,
+    );
     poignee.current = p;
     p.setNiveau(niveau);
 
@@ -96,7 +102,7 @@ export default function OreilleInterne() {
     <Carte
       titre="La cochlée sous le bruit"
       source="diapos 11-12"
-      intro="Fais glisser pour tourner. Monte le niveau de bruit et regarde les cellules ciliées — d’abord dans la zone des aigus."
+      intro="La vraie cochlée, vue en transparence, avec ses cellules ciliées le long de la spirale : une interne et trois externes par rangée, stéréocils en escalier. Fais glisser pour tourner. Monte le niveau de bruit et regarde — d’abord près de la base, la zone des aigus."
     >
       <div
         ref={conteneur}
@@ -104,6 +110,25 @@ export default function OreilleInterne() {
         role="img"
         aria-label={`Vue 3D de la cochlée. État : ${etat.texte}.`}
       />
+
+      <ul className="legende3d" aria-label="Repères du modèle">
+        <li>
+          <span className="legende3d__pastille" style={{ background: '#7ee787' }} aria-hidden="true" />
+          Stéréocils sains
+        </li>
+        <li>
+          <span className="legende3d__pastille" style={{ background: '#f2c14e' }} aria-hidden="true" />
+          Sous stress (couchés)
+        </li>
+        <li>
+          <span className="legende3d__pastille" style={{ background: '#ff7a8a' }} aria-hidden="true" />
+          Détruits
+        </li>
+        <li>
+          <span className="legende3d__pastille" style={{ background: '#e8b7bd' }} aria-hidden="true" />
+          Cochlée (base en bas = aigus, apex en haut = graves)
+        </li>
+      </ul>
 
       <div className={`resultat resultat--${etat.ton}`} style={{ marginTop: 12 }}>
         <div className="resultat__etiquette">Niveau de bruit</div>
@@ -141,6 +166,16 @@ export default function OreilleInterne() {
         elle exagère l’échelle du temps : dans la réalité, la destruction se fait
         sur des mois et des années d’exposition.
       </Avertissement>
+
+      <p className="carte__source carte__source--credit" style={{ marginTop: 12 }}>
+        Cochlée :{' '}
+        <a href="https://github.com/Z-Anatomy" target="_blank" rel="noopener noreferrer">
+          Z-Anatomy
+        </a>{' '}
+        (CC BY-SA 4.0), d'après « Anatomy of the Inner Ear » (University of Dundee, CC BY-NC-SA
+        4.0, d'après 3D Ear, McGill) — usage non commercial. Organe de Corti reconstruit, échelle
+        exagérée.
+      </p>
     </Carte>
   );
 }

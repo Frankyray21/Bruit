@@ -7,7 +7,8 @@ aucune scène vide).
 | Fichier | Ce qu'on y montre | État |
 |---|---|---|
 | **`oreille.glb`** | Oreille complète : pavillon, conduit auditif, tympan, marteau, enclume, étrier, cochlée, vestibule et canaux semi-circulaires, nerf auditif (VIII) | **présent** (voir ci-dessous) |
-| **`cellules.glb`** | Les cellules ciliées / l'organe de Corti — ce que le bruit détruit sans retour | absent (optionnel) |
+| **`cochlee.glb`** | La cochlée seule, dans la carte « La cochlée sous le bruit » : coquille en transparence, spirale du canal cochléaire enregistrée dans le fichier, organe de Corti reconstruit en code | **présent** (voir ci-dessous) |
+| **`cellules.glb`** | Les cellules ciliées / l'organe de Corti en gros plan — emplacement optionnel | absent (optionnel) |
 
 ## `oreille.glb` — provenance et licence
 
@@ -40,6 +41,24 @@ direction du filament d'origine.
 Le modèle se refabrique avec l'outil `extraire.mjs` (décodage Draco des GLB
 Z-Anatomy, lecture du FBX des régions, transformation des nœuds, écriture
 d'un GLB propre par structure), conservé hors dépôt.
+
+## `cochlee.glb` — la cochlée de l'animation « sous le bruit »
+
+Même cochlée (Dundee via Z-Anatomy, **CC BY-NC-SA 4.0**, usage non
+commercial), replacée dans un repère canonique en millimètres : origine au
+centre, **Y = axe du modiolus** (apex vers le haut), X vers le vestibule
+(côté de la base). Le nœud porte dans ses `extras` la **spirale du canal
+cochléaire** (200 points, base → apex, 2,5 tours, 38 mm) : à chaque angle,
+le rayon vaut 0,62 × celui de la paroi externe à cette hauteur (l'organe de
+Corti est à mi-chemin entre le modiolus et la paroi), lissé pour rester dans
+la coquille. Le sens d'enroulement est une convention, pas une mesure.
+
+L'app (`src/anim3d/scene.ts`) plante le long de cette spirale l'organe de
+Corti reconstruit : par station, une cellule ciliée interne (touffe en arc,
+deux rangs) et trois externes (touffes en V pointées vers la paroi, trois
+rangs en escalier), corps cellulaires et membrane basilaire. Échelle des
+cellules exagérée (des micromètres rendus en dixièmes de millimètre). Sans
+le fichier, une spirale conique lisse prend le relais.
 
 ## Ajouter `cellules.glb`
 
