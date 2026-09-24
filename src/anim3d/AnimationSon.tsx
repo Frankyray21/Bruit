@@ -11,12 +11,8 @@
  * (jamais de lecteur cassé) — ou, pour un clip optionnel, ne s'affiche pas.
  */
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Avertissement, Carte } from '../ui/composants.js';
-
-const REDUIT =
-  typeof matchMedia === 'function' &&
-  matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export interface AnimationSonProps {
   /** Nom du fichier dans `public/videos/` (ex. `videoplayback.mp4`). */
@@ -50,23 +46,39 @@ export function AnimationSon({
   // Repli sur le lien si le fichier est absent ou illisible : jamais de player
   // cassé. On met la source directement sur <video> pour que `onError` se
   // déclenche de façon fiable quand le fichier manque.
-  const [erreur, setErreur] = useState(false);
+  const [erreur, setErreur] = useState(!__VIDEOS_LOCALES__.includes(fichier));
+  const video = useRef<HTMLVideoElement>(null);
   const url = `${import.meta.env.BASE_URL}videos/${fichier}`;
 
+  // Ne jamais lancer/reprendre automatiquement : l'utilisateur garde la main.
+  // Arrêter quand le lecteur n'est plus visible économise aussi la batterie.
+  useEffect(() => {
+    const el = video.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e?.isIntersecting) el.pause();
+      },
+      { threshold: 0.25 },
+    );
+    io.observe(el);
+    const arreter = () => { if (document.hidden) el.pause(); };
+    document.addEventListener('visibilitychange', arreter);
+    return () => { io.disconnect(); document.removeEventListener('visibilitychange', arreter); el.pause(); };
+  }, [erreur]);
   if (erreur && optionnel) return null;
 
   return (
     <Carte titre={titre} source={source} intro={intro}>
       {!erreur ? (
         <video
+          ref={video}
           className="video-son"
           src={url}
           controls
-          autoPlay={!REDUIT}
           muted
-          loop
           playsInline
-          preload="auto"
+          preload="metadata"
           onError={() => setErreur(true)}
         />
       ) : (

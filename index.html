@@ -88,9 +88,10 @@
       <h1>Le site n'a pas fini de charger</h1>
       <p>
         Souvent, c'est une vieille version restée en mémoire. Le bouton
-        ci-dessous vide le cache du site et repart à neuf.
+        ci-dessous vide uniquement le cache de Bruit et recharge l'application.
+        Ta progression et les autres applications sont conservées.
       </p>
-      <button type="button" id="reinitialiser">Vider le cache et recharger</button>
+      <button type="button" id="reinitialiser">Vider le cache de Bruit et recharger</button>
       <button type="button" class="secondaire" onclick="location.reload()">
         Simplement recharger
       </button>
@@ -173,9 +174,10 @@
           }).observe(racineObs, { childList: true });
         }
 
-        // Réinitialisation complète : désinscription du service worker,
-        // suppression de tous les caches, puis rechargement. C'est la sortie de
-        // secours quand une ancienne version reste coincée.
+        // Le stockage de l'origine est partagé avec TMS et les autres apps.
+        // Vite remplace BASE_URL par le chemin de CETTE livraison (/Bruit/).
+        // Workbox ajoute registration.scope aux noms de ses caches par défaut.
+        // Une portée voisine, racine ou enfant n'appartient pas à cette app.
         document.getElementById('reinitialiser').addEventListener('click', function () {
           // Sous terre, vider le cache reviendrait à effacer l'app sans pouvoir
           // la retélécharger : on refuse tant qu'il n'y a pas de réseau.
@@ -185,27 +187,46 @@
             );
             return;
           }
+          var bouton = document.getElementById('reinitialiser');
+          if (bouton.disabled) return;
+          bouton.disabled = true;
+          bouton.textContent = 'Nettoyage du cache de Bruit…';
+          var porteeApp = new URL('%BASE_URL%', location.origin).href;
           var etapes = [];
+
+          function cacheDeBruit(nom) {
+            if (!nom.endsWith(porteeApp)) return false;
+            var prefixe = nom.slice(0, -porteeApp.length);
+            return /^workbox-(?:precache(?:-v\d+)?|runtime)-$/.test(prefixe);
+          }
 
           if ('serviceWorker' in navigator) {
             etapes.push(
               navigator.serviceWorker.getRegistrations().then(function (liste) {
-                return Promise.all(liste.map(function (r) { return r.unregister(); }));
+                return Promise.all(liste.filter(function (r) {
+                  return r.scope === porteeApp;
+                }).map(function (r) { return r.unregister(); }));
               }),
             );
           }
           if (window.caches && caches.keys) {
             etapes.push(
               caches.keys().then(function (cles) {
-                return Promise.all(cles.map(function (c) { return caches.delete(c); }));
+                return Promise.all(cles.filter(cacheDeBruit).map(function (c) { return caches.delete(c); }));
               }),
             );
           }
 
-          Promise.all(etapes)
-            .catch(function () {})
+          return Promise.all(etapes)
             .then(function () {
-              location.replace(location.pathname + '?neuf=' + Date.now());
+              var destination = new URL(location.href);
+              destination.searchParams.set('neuf', Date.now());
+              location.replace(destination.href);
+            })
+            .catch(function () {
+              noter('Le cache de Bruit n’a pas pu être entièrement vidé. Tu peux réessayer ou simplement recharger.');
+              bouton.disabled = false;
+              bouton.textContent = 'Réessayer de vider le cache de Bruit';
             });
         });
       })();

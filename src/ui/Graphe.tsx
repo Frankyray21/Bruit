@@ -8,7 +8,7 @@
  *
  * On peut aussi glisser le doigt sur la courbe pour déplacer le niveau : c'est
  * une deuxième surface de contrôle, large et utilisable avec des gants. Le
- * curseur natif reste le contrôle accessible au clavier ; la courbe l'appuie.
+ * curseur natif et la courbe se règlent aussi au clavier.
  */
 
 import { useId } from 'react';
@@ -33,6 +33,36 @@ const LARG = 360;
 const HAUT = 196;
 const PL = LARG - L - R; // largeur du tracé
 const PH = HAUT - T - B; // hauteur du tracé
+
+/** Conversion de l'écran au repère SVG, puis à la seule zone tracée.
+ * La matrice inclut le redimensionnement, les marges CSS et les transformations.
+ */
+export function niveauDepuisPointeur(
+  clientX: number,
+  clientY: number,
+  matrice: Pick<DOMMatrix, 'a' | 'b' | 'c' | 'd' | 'e' | 'f'>,
+  min: number,
+  max: number,
+): number | null {
+  const { a, b, c, d, e, f } = matrice;
+  const determinant = a * d - b * c;
+  if (!Number.isFinite(determinant) || determinant === 0) return null;
+  const x = (d * (clientX - e) - c * (clientY - f)) / determinant;
+  if (!Number.isFinite(x)) return null;
+  const niveau = min + ((x - L) / PL) * (max - min);
+  return Math.max(min, Math.min(max, Math.round(niveau * 10) / 10));
+}
+
+/** Les pas correspondent au curseur natif voisin : 0,1 dBA, ou 1 par page. */
+export function niveauDepuisTouche(touche: string, valeur: number, min: number, max: number): number | null {
+  const variations: Record<string, number> = {
+    ArrowRight: 0.1, ArrowUp: 0.1, ArrowLeft: -0.1, ArrowDown: -0.1,
+    PageUp: 1, PageDown: -1,
+  };
+  const suivant = touche === 'Home' ? min : touche === 'End' ? max
+    : variations[touche] !== undefined ? valeur + variations[touche]! : null;
+  return suivant === null ? null : Math.max(min, Math.min(max, Math.round(suivant * 10) / 10));
+}
 
 const CLASSE_TON: Record<NiveauVerdict, string> = {
   vert: 'graphe__point--vert',
@@ -102,29 +132,48 @@ export function CourbeNiveau({
   const hautProche = py < T + 26;
   const labelY = hautProche ? py + 22 : py - 12;
 
-  const deplacer = (clientX: number, cible: SVGSVGElement) => {
+  const deplacer = (clientX: number, clientY: number, cible: SVGSVGElement) => {
     if (!onChange) return;
-    const rect = cible.getBoundingClientRect();
-    const frac = (clientX - rect.left) / rect.width;
-    const dBA = min + frac * (max - min);
-    const borne = Math.max(min, Math.min(max, dBA));
-    onChange(Math.round(borne * 10) / 10);
+    const matrice = cible.getScreenCTM();
+    if (!matrice) return;
+    const suivant = niveauDepuisPointeur(clientX, clientY, matrice, min, max);
+    if (suivant !== null && suivant !== valeur) onChange(suivant);
   };
 
   return (
     <svg
       className={`graphe${onChange ? ' graphe--interactif' : ''}`}
       viewBox={`0 0 ${LARG} ${HAUT}`}
-      role="img"
+      role={onChange ? 'slider' : 'img'}
       aria-label={aria}
-      onPointerDown={(e) => {
+      tabIndex={onChange ? 0 : undefined}
+      aria-orientation={onChange ? 'horizontal' : undefined}
+      aria-valuemin={onChange ? min : undefined}
+      aria-valuemax={onChange ? max : undefined}
+      aria-valuenow={onChange ? valeur : undefined}
+      aria-valuetext={onChange ? `${valeur.toLocaleString('fr-CA')} dBA — ${etiquetteValeur}` : undefined}
+      onKeyDown={(e) => {
         if (!onChange) return;
+        const suivant = niveauDepuisTouche(e.key, valeur, min, max);
+        if (suivant === null) return;
+        e.preventDefault();
+        if (suivant !== valeur) onChange(suivant);
+      }}
+      onPointerDown={(e) => {
+        if (!onChange || !e.isPrimary || e.button !== 0) return;
         e.currentTarget.setPointerCapture(e.pointerId);
-        deplacer(e.clientX, e.currentTarget);
+        e.currentTarget.focus({ preventScroll: true });
+        deplacer(e.clientX, e.clientY, e.currentTarget);
       }}
       onPointerMove={(e) => {
-        if (e.buttons === 0) return;
-        deplacer(e.clientX, e.currentTarget);
+        if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+        deplacer(e.clientX, e.clientY, e.currentTarget);
+      }}
+      onPointerUp={(e) => {
+        if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+      }}
+      onPointerCancel={(e) => {
+        if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
       }}
     >
       <defs>

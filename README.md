@@ -51,7 +51,7 @@ Site fonctionnel : 6 modules de formation, chacun fermé par une question de
 validation, une boîte à outils organisée autour des trois questions ci-dessus,
 un quiz de 14 questions avec attestation, et un espace « Réglages du
 formateur ». Le moteur de calcul est couvert par 76 tests qui reproduisent
-chaque ligne des tableaux de la formation (82 tests au total).
+chaque ligne des tableaux de la formation (142 tests au total).
 
 ### Le parcours du travailleur
 
@@ -107,6 +107,19 @@ Voir **[PLAN.md](PLAN.md)** pour le plan par phases,
 **[docs/audit-ux.md](docs/audit-ux.md)** pour l'audit d'expérience mené en vue
 de la formation des travailleurs (méthode, diagnostic, corrections, points à
 trancher).
+
+### Deux lignes de travail réunies (v0.8.0)
+
+Entre juillet et septembre 2026, deux lignes ont avancé en parallèle : celle de
+l'audit UX et des modèles anatomiques (v0.2 → v0.7, publiée), et une refonte
+« interface et fiabilité » sur `main` (hero Sketchfab, catalogue d'outils,
+mise à jour sur demande). La fusion garde la ligne publiée pour tout ce qui
+se voit, et reprend de l'autre ce qui est autonome : nettoyage de cache limité
+à la portée de l'app (page de secours), inventaire des médias au build,
+vidéos sans lecture automatique, étiquetage accessible des champs, courbe
+réglable au clavier, stockage local validé, et leurs 44 tests. Le lecteur
+Sketchfab (réseau obligatoire) et le hero 3D ne sont pas repris : le site
+reste entièrement hors-ligne.
 
 ## Structure du dépôt
 

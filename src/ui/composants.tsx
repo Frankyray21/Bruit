@@ -3,7 +3,7 @@
  * texte libre dans le parcours principal.
  */
 
-import { Component, useId, type ErrorInfo, type ReactNode } from 'react';
+import { Component, createContext, useContext, useId, type ErrorInfo, type ReactNode } from 'react';
 import type { NiveauVerdict } from '../domain/verdict.js';
 
 /**
@@ -79,10 +79,11 @@ export function Carte({
 /**
  * Un champ et son étiquette.
  *
- * Le groupe porte `aria-labelledby` plutôt qu'un `<label for>` : plusieurs
- * champs contiennent deux contrôles (un sélecteur et un curseur), et un label
- * ne peut en désigner qu'un seul.
+ * Chaque contrôle reçoit l'identifiant de l'étiquette via le contexte :
+ * nommer le groupe seul ne nomme pas les sélecteurs et curseurs qu'il contient.
  */
+const EtiquetteChamp = createContext<string | undefined>(undefined);
+
 export function Champ({
   etiquette,
   children,
@@ -96,7 +97,7 @@ export function Champ({
       <span className="champ__etiquette" id={id}>
         {etiquette}
       </span>
-      {children}
+      <EtiquetteChamp.Provider value={id}>{children}</EtiquetteChamp.Provider>
     </div>
   );
 }
@@ -141,11 +142,13 @@ export function Selecteur<T extends { id: string; nom: string }>({
   /** Étiquette pour le lecteur d'écran quand le champ n'en a pas de visible. */
   etiquette?: string;
 }) {
+  const etiquetteChamp = useContext(EtiquetteChamp);
   return (
     <select
       className="choix__select"
       value={valeur}
-      aria-label={etiquette}
+      aria-label={etiquette ?? (etiquetteChamp ? undefined : 'Choisir une option')}
+      aria-labelledby={etiquette ? undefined : etiquetteChamp}
       onChange={(e) => onChange(e.target.value)}
     >
       {options.map((o) => (
@@ -183,11 +186,13 @@ export function Curseur({
    */
   valeursRapides?: readonly { valeur: number; label: string }[];
 }) {
+  const etiquetteChamp = useContext(EtiquetteChamp);
+  const idLegende = useId();
   return (
     <>
       <div className="curseur__valeur" aria-hidden="true">
         <span className="curseur__nombre">{affichage}</span>
-        {legende && <span className="carte__source">{legende}</span>}
+        {legende && <span className="carte__source" id={idLegende}>{legende}</span>}
       </div>
       <input
         type="range"
@@ -195,9 +200,15 @@ export function Curseur({
         max={max}
         step={pas}
         value={valeur}
-        aria-label={etiquette}
-        // « 97,8 dBA » ou « 10 min » plutôt que « 97.8 » ou « 10 ».
-        aria-valuetext={legende ? `${affichage}, ${legende}` : affichage}
+        aria-label={etiquette ?? (etiquetteChamp ? undefined : 'Régler la valeur')}
+        aria-labelledby={
+          etiquette
+            ? undefined
+            : [etiquetteChamp, legende ? idLegende : undefined].filter(Boolean).join(' ') || undefined
+        }
+        // « 97,8 dBA » ou « 10 min » plutôt que « 97.8 » ou « 10 » ; la légende
+        // est reliée par aria-labelledby.
+        aria-valuetext={affichage}
         onChange={(e) => onChange(Number(e.target.value))}
       />
       {valeursRapides && (
@@ -254,7 +265,7 @@ export function Verdict({
   message: string;
 }) {
   return (
-    <div className={`verdict verdict--${niveau}`} role="status">
+    <div className={`verdict verdict--${niveau}`} role="status" aria-live="polite" aria-atomic="true">
       <span className="verdict__pastille" aria-hidden="true">
         {PASTILLES[niveau]}
       </span>

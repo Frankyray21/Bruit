@@ -1,7 +1,11 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+
+// Inventaire à la construction : ne jamais réclamer un média optionnel absent.
+const fichiers = (dossier: string, extension: string) =>
+  readdirSync(new URL(`./public/${dossier}/`, import.meta.url)).filter((nom) => nom.endsWith(extension));
 
 // Estampille de version = numéro de package.json + moment du build (celui de
 // la CI à chaque déploiement). Affichée dans le site pour confirmer qu'on est
@@ -27,6 +31,8 @@ export default defineConfig({
   base: process.env.BASE_PATH ?? '/Bruit/',
   define: {
     __VERSION__: JSON.stringify(VERSION),
+    __MODELES_LOCAUX__: JSON.stringify(fichiers('models', '.glb')),
+    __VIDEOS_LOCALES__: JSON.stringify(fichiers('videos', '.mp4')),
   },
   plugins: [
     react(),
