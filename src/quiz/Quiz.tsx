@@ -232,6 +232,7 @@ export function Quiz({
         reussi: bonnes >= BONNES_REQUISES,
         date: new Date().toISOString(),
         modulesRates,
+        modulesFaits: faits.length,
       };
       setResultatQuiz(resultat);
       setEtat({ ...etat, termine: true });
@@ -252,7 +253,7 @@ export function Quiz({
         ordre={ordre}
         nom={profil.nom}
         onNom={(nom) => majProfil({ nom })}
-        modulesFaits={faits.length}
+        modulesFaits={resultatQuiz.modulesFaits ?? faits.length}
         onRecommencer={recommencer}
         onRevoir={onRevoir}
       />

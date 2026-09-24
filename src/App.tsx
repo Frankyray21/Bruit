@@ -8,6 +8,7 @@
  */
 
 import { FournisseurGlossaire } from './ui/Glossaire.js';
+import { FournisseurInstall } from './ui/InstallerApp.js';
 import { useEffect, useRef, useState } from 'react';
 import { MODULES, type Module } from './parcours/modules.js';
 import { ValidationModule } from './parcours/Validation.js';
@@ -47,7 +48,9 @@ export default function App() {
     <FournisseurConfig>
       <FournisseurTravailleur>
         <FournisseurGlossaire>
+          <FournisseurInstall>
         <Coquille />
+          </FournisseurInstall>
         </FournisseurGlossaire>
       </FournisseurTravailleur>
     </FournisseurConfig>

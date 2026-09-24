@@ -14,7 +14,7 @@
  * détaillée dans l'onglet « Moi ».
  */
 
-import { useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { estNavigateurIntegre, URL_SITE } from './navigateur.js';
 
 /** L'évènement d'installation, absent des types standards du DOM. */
@@ -49,9 +49,19 @@ interface EtatInstall {
   integre: boolean;
 }
 
-function useInstall(): EtatInstall & {
-  installer: () => void;
-} {
+type Install = EtatInstall & { installer: () => void };
+
+const ContexteInstall = createContext<Install | null>(null);
+
+/**
+ * Tient l'état d'installation pour toute la vie de la page.
+ *
+ * Chrome n'émet `beforeinstallprompt` qu'une fois : si l'écouteur vivait dans
+ * la bannière de l'accueil, passer à « Moi » la démontait et la carte
+ * détaillée perdait le vrai bouton d'installation. Le fournisseur se pose une
+ * fois, à la racine, et les deux présentations lisent le même évènement.
+ */
+export function FournisseurInstall({ children }: { children: ReactNode }) {
   const [evt, setEvt] = useState<EvtInstall | null>(null);
   const [installee, setInstallee] = useState(false);
   const [ios, setIos] = useState(false);
@@ -85,7 +95,17 @@ function useInstall(): EtatInstall & {
     void evt.userChoice.finally(() => setEvt(null));
   };
 
-  return { evt, installee, ios, integre, installer };
+  return (
+    <ContexteInstall.Provider value={{ evt, installee, ios, integre, installer }}>
+      {children}
+    </ContexteInstall.Provider>
+  );
+}
+
+const SANS_FOURNISSEUR: Install = { evt: null, installee: false, ios: false, integre: false, installer: () => {} };
+
+function useInstall(): Install {
+  return useContext(ContexteInstall) ?? SANS_FOURNISSEUR;
 }
 
 /** Copie l'adresse du site ; renvoie true si la copie a réussi. */

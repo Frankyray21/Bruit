@@ -34,6 +34,12 @@ export interface ResultatQuiz {
   readonly date: string;
   /** Identifiants des modules dont au moins une question a été ratée. */
   readonly modulesRates: readonly string[];
+  /**
+   * Modules terminés au moment où le quiz a été fini : c'est ce que dit
+   * l'attestation, figé à sa date. Absent des résultats enregistrés avant que
+   * ce champ existe.
+   */
+  readonly modulesFaits?: number;
 }
 
 /** Poste et protecteur types, quand le travailleur n'a encore rien choisi. */
