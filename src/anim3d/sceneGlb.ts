@@ -88,7 +88,8 @@ export async function creerVisionneuse(
   camera.position.set(0, 0.4, 5);
   camera.lookAt(0, 0, 0);
 
-  let rot = 0;
+  // Départ en trois-quarts : on voit à la fois la coupe et le relief du modèle.
+  let rot = 0.6;
   let inclin = 0;
   let temps = 0;
   let vivant = true;

@@ -36,6 +36,8 @@ const ModeleGlb = lazy(() => import('../anim3d/ModeleGlb.js'));
 
 /** Couleurs des matériaux du fichier `public/models/oreille.glb`. */
 const LEGENDE_OREILLE = [
+  { couleur: '#e3a891', nom: 'Pavillon' },
+  { couleur: '#edbda9', nom: 'Conduit auditif' },
   { couleur: '#fadbd1', nom: 'Tympan' },
   { couleur: '#f5eed9', nom: 'Osselets (marteau, enclume, étrier)' },
   { couleur: '#edb8ad', nom: 'Cochlée' },
@@ -316,9 +318,9 @@ function ModuleDommages() {
       <Suspense fallback={null}>
         <ModeleGlb
           fichier="oreille.glb"
-          titre="L'oreille moyenne et interne, en vrai 3D"
-          intro="Modèle anatomique à l'échelle : le tympan, les trois osselets, la cochlée (l'escargot), le vestibule et le nerf auditif. Fais glisser pour tourner."
-          aria="Modèle 3D anatomique de l'oreille moyenne et interne, manipulable"
+          titre="L'oreille complète, en vrai 3D"
+          intro="Modèle anatomique à l'échelle, du pavillon au nerf : le conduit, le tympan, les trois osselets, la cochlée (l'escargot) et le vestibule. Fais glisser pour tourner."
+          aria="Modèle 3D anatomique de l'oreille complète, manipulable"
           legende={LEGENDE_OREILLE}
           credit={
             <>
@@ -329,6 +331,7 @@ function ModuleDommages() {
               (CC BY-SA 4.0), d'après BodyParts3D (DBCLS, CC BY-SA 2.1 JP) et « Anatomy of the
               Inner Ear » (University of Dundee, CC BY-NC-SA 4.0, d'après 3D Ear, McGill).
               Usage non commercial pour la cochlée, le vestibule, les osselets et le tympan.
+              Conduit auditif reconstruit.
             </>
           }
         />
