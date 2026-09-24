@@ -1043,9 +1043,10 @@ input[type='range']:focus-visible::-moz-range-thumb {
   font-family: system-ui, sans-serif;
 }
 
-/* Le signal parcourt la spirale : longueur de tiret ~ portion visible. */
-.oreille-signal {
-  stroke-dasharray: 40 300;
+/* L'onde parcourt la spirale : un tiret court sur une longue période. */
+.oreille-fluide {
+  stroke-dasharray: 70 610;
+  opacity: 0.95;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -1072,6 +1073,8 @@ input[type='range']:focus-visible::-moz-range-thumb {
     }
   }
 
+  /* Le tympan vibre (légère variation de bombé), les osselets basculent
+     autour de la tête du marteau, l'étrier pousse la fenêtre ovale. */
   .oreille-tympan {
     transform-box: fill-box;
     transform-origin: center;
@@ -1079,14 +1082,33 @@ input[type='range']:focus-visible::-moz-range-thumb {
   }
   @keyframes tympan-vibre {
     0%, 100% { transform: scaleX(1); }
-    50% { transform: scaleX(0.55); }
+    50% { transform: scaleX(0.62); }
   }
 
-  .oreille-signal {
-    animation: signal-parcourt 2.4s linear infinite;
+  .oreille-osselets {
+    transform-box: fill-box;
+    transform-origin: 22% 12%;
+    animation: osselets-bascule 0.5s ease-in-out infinite;
   }
-  @keyframes signal-parcourt {
-    from { stroke-dashoffset: 340; }
+  @keyframes osselets-bascule {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(2.2deg); }
+  }
+
+  .oreille-etrier {
+    animation: etrier-pousse 0.5s ease-in-out infinite;
+  }
+  @keyframes etrier-pousse {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(1.6px); }
+  }
+
+  /* L'onde de pression parcourt la spirale, de la base vers l'apex. */
+  .oreille-fluide {
+    animation: fluide-parcourt 2.4s linear infinite;
+  }
+  @keyframes fluide-parcourt {
+    from { stroke-dashoffset: 680; }
     to { stroke-dashoffset: 0; }
   }
 
