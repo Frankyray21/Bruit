@@ -11,6 +11,7 @@
 
 import { lazy, Suspense, type ReactNode } from 'react';
 import { statistiques } from '../data/index.js';
+import { Terme } from '../ui/Glossaire.js';
 import { Avertissement, Carte, Declic } from '../ui/composants.js';
 
 // La 3D (Three.js) n'est téléchargée qu'à l'ouverture du module 4 : elle ne
@@ -189,12 +190,12 @@ function ModuleDecibel() {
       <Carte titre="Deux instruments, deux unités" source="diapo 4">
         <ul className="liste-puces">
           <li>
-            Le <strong>sonomètre</strong> mesure le bruit à l'instant même, en{' '}
+            Le <Terme id="sonometre">sonomètre</Terme> mesure le bruit à l'instant même, en{' '}
             <strong>décibels (dB)</strong>.
           </li>
           <li>
-            Le <strong>dosimètre</strong> mesure ce que l'oreille encaisse sur
-            une période, en <strong>décibels corrigés (dBA)</strong>. Ce sont
+            Le <Terme id="dosimetre">dosimètre</Terme> mesure ce que l'oreille encaisse sur
+            une période, en <Terme id="dba">décibels corrigés (dBA)</Terme>. Ce sont
             les mesures effectuées par la mine.
           </li>
           <li>
@@ -223,11 +224,11 @@ function ModuleDecibel() {
             <strong>Aérienne</strong> : le son se propage dans l'air.
           </li>
           <li>
-            <strong>Solidienne</strong> : il se transmet dans les éléments
+            <Terme id="solidienne">Solidienne</Terme> : il se transmet dans les éléments
             solides — plancher, murs, plafond.
           </li>
           <li>
-            <strong>Réverbération</strong> : il rebondit selon les matériaux.
+            <Terme id="reverberation">Réverbération</Terme> : il rebondit selon les matériaux.
             Une galerie en tôle nue renvoie tout ; un panneau absorbant poreux
             l'avale.
           </li>
@@ -349,21 +350,22 @@ function ModuleDommages() {
       <Carte titre="Les quatre atteintes" source="diapo 12">
         <ul className="liste-puces">
           <li>
-            <strong>Surdité brutale</strong> — un bruit soudain et intense, une
+            <Terme id="surdite-brutale">Surdité brutale</Terme> — un bruit soudain et intense, une
             déflagration : lésions immédiates et définitives, parfois déchirure
-            du tympan.
+            du <Terme id="tympan">tympan</Terme>.
           </li>
           <li>
-            <strong>Surdité progressive</strong> — fréquente chez les foreurs.
-            Exposition continue, destruction des cellules ciliées, perte{' '}
+            <Terme id="surdite-progressive">Surdité progressive</Terme> — fréquente chez les foreurs.
+            Exposition continue, destruction des{' '}
+            <Terme id="cellules-ciliees">cellules ciliées</Terme>, perte{' '}
             <strong>irréversible</strong>.
           </li>
           <li>
-            <strong>Acouphènes</strong> — bourdonnements ou sifflements
+            <Terme id="acouphenes">Acouphènes</Terme> — bourdonnements ou sifflements
             permanents, même dans le silence.
           </li>
           <li>
-            <strong>Hyperacousie</strong> — hypersensibilité anormale aux sons.
+            <Terme id="hyperacousie">Hyperacousie</Terme> — hypersensibilité anormale aux sons.
           </li>
         </ul>
       </Carte>
@@ -395,14 +397,14 @@ function ModuleChoisir() {
       >
         <ul className="liste-puces">
           <li>
-            <strong>Bouchons</strong> : mousse (NRR 32-33) ou sur arceau (NRR
+            <strong>Bouchons</strong> : mousse (<Terme id="nrr">NRR</Terme> 32-33) ou sur arceau (NRR
             17-20).
           </li>
           <li>
             <strong>Coquilles</strong> montées sur casque (NRR 25).
           </li>
           <li>
-            <strong>Double protection</strong> recommandée au-delà de 105 dBA.
+            <Terme id="double-protection">Double protection</Terme> recommandée au-delà de 105 dBA.
           </li>
         </ul>
       </Carte>

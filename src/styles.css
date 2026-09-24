@@ -2585,3 +2585,157 @@ h1.entete__titre {
   min-height: 76px;
   font-size: 1.2rem;
 }
+
+/* ---------- Glossaire : termes cliquables et fiche en fenêtre ---------- */
+
+.terme {
+  all: unset;
+  font-weight: 700;
+  color: var(--texte);
+  text-decoration: underline dotted var(--rouge-clair);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  cursor: help;
+  border-radius: 3px;
+}
+
+.terme::after {
+  content: ' ⓘ';
+  font-size: 0.75em;
+  color: var(--rouge-clair);
+  font-weight: 600;
+}
+
+.terme:hover,
+.terme:focus-visible {
+  color: var(--rouge-clair);
+  outline: 2px solid var(--rouge-clair);
+  outline-offset: 2px;
+}
+
+.fenetre {
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  background: var(--fond-carte);
+  color: var(--texte);
+  padding: 0;
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(86vh, 720px);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+}
+
+.fenetre::backdrop {
+  background: rgba(4, 7, 14, 0.7);
+  backdrop-filter: blur(3px);
+}
+
+.fenetre__contenu {
+  padding: 20px 22px 18px;
+  overflow: auto;
+  max-height: min(86vh, 720px);
+}
+
+.fenetre__contenu p {
+  margin: 0 0 12px;
+  line-height: 1.55;
+  color: var(--texte-doux);
+}
+
+.fenetre__entete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.fenetre__sur {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rouge-clair);
+  margin: 0 0 2px !important;
+}
+
+.fenetre__titre {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  line-height: 1.05;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.fenetre__fermer {
+  all: unset;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--texte-doux);
+  background: var(--fond-carte-haut);
+  cursor: pointer;
+  flex: none;
+}
+
+.fenetre__fermer:hover,
+.fenetre__fermer:focus-visible {
+  color: var(--texte);
+  outline: 2px solid var(--rouge-clair);
+}
+
+.fenetre__court {
+  font-size: 1.08rem;
+  color: var(--texte) !important;
+  font-weight: 500;
+}
+
+.fenetre__complement {
+  border-left: 3px solid var(--bleu);
+  background: color-mix(in srgb, var(--bleu) 10%, transparent);
+  padding: 10px 12px;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.92rem;
+}
+
+.fenetre__complement strong,
+.fenetre__retenir strong {
+  color: var(--texte);
+}
+
+.fenetre__retenir {
+  border-left: 3px solid var(--rouge);
+  background: color-mix(in srgb, var(--rouge) 10%, transparent);
+  padding: 10px 12px;
+  border-radius: 0 8px 8px 0;
+}
+
+.fenetre__pied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+@media (max-width: 520px) {
+  .fenetre {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 88vh;
+    margin: auto 0 0;
+    border-radius: var(--rayon) var(--rayon) 0 0;
+    border-bottom: 0;
+  }
+
+  .fenetre__contenu {
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.projection .terme::after {
+  content: '';
+}

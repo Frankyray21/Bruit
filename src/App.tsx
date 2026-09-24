@@ -7,6 +7,7 @@
  * mémorisés : on reprend où on était, même après une mise à jour.
  */
 
+import { FournisseurGlossaire } from './ui/Glossaire.js';
 import { useEffect, useRef, useState } from 'react';
 import { MODULES, type Module } from './parcours/modules.js';
 import { ValidationModule } from './parcours/Validation.js';
@@ -45,7 +46,9 @@ export default function App() {
   return (
     <FournisseurConfig>
       <FournisseurTravailleur>
+        <FournisseurGlossaire>
         <Coquille />
+        </FournisseurGlossaire>
       </FournisseurTravailleur>
     </FournisseurConfig>
   );
@@ -150,6 +153,7 @@ function Coquille() {
         (e.key === ' ' || e.key === 'Enter')
       )
         return;
+      if (document.querySelector('dialog[open]')) return;
       if (e.key === 'f' || e.key === 'F') {
         if (document.fullscreenElement) void document.exitFullscreen();
         else void document.documentElement.requestFullscreen?.();
