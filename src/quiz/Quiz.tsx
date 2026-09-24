@@ -11,7 +11,7 @@
  * il faudra un serveur.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { QUESTIONS, type Question } from './questions.js';
 import {
   dessinerAttestation,
@@ -104,13 +104,23 @@ export function OptionQuestion({
   const repondu = choisi !== null;
   const juste = repondu && i === question.bonne;
   const faux = repondu && i === choisi && i !== question.bonne;
-  let classe = 'quiz__option';
-  if (juste) classe += ' quiz__option--juste';
-  else if (faux) classe += ' quiz__option--faux';
-  else if (!repondu && provisoire === i) classe += ' quiz__option--provisoire';
+  const retenu = !repondu && provisoire === i;
+  // Une fois répondu, seuls comptent la bonne réponse et, le cas échéant, la
+  // tienne : les autres s'estompent.
+  const ecarte = repondu && !juste && !faux;
+  const classe = [
+    'reponse',
+    juste && 'reponse--juste',
+    faux && 'reponse--faux',
+    retenu && 'reponse--retenu',
+    ecarte && 'reponse--ecarte',
+  ]
+    .filter(Boolean)
+    .join(' ');
   const option = question.options[i]!;
-  // Le badge dit l'état sans la couleur : ✓ bonne réponse, ✕ ta réponse.
-  const badge = juste ? '✓' : faux ? '✕' : String.fromCharCode(65 + i);
+  // La lettre reste ; l'état est dit par une étiquette, pas seulement par la
+  // couleur.
+  const etiquette = juste ? 'Bonne réponse' : faux ? 'Ta réponse' : retenu ? 'Ton choix' : null;
   return (
     <button
       type="button"
@@ -119,15 +129,28 @@ export function OptionQuestion({
       disabled={repondu}
       aria-pressed={repondu ? choisi === i : provisoire === i}
     >
-      <span className="quiz__lettre" aria-hidden="true">
-        {badge}
+      <span className="reponse__lettre" aria-hidden="true">
+        {juste ? '✓' : faux ? '✕' : String.fromCharCode(65 + i)}
       </span>
-      <span>
-        {option}
-        {juste && <span className="sr-only"> — bonne réponse</span>}
-        {faux && <span className="sr-only"> — ta réponse, fausse</span>}
-      </span>
+      <span className="reponse__texte">{option}</span>
+      {etiquette && <span className="reponse__etiquette">{etiquette}</span>}
     </button>
+  );
+}
+
+/** La liste des choix, avec sa consigne. */
+export function ListeReponses({
+  consigne,
+  children,
+}: {
+  consigne?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="reponses" role="group" aria-label="Choix de réponse">
+      {consigne && <p className="reponses__consigne">{consigne}</p>}
+      {children}
+    </div>
   );
 }
 
@@ -279,16 +302,26 @@ export function Quiz({
           {question.enonce}
         </p>
 
-        {question.options.map((_, i) => (
-          <OptionQuestion
-            key={i}
-            question={question}
-            i={i}
-            choisi={choisi}
-            provisoire={provisoire}
-            onChoisir={repondre}
-          />
-        ))}
+        <ListeReponses
+          consigne={
+            choisi !== null
+              ? undefined
+              : revelation
+                ? 'Touche un choix, puis « Révéler »'
+                : 'Touche ta réponse'
+          }
+        >
+          {question.options.map((_, i) => (
+            <OptionQuestion
+              key={i}
+              question={question}
+              i={i}
+              choisi={choisi}
+              provisoire={provisoire}
+              onChoisir={repondre}
+            />
+          ))}
+        </ListeReponses>
 
         {revelation && choisi === null && provisoire !== null && (
           <button type="button" className="bouton" onClick={() => valider(provisoire)}>
@@ -491,9 +524,11 @@ function Resultat({
                 <span className="relecture__num">{i + 1}</span>
                 {q.enonce}
               </summary>
-              {q.options.map((_, j) => (
-                <OptionQuestion key={j} question={q} i={j} choisi={choisi} onChoisir={() => {}} />
-              ))}
+              <ListeReponses>
+                {q.options.map((_, j) => (
+                  <OptionQuestion key={j} question={q} i={j} choisi={choisi} onChoisir={() => {}} />
+                ))}
+              </ListeReponses>
               <div className="declic">{q.explication}</div>
               <button
                 type="button"

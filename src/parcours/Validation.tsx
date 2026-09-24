@@ -8,7 +8,7 @@
  */
 
 import { QUESTIONS } from '../quiz/questions.js';
-import { OptionQuestion } from '../quiz/Quiz.js';
+import { ListeReponses, OptionQuestion } from '../quiz/Quiz.js';
 import { useTravailleur } from '../etat/travailleur.js';
 import { Carte } from '../ui/composants.js';
 import type { Module } from './modules.js';
@@ -44,15 +44,17 @@ export function ValidationModule({ module }: { module: Module }) {
         l'explication suit.
       </p>
       <p className="quiz__question">{question.enonce}</p>
-      {question.options.map((_, i) => (
-        <OptionQuestion
-          key={i}
-          question={question}
-          i={i}
-          choisi={choisi}
-          onChoisir={(i) => validerModule(module.id, i === question.bonne)}
-        />
-      ))}
+      <ListeReponses consigne={deja === undefined ? 'Touche ta réponse' : undefined}>
+        {question.options.map((_, i) => (
+          <OptionQuestion
+            key={i}
+            question={question}
+            i={i}
+            choisi={choisi}
+            onChoisir={(i) => validerModule(module.id, i === question.bonne)}
+          />
+        ))}
+      </ListeReponses>
       {deja !== undefined && (
         <div className="declic" role="status">
           <strong>{deja ? 'Bonne réponse. ' : 'La bonne réponse est en vert. '}</strong>

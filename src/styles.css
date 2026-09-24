@@ -1960,7 +1960,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
   margin-bottom: 12px;
 }
 
-.relecture .quiz__option {
+.relecture .reponse {
   background: var(--fond-carte);
 }
 
@@ -2327,8 +2327,7 @@ h1.entete__titre {
   font-size: 1.25rem;
 }
 
-.carte--validation .quiz__option {
-  background: var(--fond-carte-haut);
+.carte--validation .reponse {
   border-color: color-mix(in srgb, var(--rouge-clair) 55%, var(--bordure-controle));
 }
 
@@ -2364,7 +2363,7 @@ h1.entete__titre {
   color: var(--vert);
 }
 
-.carte--validation-faite .quiz__option {
+.carte--validation-faite .reponse {
   border-color: var(--bordure-controle);
 }
 
@@ -2382,4 +2381,160 @@ h1.entete__titre {
       box-shadow: 0 0 0 10px color-mix(in srgb, var(--rouge) 10%, transparent);
     }
   }
+}
+
+/* ---------- Choix de réponse (quiz, validation) ---------- */
+
+.reponses {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.reponses__consigne {
+  font-size: 0.85rem;
+  color: var(--texte-doux);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.reponse {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 68px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--bordure-controle);
+  background: var(--fond-carte-haut);
+  text-align: left;
+  font-size: 1.08rem;
+  line-height: 1.35;
+  transition:
+    border-color 0.15s var(--ease),
+    background-color 0.15s var(--ease),
+    opacity 0.2s var(--ease);
+}
+
+@media (hover: hover) {
+  .reponse:not(:disabled):hover {
+    border-color: var(--texte-doux);
+    background: color-mix(in srgb, var(--texte) 6%, var(--fond-carte-haut));
+  }
+}
+
+.reponse:not(:disabled):active {
+  transform: scale(0.985);
+}
+
+.reponse:disabled {
+  cursor: default;
+}
+
+/* La lettre : un vrai repère, lisible sous une lampe frontale. */
+.reponse__lettre {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--bordure-controle);
+  background: var(--fond-carte);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--texte);
+}
+
+.reponse__texte {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.reponse__etiquette {
+  flex: 0 0 auto;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+}
+
+/* Choix retenu, pas encore révélé (projection). */
+.reponse--retenu {
+  border-color: var(--bleu);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--bleu) 45%, transparent);
+}
+
+.reponse--retenu .reponse__lettre {
+  border-color: var(--bleu);
+  background: var(--bleu);
+  color: #fff;
+}
+
+.reponse--retenu .reponse__etiquette {
+  color: var(--bleu);
+}
+
+/* Bonne réponse : vert, lettre remplacée par ✓, étiquette. */
+.reponse--juste {
+  border-color: var(--vert);
+  background: color-mix(in srgb, var(--vert) 16%, var(--fond-carte-haut));
+  font-weight: 600;
+}
+
+.reponse--juste .reponse__lettre {
+  border-color: var(--vert);
+  background: var(--vert);
+  color: #06210c;
+}
+
+.reponse--juste .reponse__etiquette {
+  color: var(--vert);
+}
+
+/* Ta réponse, fausse : rouge, lettre remplacée par ✕, étiquette. */
+.reponse--faux {
+  border-color: var(--rouge-clair);
+  background: color-mix(in srgb, var(--rouge-clair) 14%, var(--fond-carte-haut));
+}
+
+.reponse--faux .reponse__lettre {
+  border-color: var(--rouge-clair);
+  background: var(--rouge-clair);
+  color: #fff;
+}
+
+.reponse--faux .reponse__etiquette {
+  color: var(--rouge-clair);
+}
+
+/* Les autres choix s'effacent une fois la réponse connue. */
+.reponse--ecarte {
+  opacity: 0.5;
+}
+
+/* Sur écran étroit, l'étiquette passe sous le texte plutôt que de l'écraser. */
+@media (max-width: 420px) {
+  .reponse {
+    flex-wrap: wrap;
+  }
+  .reponse__texte {
+    flex-basis: calc(100% - 54px);
+  }
+  .reponse__etiquette {
+    margin-left: 54px;
+  }
+}
+
+.app--presentation .reponse {
+  min-height: 76px;
+  font-size: 1.2rem;
 }
