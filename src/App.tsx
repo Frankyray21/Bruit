@@ -140,8 +140,15 @@ function Coquille() {
     };
     const surTouche = (e: KeyboardEvent) => {
       const cible = e.target;
-      // Un champ garde ses flèches ; un bouton focalisé garde Espace et Entrée.
-      if (cible instanceof HTMLElement && cible.closest('input, select, textarea, button, summary, a'))
+      // Un champ garde toutes ses touches (les flèches règlent un curseur) ;
+      // un bouton focalisé — c'est le cas juste après un clic — garde Espace
+      // et Entrée, mais les flèches font avancer la projection.
+      if (cible instanceof HTMLElement && cible.closest('input, select, textarea')) return;
+      if (
+        cible instanceof HTMLElement &&
+        cible.closest('button, summary, a') &&
+        (e.key === ' ' || e.key === 'Enter')
+      )
         return;
       if (e.key === 'f' || e.key === 'F') {
         if (document.fullscreenElement) void document.exitFullscreen();
