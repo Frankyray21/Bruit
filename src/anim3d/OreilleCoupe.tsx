@@ -18,8 +18,23 @@
 import { Carte } from '../ui/composants.js';
 
 const OS = 'M 296 62 C 380 36, 640 34, 724 92 C 766 122, 770 392, 730 434 C 650 476, 420 478, 302 446 C 286 400, 284 120, 296 62 Z';
-const COCHLEE =
-  'M 566 316 m 54 0 a 54 54 0 1 1 -54 -54 a 42 42 0 1 1 42 42 a 31 31 0 1 1 -31 -31 a 21 21 0 1 1 21 21 a 12 12 0 1 1 -12 -12 a 5 5 0 1 1 5 5';
+/**
+ * Spirale de la cochlée : 2,5 tours (l'humain en a 2,5 à 2,75), de la base
+ * (tour le plus large, tourné vers l'oreille moyenne et les deux fenêtres) à
+ * l'apex. Spirale d'Archimède échantillonnée : le rayon décroît linéairement.
+ */
+function spiraleCochlee(cx: number, cy: number, r0: number, r1: number, tours: number): string {
+  const n = Math.round(tours * 48);
+  const pts: string[] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    const angle = Math.PI + t * tours * 2 * Math.PI; // départ à gauche, face à l'oreille moyenne
+    const r = r0 + (r1 - r0) * t;
+    pts.push(`${(cx + r * Math.cos(angle)).toFixed(1)} ${(cy + r * Math.sin(angle)).toFixed(1)}`);
+  }
+  return `M ${pts.join(' L ')}`;
+}
+const COCHLEE = spiraleCochlee(570, 318, 52, 5, 2.5);
 
 export function OreilleCoupe() {
   return (
@@ -247,7 +262,7 @@ export function OreilleCoupe() {
           <ellipse cx="492" cy="236" rx="10" ry="12" fill="#ffffff" opacity="0.25" />
           {/* Fenêtre ovale (sous la platine de l'étrier) et fenêtre ronde */}
           <ellipse cx="474" cy="244" rx="3.5" ry="12" fill="#3b2a28" />
-          <circle cx="548" cy="292" r="4.5" fill="#4a2f2d" stroke="#9f8c6c" strokeWidth="1" />
+          <ellipse cx="514" cy="300" rx="4" ry="7" fill="#3b2a28" stroke="#9f8c6c" strokeWidth="1" />
           {/* Cochlée : coquille osseuse, canal, reflet nacré */}
           <path d={COCHLEE} fill="none" stroke="#7d6a4b" strokeWidth="22" strokeLinecap="round" />
           <path d={COCHLEE} fill="none" stroke="url(#oc-labyrinthe)" strokeWidth="17" strokeLinecap="round" />
@@ -269,6 +284,8 @@ export function OreilleCoupe() {
             <path d="M 566 372 L 566 408" />
             <path d="M 700 342 L 700 378" />
             <path d="M 372 428 L 350 454" />
+            <path d="M 464 210 L 472 236" />
+            <path d="M 464 292 L 508 300" />
           </g>
           <text x="118" y="380" textAnchor="middle">Pavillon</text>
           <text x="300" y="322" textAnchor="middle">Conduit auditif</text>
@@ -279,6 +296,9 @@ export function OreilleCoupe() {
           <text x="470" y="356" textAnchor="middle">Vestibule</text>
           <text x="566" y="426" textAnchor="middle">Cochlée</text>
           <text x="700" y="396" textAnchor="middle">Nerf auditif</text>
+          <text x="700" y="412" textAnchor="middle" fontSize="11" fontWeight="500" fill="#b6c1d6">vestibulocochléaire (VIII)</text>
+          <text x="462" y="206" textAnchor="end" fontSize="11" fontWeight="500" fill="#b6c1d6">fenêtre ovale</text>
+          <text x="462" y="290" textAnchor="end" fontSize="11" fontWeight="500" fill="#b6c1d6">fenêtre ronde</text>
           <text x="330" y="472" textAnchor="middle">Trompe d'Eustache</text>
           <text x="660" y="86" textAnchor="middle" fill="#8a7756" fontWeight="700" fontSize="13">OS TEMPORAL</text>
           <text x="40" y="150" fill="#79b9ff" fontSize="12" fontWeight="500">son</text>

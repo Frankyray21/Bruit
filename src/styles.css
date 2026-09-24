@@ -1045,7 +1045,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 
 /* L'onde parcourt la spirale : un tiret court sur une longue période. */
 .oreille-fluide {
-  stroke-dasharray: 70 610;
+  stroke-dasharray: 60 470;
   opacity: 0.95;
 }
 
@@ -1108,7 +1108,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
     animation: fluide-parcourt 2.4s linear infinite;
   }
   @keyframes fluide-parcourt {
-    from { stroke-dashoffset: 680; }
+    from { stroke-dashoffset: 530; }
     to { stroke-dashoffset: 0; }
   }
 
