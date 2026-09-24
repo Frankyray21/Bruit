@@ -13,7 +13,7 @@ const MOTIFS_INTEGRE = [
   /FBAN|FBAV|FB_IAB|FB4A/i, // Facebook, Messenger
   /Instagram/i,
   /Messenger/i,
-  /Teams\//i, // Microsoft Teams mobile
+  /TeamsMobile|Teams\//i, // Microsoft Teams mobile
   /MicroMessenger/i, // WeChat
   /\bLine\//i,
   /Snapchat/i,

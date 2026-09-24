@@ -106,6 +106,7 @@ export function BoutonCopierLien({ secondaire = false }: { secondaire?: boolean 
       <button
         type="button"
         className={`bouton${secondaire ? ' bouton--secondaire' : ''}`}
+        aria-live="polite"
         onClick={async () => {
           setEtat((await copierLien()) ? 'copie' : 'echec');
           setTimeout(() => setEtat('repos'), 4000);
@@ -134,9 +135,10 @@ export function BoutonPartagerLien() {
           url: URL_SITE,
         });
         return;
-      } catch {
-        // Partage annulé : rien à faire.
-        return;
+      } catch (e) {
+        // Feuille fermée par la personne : rien à faire. Tout autre échec
+        // (partage non branché dans un navigateur intégré…) : on copie.
+        if ((e as DOMException).name === 'AbortError') return;
       }
     }
     setCopie(await copierLien());

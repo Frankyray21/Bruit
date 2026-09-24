@@ -13,7 +13,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { QUESTIONS, type Question } from './questions.js';
-import { dessinerAttestation, exporterAttestation, nomFichierAttestation } from './attestation.js';
+import {
+  dessinerAttestation,
+  exporterAttestation,
+  nomFichierAttestation,
+  type IssueExport,
+} from './attestation.js';
 import { MODULES } from '../parcours/modules.js';
 import { useStockage } from '../etat/stockage.js';
 import { useTravailleur, type ResultatQuiz } from '../etat/travailleur.js';
@@ -329,7 +334,7 @@ function Resultat({
   const { bonnes, total, reussi } = resultat;
   const score = Math.round((bonnes / total) * 100);
   const refCanvas = useRef<HTMLCanvasElement>(null);
-  const [exportEtat, setExportEtat] = useState<'repos' | 'en-cours' | 'partage' | 'telechargement' | 'echec'>('repos');
+  const [exportEtat, setExportEtat] = useState<'repos' | 'en-cours' | IssueExport | 'echec'>('repos');
 
   async function enregistrerImage() {
     const canvas = refCanvas.current;
@@ -437,7 +442,8 @@ function Resultat({
             </button>
             {exportEtat === 'telechargement' && (
               <p className="champ__aide" role="status">
-                Image enregistrée sur ton appareil (dossier Téléchargements ou galerie).
+                Image envoyée aux téléchargements — vérifie la notification ou
+                l'app Fichiers.
               </p>
             )}
             {exportEtat === 'echec' && (
@@ -453,7 +459,7 @@ function Resultat({
         <div className="barre-boutons" style={{ marginTop: 10 }}>
           <button
             type="button"
-            className="bouton bouton--secondaire"
+            className={`bouton${reussi ? ' bouton--secondaire' : ''}`}
             onClick={onRecommencer}
           >
             Refaire le quiz

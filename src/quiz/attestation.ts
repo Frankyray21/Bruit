@@ -25,7 +25,7 @@ export const MENTION_DECLARATIVE =
 export function slug(texte: string): string {
   const s = texte
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
@@ -58,6 +58,23 @@ export function lignesAttestation(
     score: `Quiz : ${d.bonnes} / ${d.total} bonnes réponses · Modules suivis : ${d.modulesSuivis} / ${d.modulesTotal}`,
     mention: MENTION_DECLARATIVE,
   };
+}
+
+/** Réduit la taille de police jusqu'à ce que le texte tienne dans `largeur`. */
+function ajuster(
+  ctx: CanvasRenderingContext2D,
+  texte: string,
+  poids: number,
+  taille: number,
+  famille: string,
+  largeur: number,
+  min: number,
+): void {
+  ctx.font = `${poids} ${taille}px ${famille}`;
+  while (ctx.measureText(texte).width > largeur && taille > min) {
+    taille -= 2;
+    ctx.font = `${poids} ${taille}px ${famille}`;
+  }
 }
 
 /** Coupe un texte en lignes qui tiennent dans `largeur` px. */
@@ -94,17 +111,21 @@ export async function dessinerAttestation(
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('canvas 2D indisponible');
 
-  // Polices embarquées (@fontsource) : on attend qu'elles soient prêtes.
-  if (typeof document !== 'undefined' && document.fonts?.ready) {
-    try {
-      await document.fonts.ready;
-    } catch {
-      // Sans police chargée, le repli système est acceptable.
-    }
-  }
   const affiche = "'Barlow Condensed', 'Barlow', system-ui, sans-serif";
   const corps = "'Barlow', system-ui, sans-serif";
   const l = lignesAttestation(d, formaterDate);
+
+  // Polices embarquées (@fontsource) : elles ne se chargent qu'à l'usage, et
+  // fillText n'attend pas. On demande explicitement chaque style dessiné ;
+  // un échec n'empêche pas l'export (repli système).
+  if (typeof document !== 'undefined' && document.fonts?.load) {
+    await Promise.allSettled([
+      document.fonts.load(`700 26px ${affiche}`),
+      document.fonts.load(`800 54px ${affiche}`),
+      document.fonts.load(`500 34px ${corps}`),
+      document.fonts.load(`400 30px ${corps}`),
+    ]);
+  }
 
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, L, H);
@@ -117,10 +138,10 @@ export async function dessinerAttestation(
   ctx.fillText(l.kicker.toUpperCase(), 110, 108);
 
   ctx.fillStyle = '#0a0e17';
-  ctx.font = `800 54px ${affiche}`;
+  ajuster(ctx, l.titre.toUpperCase(), 800, 54, affiche, L - 110 - 72, 30);
   ctx.fillText(l.titre.toUpperCase(), 110, 176);
 
-  ctx.font = `800 88px ${affiche}`;
+  ajuster(ctx, l.nom, 800, 88, affiche, L - 144, 44);
   ctx.fillText(l.nom, 72, 340);
 
   ctx.fillStyle = '#1f2937';
@@ -145,14 +166,16 @@ export async function dessinerAttestation(
   }
 }
 
+export type IssueExport = 'partage' | 'telechargement' | 'annule';
+
 /**
  * Partage l'image (Messages, courriel…) si l'appareil le permet, sinon la
- * télécharge. Renvoie « partage » ou « telechargement ».
+ * télécharge. « annule » quand la personne ferme la feuille de partage.
  */
 export async function exporterAttestation(
   canvas: HTMLCanvasElement,
   nomFichier: string,
-): Promise<'partage' | 'telechargement'> {
+): Promise<IssueExport> {
   const blob = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, 'image/png'));
   if (!blob) throw new Error("impossible de produire l'image");
   const fichier = new File([blob], nomFichier, { type: 'image/png' });
@@ -163,8 +186,10 @@ export async function exporterAttestation(
     try {
       await nav.share({ files: [fichier], title: 'Attestation — Protection auditive' });
       return 'partage';
-    } catch {
-      // Partage annulé ou refusé : on retombe sur le téléchargement.
+    } catch (e) {
+      // Feuille fermée par la personne : c'est son choix, on n'insiste pas.
+      if ((e as DOMException).name === 'AbortError') return 'annule';
+      // Autre refus : on retombe sur le téléchargement.
     }
   }
   const url = URL.createObjectURL(blob);

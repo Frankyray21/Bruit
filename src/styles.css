@@ -2285,6 +2285,14 @@ h1.entete__titre {
   }
 }
 
+/* En projection, le texte du hero laisse la colonne de droite au QR : un code
+   partiellement recouvert ne se scanne pas. */
+@media (min-width: 980px) {
+  .hero:has(.hero__coin) .hero__contenu {
+    padding-right: 300px;
+  }
+}
+
 @media print {
   .qr,
   .partage {
