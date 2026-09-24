@@ -115,17 +115,15 @@ document, pas comme une formation** :
   `<select>` natif) : le sélecteur natif d'Android et d'iPhone est déjà
   grand et utilisable avec des gants ; à revoir seulement si le test terrain
   le contredit.
-- **Cochlée 3D de l'accueil** (Three.js, 568 ko) : conservée, c'est
-  l'identité visuelle voulue ; elle est mise en cache après la première
-  visite. Elle pourrait être remplacée par le fond d'ondes seul si la
-  première ouverture est jugée trop lente.
+- **Cochlée 3D de l'accueil** (Three.js, 568 ko) : d'abord conservée comme
+  identité visuelle, puis **retirée à la demande du propriétaire** — l'accueil
+  garde le fond d'ondes seul et ne charge plus Three.js avant le module 4.
 - **Vidéo de 4,6 Mo en précache** : conservée, c'est ce qui la rend
   disponible sous terre. L'indicateur « contenu téléchargé » dit maintenant
   quand elle est prête.
-- **QR code pour diffuser le lien en salle**, **détection des navigateurs
-  intégrés** (Messenger, Teams) pour l'installation, **export de
-  l'attestation en image** : utiles, non bloquants — voir les tâches
-  suggérées.
+- ~~QR code, détection des navigateurs intégrés, export de l'attestation en
+  image~~ : d'abord reportés, puis **réalisés** (voir « Espace du formateur »
+  dans le README).
 - **Mélange de l'ordre des options** (seul l'ordre des questions est tiré au
   sort) : les explications disent « la bonne réponse est en vert », ce qui
   reste vrai ; à faire si le par-cœur devient un problème constaté.

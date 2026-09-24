@@ -1,17 +1,16 @@
 /**
- * Hero d'accueil — fond propre (ondes sonores) + titre, et, si un vrai modèle
- * GLB d'oreille est déposé, ce modèle en 3D par-dessus.
+ * Hero d'accueil — fond sobre (ondes sonores) + titre.
  *
- * Par défaut, aucun objet 3D généré par code : un motif d'ondes sonores sobre
- * sert de fond. Dès qu'un fichier `public/models/oreille.glb` est présent, la
- * 3D réelle apparaît en fondu — exactement l'idée du hero de TMS.
+ * Aucun objet 3D ici : l'accueil doit s'ouvrir vite, même sur un vieux
+ * téléphone, et ne pas charger Three.js avant qu'on en ait besoin (module 4).
+ * Le motif d'ondes concentriques est dessiné en SVG, donc léger et hors-ligne.
+ * `coin` permet de poser un élément en haut à droite (ex. : le code QR en
+ * projection).
  */
 
-import { lazy, Suspense, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
-const HeroCanvas = lazy(() => import('./HeroCanvas.js'));
-
-export function HeroOreille({ children }: { children: ReactNode }) {
+export function HeroOreille({ children, coin }: { children: ReactNode; coin?: ReactNode }) {
   return (
     <section className="hero">
       <div className="hero__media">
@@ -43,14 +42,9 @@ export function HeroOreille({ children }: { children: ReactNode }) {
           </g>
           <circle cx="288" cy="132" r="6" fill="#ef5a5c" />
         </svg>
-
-        {/* Vrai modèle 3D si présent ; sinon, ne rend rien. */}
-        <Suspense fallback={null}>
-          <HeroCanvas />
-        </Suspense>
-
         <div className="hero__voile" />
       </div>
+      {coin && <div className="hero__coin">{coin}</div>}
       <div className="hero__contenu">{children}</div>
     </section>
   );

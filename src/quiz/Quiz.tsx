@@ -13,6 +13,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { QUESTIONS, type Question } from './questions.js';
+import { dessinerAttestation, exporterAttestation, nomFichierAttestation } from './attestation.js';
 import { MODULES } from '../parcours/modules.js';
 import { useStockage } from '../etat/stockage.js';
 import { useTravailleur, type ResultatQuiz } from '../etat/travailleur.js';
@@ -327,6 +328,31 @@ function Resultat({
 }) {
   const { bonnes, total, reussi } = resultat;
   const score = Math.round((bonnes / total) * 100);
+  const refCanvas = useRef<HTMLCanvasElement>(null);
+  const [exportEtat, setExportEtat] = useState<'repos' | 'en-cours' | 'partage' | 'telechargement' | 'echec'>('repos');
+
+  async function enregistrerImage() {
+    const canvas = refCanvas.current;
+    if (!canvas) return;
+    setExportEtat('en-cours');
+    try {
+      await dessinerAttestation(
+        canvas,
+        {
+          nom,
+          date: resultat.date,
+          bonnes,
+          total,
+          modulesSuivis: modulesFaits,
+          modulesTotal: MODULES.length,
+        },
+        formaterDate,
+      );
+      setExportEtat(await exporterAttestation(canvas, nomFichierAttestation(nom, resultat.date)));
+    } catch {
+      setExportEtat('echec');
+    }
+  }
   // Dans l'ordre où les questions ont été posées, numérotées ainsi.
   const ratees = ordre
     .map((numero, position) => ({
@@ -399,16 +425,41 @@ function Resultat({
           </div>
         )}
 
-        <div className="barre-boutons" style={{ marginTop: 16 }}>
+        {reussi && nom.trim() !== '' && (
+          <>
+            <button
+              type="button"
+              className="bouton"
+              onClick={enregistrerImage}
+              disabled={exportEtat === 'en-cours'}
+            >
+              {exportEtat === 'en-cours' ? 'Préparation…' : "Enregistrer l'attestation (image)"}
+            </button>
+            {exportEtat === 'telechargement' && (
+              <p className="champ__aide" role="status">
+                Image enregistrée sur ton appareil (dossier Téléchargements ou galerie).
+              </p>
+            )}
+            {exportEtat === 'echec' && (
+              <p className="champ__aide" role="status">
+                L'image n'a pas pu être produite sur cet appareil — utilise « Imprimer ».
+              </p>
+            )}
+            {/* Le canvas ne sert qu'à produire le fichier : jamais affiché. */}
+            <canvas ref={refCanvas} hidden aria-hidden="true" />
+          </>
+        )}
+
+        <div className="barre-boutons" style={{ marginTop: 10 }}>
           <button
             type="button"
-            className={`bouton${reussi ? ' bouton--secondaire' : ''}`}
+            className="bouton bouton--secondaire"
             onClick={onRecommencer}
           >
             Refaire le quiz
           </button>
           {reussi && nom.trim() !== '' && (
-            <button type="button" className="bouton" onClick={() => window.print()}>
+            <button type="button" className="bouton bouton--secondaire" onClick={() => window.print()}>
               Imprimer
             </button>
           )}

@@ -1099,7 +1099,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
   }
 }
 
-/* ---------- Hero d'accueil (cochlée 3D en fond) ---------- */
+/* ---------- Hero d'accueil (ondes sonores en fond) ---------- */
 
 .hero {
   position: relative;
@@ -1121,20 +1121,6 @@ input[type='range']:focus-visible::-moz-range-thumb {
   inset: 0;
   width: 100%;
   height: 100%;
-}
-
-.hero__gl {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  transition: opacity 0.6s var(--ease);
-}
-
-.hero__gl canvas {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -2223,4 +2209,85 @@ h1.entete__titre {
 .app--presentation .contenu > .carte:has(.attestation),
 .app--presentation .contenu > .carte:has(.quiz__question) {
   min-height: 0;
+}
+
+/* ---------- Code QR et partage ---------- */
+
+.hero__coin {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 1;
+}
+
+.qr {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff;
+  color: #0a0e17;
+  text-align: center;
+}
+
+.qr img {
+  display: block;
+  width: 120px;
+  height: 120px;
+}
+
+.qr figcaption {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
+.qr figcaption span {
+  color: #4b5563;
+  font-size: 0.74rem;
+  word-break: break-all;
+}
+
+.qr--grand {
+  padding: 16px;
+}
+
+.qr--grand img {
+  width: 220px;
+  height: 220px;
+}
+
+.qr--grand figcaption {
+  font-size: 1rem;
+}
+
+.partage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.partage .bouton {
+  flex: 1 1 200px;
+  margin-top: 0;
+}
+
+/* Sur téléphone, le QR de projection n'a pas de sens : le hero reste sobre. */
+@media (max-width: 979px) {
+  .hero__coin {
+    display: none;
+  }
+}
+
+@media print {
+  .qr,
+  .partage {
+    display: none !important;
+  }
 }

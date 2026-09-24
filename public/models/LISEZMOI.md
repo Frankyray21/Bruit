@@ -6,12 +6,11 @@ scène vide).
 
 | Fichier | Où il apparaît | Ce qu'on y montre |
 |---|---|---|
-| **`oreille.glb`** | Le hero d'accueil **et** le module « Ce que le bruit détruit » | L'oreille complète : externe (pavillon, conduit, tympan) et interne (cochlée) |
+| **`oreille.glb`** | Le module « Ce que le bruit détruit » | L'oreille complète : externe (pavillon, conduit, tympan) et interne (cochlée) |
 | **`cellules.glb`** | Le module « Ce que le bruit détruit » | Les cellules ciliées / l'organe de Corti — ce que le bruit détruit sans retour |
 
-Dans le hero, `oreille.glb` tourne lentement en fond derrière le titre, comme le
-corps 3D du hero de TMS. S'il est absent, l'accueil montre un fond d'ondes
-sonores propre.
+L'accueil, lui, n'affiche aucune 3D : un fond d'ondes sonores dessiné en code,
+pour s'ouvrir vite sur n'importe quel téléphone.
 
 ## Où trouver un modèle libre et téléchargeable
 
@@ -41,7 +40,7 @@ sonores propre.
 2. Renomme-le **`oreille.glb`** ou **`cellules.glb`** et dépose-le dans ce
    dossier (`public/models/`).
 3. Reconstruis le site (`npm run build`) — ou pousse le fichier, le déploiement
-   automatique s'en charge. Le hero et le module 4 l'affichent tout seuls.
+   automatique s'en charge. Le module 4 l'affiche tout seul.
 
 Le fichier est empaqueté avec le site : une fois chargé, il est mis en cache et
 fonctionne **hors-ligne** comme le reste.

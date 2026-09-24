@@ -51,7 +51,7 @@ Site fonctionnel : 6 modules de formation, chacun fermé par une question de
 validation, une boîte à outils organisée autour des trois questions ci-dessus,
 un quiz de 14 questions avec attestation, et un espace « Réglages du
 formateur ». Le moteur de calcul est couvert par 76 tests qui reproduisent
-chaque ligne des tableaux de la formation.
+chaque ligne des tableaux de la formation (82 tests au total).
 
 ### Le parcours du travailleur
 
@@ -76,16 +76,29 @@ perdre.
 ### L'espace du formateur
 
 Dans « Moi › Réglages du formateur » : le mode **Projeter** (gros caractères,
-flèches ← → pour passer d'un module à l'autre, Échap pour la liste, et au quiz
-un bouton « Révéler » pour faire voter la salle avant de dévoiler la réponse),
-le **facteur d'efficacité des bouchons** (60 % par défaut, voir §7 du plan), et
-**Réinitialiser cet appareil** pour un téléphone ou une tablette de prêt.
+une carte par écran, flèches ← → pour avancer, Échap pour la liste, F pour le
+plein écran, et au quiz un bouton « Révéler » pour faire voter la salle avant
+de dévoiler la réponse), le **facteur d'efficacité des bouchons** (60 % par
+défaut, voir §7 du plan), et **Réinitialiser cet appareil** pour un téléphone
+ou une tablette de prêt.
+
+En projection, l'accueil affiche un **code QR** vers le site : chacun le scanne
+et installe l'app pendant la séance. Le QR est un SVG versionné
+(`public/qr.svg`), régénéré par `npm run qr` si l'adresse change — rien n'est
+chargé depuis le réseau. Le même QR et un bouton « Partager le lien à un
+collègue » sont dans « Moi ». Ouvert depuis Messenger, Teams ou un SMS (un
+navigateur intégré qui ne sait pas installer d'app), le site le détecte et
+propose de copier le lien pour l'ouvrir dans Chrome ou Safari.
+
+L'attestation de réussite s'imprime, ou s'**enregistre en image** (PNG) pour
+la garder sur le téléphone ou l'envoyer — sans imprimante ni réseau.
 
 ```bash
 npm install
 npm run dev      # développement
-npm test         # 76 tests du moteur de calcul
+npm test         # 82 tests (moteur de calcul, attestation, détection de navigateur)
 npm run build    # typecheck + build de production
+npm run qr       # régénère public/qr.svg (npm run qr -- https://autre.adresse/)
 ```
 
 Voir **[PLAN.md](PLAN.md)** pour le plan par phases,
@@ -116,6 +129,9 @@ src/outils/                   Les calculateurs
 src/ui/                       Composants « terrain », graphiques SVG, champs du profil
 src/anim3d/                   Cochlée 3D interactive (Three.js, chargée à la demande)
 ```
+
+L'accueil est volontairement léger : un fond d'ondes sonores dessiné en SVG,
+aucune 3D — Three.js n'est chargé qu'au module 4.
 
 Le module « Ce que le bruit détruit » contient une **vue 3D de la cochlée** :
 on la tourne au doigt, et un curseur de bruit couche puis détruit les cellules

@@ -24,7 +24,7 @@ import { FacteurDerating, Protection } from './outils/Protection.js';
 import { TempsDePort } from './outils/TempsDePort.js';
 import { Carriere } from './outils/Carriere.js';
 import { HeroOreille } from './anim3d/HeroOreille.js';
-import { BanniereInstall, CarteInstall } from './ui/InstallerApp.js';
+import { BanniereInstall, BoutonPartagerLien, CarteInstall, CodeQr } from './ui/InstallerApp.js';
 
 type Zone = 'parcours' | 'outils' | 'quiz' | 'moi';
 
@@ -298,6 +298,7 @@ function Coquille() {
                   onOuvrir={ouvrirModule}
                   onQuiz={() => allerA('quiz')}
                   onMoi={() => allerA('moi')}
+                  presentation={presentation}
                 />
               ))}
 
@@ -410,10 +411,12 @@ function Parcours({
   onOuvrir,
   onQuiz,
   onMoi,
+  presentation,
 }: {
   onOuvrir: (id: string) => void;
   onQuiz: () => void;
   onMoi: () => void;
+  presentation: boolean;
 }) {
   const { faits, validations, resultatQuiz, posteChoisi, protecteurChoisi } = useTravailleur();
   const [accueilVu, setAccueilVu] = useStockage('accueil-vu', false);
@@ -431,7 +434,7 @@ function Parcours({
 
   return (
     <>
-      <HeroOreille>
+      <HeroOreille coin={presentation ? <CodeQr grand /> : undefined}>
         <h1 style={{ marginBottom: 6 }}>Protection auditive</h1>
         <p className="carte__intro" style={{ marginBottom: 12 }}>
           Six modules de 3 à 8 minutes, à faire dans l'ordre. Chaque notion se
@@ -757,6 +760,10 @@ function Moi({
           fond, comme en surface.
         </p>
         <CarteInstall />
+        <div className="partage">
+          <CodeQr />
+          <BoutonPartagerLien />
+        </div>
         <Avertissement>
           Rien ne quitte ton appareil : pas de compte, pas de serveur, aucune
           donnée transmise. Ta progression est stockée localement.
