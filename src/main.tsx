@@ -23,10 +23,6 @@ createRoot(racine).render(
   </StrictMode>,
 );
 
-// L'application est montée : le panneau de secours de index.html n'a plus
-// lieu d'être, même si le chargement a été lent.
-document.getElementById('secours')?.remove();
-
 // Toujours à jour : quand un NOUVEAU service worker prend le contrôle (nouveau
 // déploiement), on recharge une fois pour servir la dernière version. Combiné à
 // skipWaiting/clientsClaim, l'utilisateur n'a jamais une version périmée.

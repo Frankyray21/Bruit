@@ -146,11 +146,19 @@ export function Quiz({
   const refQuestion = useRef<HTMLParagraphElement>(null);
 
   // Une sauvegarde d'une version précédente (sans ordre, ou avec un autre
-  // nombre de questions) serait incohérente : on repart proprement.
-  const etat: EtatQuiz =
-    etatBrut.reponses.length === QUESTIONS.length && ordreValide(etatBrut.ordre)
-      ? etatBrut
-      : etatInitial();
+  // nombre de questions), corrompue, ou terminée sans résultat (progression
+  // remise à zéro) serait incohérente : on repart proprement, avec un état
+  // de repli tiré une seule fois et aussitôt persisté.
+  const [repli] = useState(etatInitial);
+  const etatValide =
+    Array.isArray(etatBrut?.reponses) &&
+    etatBrut.reponses.length === QUESTIONS.length &&
+    ordreValide(etatBrut.ordre) &&
+    !(etatBrut.termine && !resultatQuiz);
+  const etat: EtatQuiz = etatValide ? etatBrut : repli;
+  useEffect(() => {
+    if (!etatValide) setEtat(repli);
+  }, [etatValide, repli, setEtat]);
   const { reponses, ordre } = etat;
   const index = Math.min(etat.index, QUESTIONS.length - 1);
   const numero = ordre[index]!;
@@ -165,17 +173,23 @@ export function Quiz({
     setProvisoire(null);
   }, [index, etat.termine]);
 
-  function repondre(i: number) {
-    if (choisi !== null) return;
-    if (revelation && provisoire === null) {
-      setProvisoire(i);
-      return;
-    }
+  function valider(i: number) {
     setEtat({
       ...etat,
       reponses: reponses.map((r, j) => (j === numero ? i : r)),
     });
     setProvisoire(null);
+  }
+
+  function repondre(i: number) {
+    if (choisi !== null) return;
+    // En projection, un appui ne fait que déplacer le vote ; seul le bouton
+    // « Révéler » dévoile la réponse.
+    if (revelation) {
+      setProvisoire(i);
+      return;
+    }
+    valider(i);
   }
 
   function suivante() {
@@ -271,7 +285,7 @@ export function Quiz({
         ))}
 
         {revelation && choisi === null && provisoire !== null && (
-          <button type="button" className="bouton" onClick={() => repondre(provisoire)}>
+          <button type="button" className="bouton" onClick={() => valider(provisoire)}>
             Révéler la réponse
           </button>
         )}

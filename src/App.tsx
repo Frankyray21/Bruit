@@ -28,6 +28,12 @@ import { BanniereInstall, CarteInstall } from './ui/InstallerApp.js';
 
 type Zone = 'parcours' | 'outils' | 'quiz' | 'moi';
 
+const RE_HASH = /^#\/(parcours|outils|quiz|moi)(?:\/([\w-]+))?/;
+
+function hashPour(zone: Zone, moduleId: string | null): string {
+  return `#/${zone}${zone === 'parcours' && moduleId ? `/${moduleId}` : ''}`;
+}
+
 const ZONES: readonly { id: Zone; nom: string; titre: string; icone: string }[] = [
   { id: 'parcours', nom: 'Formation', titre: 'Protection auditive', icone: '📘' },
   { id: 'outils', nom: 'Outils', titre: 'Boîte à outils', icone: '🧮' },
@@ -59,10 +65,14 @@ function Coquille() {
   const premierHash = useRef(true);
   useEffect(() => {
     const lire = () => {
-      const m = /^#\/(parcours|outils|quiz|moi)(?:\/([\w-]+))?/.exec(location.hash);
+      const m = RE_HASH.exec(location.hash);
       if (!m) return;
       const z = m[1] as Zone;
       const id = m[2] && MODULES.some((x) => x.id === m[2]) ? m[2] : null;
+      // URL normalisée (module inconnu retiré) : l'effet d'écriture la
+      // retrouvera égale à l'état et n'ajoutera rien à l'historique.
+      const canon = hashPour(z, z === 'parcours' ? id : null);
+      if (location.hash !== canon) history.replaceState(null, '', canon);
       setZone(z);
       setModuleOuvert(z === 'parcours' ? id : null);
     };
@@ -71,11 +81,18 @@ function Coquille() {
     return () => window.removeEventListener('popstate', lire);
   }, [setZone, setModuleOuvert]);
   useEffect(() => {
-    const hash = `#/${zone}${zone === 'parcours' && moduleOuvert ? `/${moduleOuvert}` : ''}`;
-    if (location.hash === hash) return;
-    if (premierHash.current) history.replaceState(null, '', hash);
-    else history.pushState(null, '', hash);
-    premierHash.current = false;
+    const hash = hashPour(zone, moduleOuvert);
+    if (premierHash.current) {
+      // Au montage, un hash valide vient d'être lu par l'effet précédent :
+      // l'état de ce rendu est encore celui de la mémoire, on attend le
+      // rendu suivant. Sinon, l'URL prend l'état mémorisé sans créer
+      // d'entrée d'historique.
+      if (location.hash !== hash && RE_HASH.test(location.hash)) return;
+      premierHash.current = false;
+      if (location.hash !== hash) history.replaceState(null, '', hash);
+      return;
+    }
+    if (location.hash !== hash) history.pushState(null, '', hash);
   }, [zone, moduleOuvert]);
 
   const indexModule = MODULES.findIndex((m) => m.id === moduleOuvert);
@@ -107,7 +124,9 @@ function Coquille() {
     if (!presentation) return;
     const HAUT = 70; // sous l'en-tête collant
     const cartes = () =>
-      Array.from(document.querySelectorAll<HTMLElement>('#contenu > .carte'));
+      Array.from(document.querySelectorAll<HTMLElement>('#contenu > .carte')).filter(
+        (el) => !el.hidden,
+      );
     const versCarte = (c: HTMLElement) => c.scrollIntoView({ block: 'start', behavior: 'smooth' });
     const carteSuivante = () => {
       const c = cartes().find((el) => el.getBoundingClientRect().top > HAUT + 8);
@@ -121,7 +140,9 @@ function Coquille() {
     };
     const surTouche = (e: KeyboardEvent) => {
       const cible = e.target;
-      if (cible instanceof HTMLElement && /^(INPUT|SELECT|TEXTAREA)$/.test(cible.tagName)) return;
+      // Un champ garde ses flèches ; un bouton focalisé garde Espace et Entrée.
+      if (cible instanceof HTMLElement && cible.closest('input, select, textarea, button, summary, a'))
+        return;
       if (e.key === 'f' || e.key === 'F') {
         if (document.fullscreenElement) void document.exitFullscreen();
         else void document.documentElement.requestFullscreen?.();
@@ -167,7 +188,14 @@ function Coquille() {
 
   return (
     <div className={`app${presentation ? ' app--presentation' : ''}`}>
-      <a className="lien-evitement" href="#contenu">
+      <a
+        className="lien-evitement"
+        href="#contenu"
+        onClick={(e) => {
+          e.preventDefault();
+          document.getElementById('contenu')?.focus();
+        }}
+      >
         Aller au contenu
       </a>
 
@@ -678,9 +706,9 @@ function Moi({
         {confirmation === 'progression' ? (
           <div className="confirmation" role="alertdialog" aria-label="Confirmer la remise à zéro">
             <p>
-              Effacer tes {faits.length} module{faits.length > 1 ? 's' : ''} fait
-              {faits.length > 1 ? 's' : ''} et ton résultat de quiz ? Ton profil
-              est conservé.
+              Effacer{' '}
+              {faits.length > 1 ? `tes ${faits.length} modules faits` : 'ton module fait'}{' '}
+              et ton résultat de quiz ? Ton profil est conservé.
             </p>
             <div className="barre-boutons">
               <button

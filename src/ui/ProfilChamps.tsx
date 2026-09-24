@@ -8,7 +8,7 @@
 
 import { metiers, protecteurs, type Protecteur } from '../data/index.js';
 import { useTravailleur } from '../etat/travailleur.js';
-import { Champ, Selecteur } from './composants.js';
+import { Champ } from './composants.js';
 import { nb } from './format.js';
 
 export function formatMetier(m: { nom: string; niveau_dBA: number }): string {
@@ -19,17 +19,28 @@ export function formatProtecteur(p: Protecteur): string {
   return `${p.nom} — NRR ${p.nrr}`;
 }
 
+/**
+ * Tant que rien n'est choisi, le sélecteur affiche une invite plutôt que le
+ * poste type : sinon, un travailleur dont le poste EST le poste type n'aurait
+ * aucun moyen de le confirmer (aucun changement, donc aucun onChange).
+ */
 export function ChampPoste({ etiquette = 'Mon poste' }: { etiquette?: string }) {
-  const { poste, majProfil } = useTravailleur();
+  const { poste, posteChoisi, majProfil } = useTravailleur();
   return (
     <Champ etiquette={etiquette}>
-      <Selecteur
-        options={metiers}
-        valeur={poste.id}
-        onChange={(id) => majProfil({ posteId: id })}
-        format={formatMetier}
-        etiquette={etiquette}
-      />
+      <select
+        className="choix__select"
+        aria-label={etiquette}
+        value={posteChoisi ? poste.id : ''}
+        onChange={(e) => majProfil({ posteId: e.target.value || null })}
+      >
+        {!posteChoisi && <option value="">Choisis ton poste…</option>}
+        {metiers.map((m) => (
+          <option key={m.id} value={m.id}>
+            {formatMetier(m)}
+          </option>
+        ))}
+      </select>
     </Champ>
   );
 }
@@ -41,22 +52,24 @@ export function ChampProtecteur({
   etiquette?: string;
   options?: readonly Protecteur[];
 }) {
-  const { protecteur, majProfil } = useTravailleur();
-  // Si le protecteur du profil n'est pas dans la liste proposée (par ex. des
-  // coquilles dans un outil réservé aux bouchons), on affiche le premier de la
-  // liste sans écraser le profil.
-  const valeur = options.some((p) => p.id === protecteur.id)
-    ? protecteur.id
-    : (options[0]?.id ?? protecteur.id);
+  const { protecteur, protecteurChoisi, majProfil } = useTravailleur();
+  const dansListe = options.some((p) => p.id === protecteur.id);
+  const valeur = protecteurChoisi && dansListe ? protecteur.id : '';
   return (
     <Champ etiquette={etiquette}>
-      <Selecteur
-        options={options}
-        valeur={valeur}
-        onChange={(id) => majProfil({ protecteurId: id })}
-        format={formatProtecteur}
-        etiquette={etiquette}
-      />
+      <select
+        className="choix__select"
+        aria-label={etiquette}
+        value={valeur}
+        onChange={(e) => majProfil({ protecteurId: e.target.value || null })}
+      >
+        {valeur === '' && <option value="">Choisis ton protecteur…</option>}
+        {options.map((p) => (
+          <option key={p.id} value={p.id}>
+            {formatProtecteur(p)}
+          </option>
+        ))}
+      </select>
     </Champ>
   );
 }

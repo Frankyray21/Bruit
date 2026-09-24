@@ -17,7 +17,7 @@ import {
   type Metier,
   type Protecteur,
 } from '../data/index.js';
-import { lire, useStockage } from './stockage.js';
+import { lire, PREFIXE, useStockage } from './stockage.js';
 
 export interface Profil {
   readonly nom: string;
@@ -101,6 +101,14 @@ export function FournisseurTravailleur({ children }: { children: ReactNode }) {
     setFaits([]);
     setValidations({});
     setResultatQuiz(null);
+    // Le quiz en cours (ou terminé) repart de zéro lui aussi : il vit dans
+    // son propre composant, démonté à ce moment-là.
+    try {
+      localStorage.removeItem(`${PREFIXE}quiz-etat`);
+    } catch {
+      // Stockage inaccessible : le quiz se réinitialisera de lui-même
+      // (terminé sans résultat = état invalide).
+    }
   }, [setFaits, setValidations, setResultatQuiz]);
 
   const valeur = useMemo<Travailleur>(() => {

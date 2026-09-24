@@ -139,8 +139,14 @@ function useHorsLigne(): EtatHorsLigne {
       .catch(() => {
         if (!annule) setEtat('inconnu');
       });
+    // Sans service worker (mode développement, stockage bloqué), `ready` ne
+    // se résout jamais : on cesse d'annoncer un téléchargement au bout de 30 s.
+    const limite = setTimeout(() => {
+      if (!annule) setEtat((e) => (e === 'en-cours' ? 'inconnu' : e));
+    }, 30_000);
     return () => {
       annule = true;
+      clearTimeout(limite);
     };
   }, []);
   return etat;
