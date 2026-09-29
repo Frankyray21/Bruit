@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Thème de lancement (même choix que le gabarit Bubblewrap) : translucide,
+       sans titre, sans animation — l'écran de démarrage est celui de la TWA. -->
+  <style name="Theme.LauncherActivity" parent="@android:style/Theme.Translucent.NoTitleBar">
+    <item name="android:windowAnimationStyle">@null</item>
+    <item name="android:statusBarColor">@color/couleur_theme</item>
+    <item name="android:navigationBarColor">@color/couleur_fond</item>
+  </style>
+</resources>
