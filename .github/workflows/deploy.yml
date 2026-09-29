@@ -95,6 +95,8 @@ jobs:
           name: apk
           path: sortie
           if-no-files-found: error
+          # .well-known/ commence par un point : sans ceci, il serait ignoré.
+          include-hidden-files: true
 
   deployer:
     runs-on: ubuntu-latest
