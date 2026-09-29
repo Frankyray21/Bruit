@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Trusted Web Activity : l'application ouvre le site publié dans Chrome, sans
+  barre d'adresse une fois le site vérifié (assetlinks.json à la racine du
+  domaine), et retombe sur un WebView si aucun navigateur compatible n'est
+  installé. Tout le contenu vient du site : hors-ligne par son service worker.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <application
+    android:label="@string/app_name"
+    android:icon="@mipmap/ic_launcher"
+    android:allowBackup="true"
+    android:supportsRtl="true">
+
+    <meta-data
+      android:name="asset_statements"
+      android:resource="@string/asset_statements" />
+    <meta-data
+      android:name="web_manifest_url"
+      android:value="https://frankyray21.github.io/Bruit/manifest.webmanifest" />
+
+    <activity
+      android:name="com.google.androidbrowserhelper.trusted.LauncherActivity"
+      android:exported="true"
+      android:label="@string/app_name"
+      android:theme="@style/Theme.LauncherActivity">
+
+      <meta-data
+        android:name="android.support.customtabs.trusted.DEFAULT_URL"
+        android:value="https://frankyray21.github.io/Bruit/" />
+      <meta-data
+        android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR"
+        android:resource="@color/couleur_theme" />
+      <meta-data
+        android:name="android.support.customtabs.trusted.NAVIGATION_BAR_COLOR"
+        android:resource="@color/couleur_fond" />
+      <meta-data
+        android:name="android.support.customtabs.trusted.SPLASH_IMAGE_DRAWABLE"
+        android:resource="@drawable/splash" />
+      <meta-data
+        android:name="android.support.customtabs.trusted.SPLASH_SCREEN_BACKGROUND_COLOR"
+        android:resource="@color/couleur_fond" />
+      <meta-data
+        android:name="android.support.customtabs.trusted.SPLASH_SCREEN_FADE_OUT_DURATION"
+        android:value="300" />
+      <meta-data
+        android:name="android.support.customtabs.trusted.FILE_PROVIDER_AUTHORITY"
+        android:value="io.github.frankyray21.bruit.fileprovider" />
+      <meta-data
+        android:name="android.support.customtabs.trusted.FALLBACK_STRATEGY"
+        android:value="webview" />
+
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data
+          android:scheme="https"
+          android:host="frankyray21.github.io"
+          android:pathPrefix="/Bruit/" />
+      </intent-filter>
+    </activity>
+
+    <activity android:name="com.google.androidbrowserhelper.trusted.FocusActivity" />
+
+    <activity
+      android:name="com.google.androidbrowserhelper.trusted.WebViewFallbackActivity"
+      android:configChanges="orientation|screenSize" />
+
+    <provider
+      android:name="androidx.core.content.FileProvider"
+      android:authorities="io.github.frankyray21.bruit.fileprovider"
+      android:grantUriPermissions="true"
+      android:exported="false">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/filepaths" />
+    </provider>
+
+    <service
+      android:name="com.google.androidbrowserhelper.trusted.DelegationService"
+      android:enabled="true"
+      android:exported="true">
+      <intent-filter>
+        <action android:name="android.support.customtabs.trusted.TRUSTED_WEB_ACTIVITY_SERVICE" />
+        <category android:name="android.intent.category.DEFAULT" />
+      </intent-filter>
+    </service>
+  </application>
+</manifest>

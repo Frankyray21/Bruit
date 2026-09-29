@@ -64,11 +64,25 @@ export default defineConfig({
       workbox: {
         // Tout doit être disponible hors-ligne : il n'y a pas de réseau sous terre.
         // La vidéo (mp4) est incluse pour que l'animation joue au fond.
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2,mp4,glb}'],
-        // La vidéo dépasse la limite de précache par défaut (2 Mo) ; on la relève
-        // pour qu'elle soit bien mise en cache. Coût : une installation plus
-        // lourde, assumé puisqu'on veut l'animation hors-ligne.
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2,glb}'],
+        // Les vidéos ne passent PAS par le précache : un lecteur <video> demande
+        // des plages d'octets (Range), que le précache ne sait pas servir — hors
+        // ligne, la vidéo échouait. Elles vont dans un cache dédié qui gère les
+        // plages, rempli dès la première visite par `preparerHorsLigne`.
+        globIgnores: ['**/videos/**'],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => /\/videos\/[^/]+\.mp4$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'bruit-videos',
+              rangeRequests: true,
+              cacheableResponse: { statuses: [0, 200] },
+              expiration: { maxEntries: 8 },
+            },
+          },
+        ],
         // Sans ça, les précaches des versions précédentes s'accumulent et
         // peuvent servir des fichiers qui n'existent plus — d'où une page vide.
         cleanupOutdatedCaches: true,

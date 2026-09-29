@@ -2739,3 +2739,34 @@ h1.entete__titre {
 .projection .terme::after {
   content: '';
 }
+
+/* ---------- Carte APK, imbriquée dans les réglages du formateur ---------- */
+
+.formateur--imbrique {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px dashed var(--bordure-controle);
+  border-radius: 10px;
+}
+
+.formateur--imbrique summary {
+  font-size: 0.95rem;
+}
+
+.formateur--imbrique .bouton {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  margin: 12px 0;
+}
+
+.liste-etapes {
+  margin: 12px 0 0;
+  padding-left: 22px;
+  color: var(--texte-doux);
+  line-height: 1.5;
+}
+
+.liste-etapes li + li {
+  margin-top: 6px;
+}

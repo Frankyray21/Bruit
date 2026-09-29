@@ -108,6 +108,25 @@ Voir **[PLAN.md](PLAN.md)** pour le plan par phases,
 de la formation des travailleurs (méthode, diagnostic, corrections, points à
 trancher).
 
+### Hors-ligne complet et deux façons d'installer (v0.9.0)
+
+Vérifié en mode avion (Playwright, réseau coupé après la première visite) :
+chaque écran, les six modules, les deux modèles 3D, les polices, le QR et la
+vidéo répondent sans réseau. Les vidéos ont leur propre cache qui sert les
+plages d'octets demandées par le lecteur, rempli dès l'ouverture du site ;
+l'indicateur « contenu téléchargé » n'apparaît qu'une fois ce cache plein.
+
+Deux façons d'installer, une seule app :
+
+- **PWA, mise de l'avant** : « Installer l'application » depuis le navigateur
+  (bannière à l'accueil, carte dans « Moi », QR pour la salle).
+- **APK Android, discret** : construit par la CI à chaque déploiement
+  (`android/`, une Trusted Web Activity qui ouvre le site plein écran dans
+  Chrome), publié à `telecharger/bruit.apk` et proposé dans Moi › Réglages du
+  formateur › « Version Android (APK) ». Pour les téléphones où l'installation
+  depuis le navigateur est bloquée. Voir `android/LISEZMOI.md` pour la clé de
+  signature et la déclaration `assetlinks.json`.
+
 ### Deux lignes de travail réunies (v0.8.0)
 
 Entre juillet et septembre 2026, deux lignes ont avancé en parallèle : celle de

@@ -16,6 +16,8 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { estNavigateurIntegre, URL_SITE } from './navigateur.js';
+import { Avertissement } from './composants.js';
+import { lancerPreparation } from './horsLigne.js';
 
 /** L'évènement d'installation, absent des types standards du DOM. */
 interface EvtInstall extends Event {
@@ -83,6 +85,8 @@ export function FournisseurInstall({ children }: { children: ReactNode }) {
 
     window.addEventListener('beforeinstallprompt', surPrompt);
     window.addEventListener('appinstalled', surInstall);
+    // Dès l'ouverture : compléter le hors-ligne (vidéos) sans attendre « Moi ».
+    void lancerPreparation(import.meta.env.BASE_URL, __VIDEOS_LOCALES__);
     return () => {
       window.removeEventListener('beforeinstallprompt', surPrompt);
       window.removeEventListener('appinstalled', surInstall);
@@ -257,18 +261,17 @@ function useHorsLigne(): EtatHorsLigne {
     if (!('serviceWorker' in navigator)) return;
     let annule = false;
     setEtat('en-cours');
-    navigator.serviceWorker.ready
-      .then(() => {
-        if (!annule) setEtat('pret');
-      })
-      .catch(() => {
-        if (!annule) setEtat('inconnu');
-      });
     // Sans service worker (mode développement, stockage bloqué), `ready` ne
     // se résout jamais : on cesse d'annoncer un téléchargement au bout de 30 s.
     const limite = setTimeout(() => {
       if (!annule) setEtat((e) => (e === 'en-cours' ? 'inconnu' : e));
     }, 30_000);
+    navigator.serviceWorker.ready.then(() => clearTimeout(limite), () => {});
+    // La préparation (précache + vidéos) est lancée à la racine dès l'ouverture
+    // du site ; ici on ne fait qu'en lire l'issue.
+    lancerPreparation(import.meta.env.BASE_URL, __VIDEOS_LOCALES__).then((ok) => {
+      if (!annule) setEtat(ok ? 'pret' : 'inconnu');
+    });
     return () => {
       annule = true;
       clearTimeout(limite);
@@ -433,5 +436,95 @@ export function CarteInstall() {
         hors-ligne.
       </p>
     </>
+  );
+}
+
+/** Ce que la CI publie avec l'APK (`telecharger/bruit.json`). */
+interface MetaApk {
+  version: string;
+  date: string;
+  sha256: string;
+  taille: number;
+  signature: 'stable' | 'temporaire';
+}
+
+/**
+ * Carte discrète « Version Android (APK) », dans les réglages du formateur.
+ *
+ * L'installation depuis le navigateur (PWA) reste la voie mise de l'avant :
+ * l'APK sert aux appareils où elle est impossible (navigateur bridé, parc
+ * géré). Il est construit par la CI à chaque déploiement (voir
+ * android/LISEZMOI.md) ; les métadonnées se lisent quand on ouvre la carte.
+ */
+export function CarteAndroid() {
+  const [ouvert, setOuvert] = useState(false);
+  const [meta, setMeta] = useState<MetaApk | null | 'absent' | 'hors-ligne'>(null);
+  const base = import.meta.env.BASE_URL;
+  const urlApk = `${base}telecharger/bruit.apk`;
+
+  useEffect(() => {
+    if (!ouvert || meta !== null) return;
+    let annule = false;
+    fetch(`${base}telecharger/bruit.json`, { cache: 'no-store' })
+      .then((r) => (r.ok ? (r.json() as Promise<MetaApk>) : Promise.reject(new Error(String(r.status)))))
+      .then((m) => {
+        if (!annule) setMeta(m);
+      })
+      .catch(() => {
+        if (!annule) setMeta(navigator.onLine === false ? 'hors-ligne' : 'absent');
+      });
+    return () => {
+      annule = true;
+    };
+  }, [ouvert, meta, base]);
+
+  return (
+    <details className="formateur formateur--imbrique" onToggle={(e) => setOuvert(e.currentTarget.open)}>
+      <summary>Version Android (APK)</summary>
+      <p className="carte__intro">
+        Pour un téléphone où « Installer l'application » depuis le navigateur n'est pas
+        possible. C'est la même app : l'APK ouvre le site plein écran dans Chrome et garde
+        le même hors-ligne. <strong>Première ouverture avec réseau</strong>, ensuite tout
+        est sur l'appareil.
+      </p>
+
+      {meta === null && ouvert && <p className="carte__source">Recherche de la dernière version…</p>}
+      {meta === 'hors-ligne' && (
+        <Avertissement>Pas de réseau : le téléchargement de l'APK demande le Wi-Fi.</Avertissement>
+      )}
+      {meta === 'absent' && (
+        <Avertissement>
+          Aucun APK n'est publié pour l'instant (la construction Android n'a pas encore
+          abouti). L'installation depuis le navigateur reste disponible.
+        </Avertissement>
+      )}
+      {meta !== null && typeof meta === 'object' && (
+        <>
+          <a className="bouton" href={urlApk} download="bruit.apk">
+            Télécharger l'APK · version {meta.version} · {Math.round(meta.taille / 1024 / 1024 * 10) / 10} Mo
+          </a>
+          <ol className="liste-etapes">
+            <li>Télécharge le fichier, puis ouvre-le depuis les notifications ou « Fichiers ».</li>
+            <li>
+              Si Android demande « autoriser les installations de cette source », accepte pour
+              Chrome ou Fichiers, puis reviens.
+            </li>
+            <li>Touche « Installer ». L'icône Bruit apparaît sur l'écran d'accueil.</li>
+            <li>Ouvre-la une première fois avec le réseau : le contenu se télécharge.</li>
+          </ol>
+          {meta.signature === 'temporaire' && (
+            <Avertissement>
+              Signé avec une clé temporaire : pour passer à une version plus récente, il faudra
+              désinstaller puis réinstaller. Une clé stable se configure dans les secrets du
+              dépôt (voir android/LISEZMOI.md).
+            </Avertissement>
+          )}
+          <p className="carte__source carte__source--credit" style={{ marginTop: 12 }}>
+            Construit le {meta.date} · SHA-256 {meta.sha256.slice(0, 16)}… · signature{' '}
+            {meta.signature}
+          </p>
+        </>
+      )}
+    </details>
   );
 }
