@@ -1,0 +1,18 @@
+// Projet Android « Bruit » : une Trusted Web Activity (TWA) qui ouvre le site
+// publié dans Chrome, plein écran, avec le même hors-ligne que la PWA.
+pluginManagement {
+  repositories {
+    google()
+    mavenCentral()
+    gradlePluginPortal()
+  }
+}
+dependencyResolutionManagement {
+  repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+  repositories {
+    google()
+    mavenCentral()
+  }
+}
+rootProject.name = 'Bruit'
+include ':app'

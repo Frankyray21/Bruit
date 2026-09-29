@@ -4,3 +4,11 @@ dist/
 *.log
 # lien symbolique ou dossier
 node_modules
+
+# Android (APK construit par la CI)
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/*.keystore
+android/signature.txt

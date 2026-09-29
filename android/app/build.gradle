@@ -1,0 +1,49 @@
+plugins {
+  id 'com.android.application'
+}
+
+// La version de l'APK suit celle du site (package.json) : 0.9.0 → code 900,
+// nom « 0.9.0 ». Un APK plus récent a toujours un code plus grand.
+def versionSite = new groovy.json.JsonSlurper().parse(file('../../package.json')).version
+def morceaux = versionSite.tokenize('.').collect { it.toInteger() }
+def codeVersion = morceaux[0] * 10000 + morceaux[1] * 100 + morceaux[2]
+
+android {
+  namespace 'io.github.frankyray21.bruit'
+  compileSdk 35
+
+  defaultConfig {
+    applicationId 'io.github.frankyray21.bruit'
+    minSdk 24
+    targetSdk 35
+    versionCode codeVersion
+    versionName versionSite
+  }
+
+  // Signature : par la clé fournie en secret dans la CI (stable d'une version
+  // à l'autre), sinon par une clé temporaire générée à la construction.
+  signingConfigs {
+    release {
+      storeFile file(System.getenv('BRUIT_KEYSTORE') ?: 'bruit.keystore')
+      storePassword System.getenv('BRUIT_KEYSTORE_PASSWORD') ?: 'bruit-temporaire'
+      keyAlias System.getenv('BRUIT_KEY_ALIAS') ?: 'bruit'
+      keyPassword System.getenv('BRUIT_KEY_PASSWORD') ?: 'bruit-temporaire'
+    }
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+      signingConfig signingConfigs.release
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+}
+
+dependencies {
+  implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+}

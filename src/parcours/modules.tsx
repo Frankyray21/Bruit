@@ -316,6 +316,7 @@ function ModuleDommages() {
         optionnel
       />
 
+      {__MODELES_LOCAUX__.includes('oreille.glb') && (
       <Suspense fallback={null}>
         <ModeleGlb
           fichier="oreille.glb"
@@ -337,7 +338,9 @@ function ModuleDommages() {
           }
         />
       </Suspense>
+      )}
 
+      {__MODELES_LOCAUX__.includes('cellules.glb') && (
       <Suspense fallback={null}>
         <ModeleGlb
           fichier="cellules.glb"
@@ -346,6 +349,7 @@ function ModuleDommages() {
           aria="Modèle 3D des cellules ciliées de la cochlée, manipulable"
         />
       </Suspense>
+      )}
 
       <Carte titre="Les quatre atteintes" source="diapo 12">
         <ul className="liste-puces">

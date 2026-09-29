@@ -26,7 +26,7 @@ import { FacteurDerating, Protection } from './outils/Protection.js';
 import { TempsDePort } from './outils/TempsDePort.js';
 import { Carriere } from './outils/Carriere.js';
 import { HeroOreille } from './anim3d/HeroOreille.js';
-import { BanniereInstall, BoutonPartagerLien, CarteInstall, CodeQr } from './ui/InstallerApp.js';
+import { BanniereInstall, BoutonPartagerLien, CarteAndroid, CarteInstall, CodeQr } from './ui/InstallerApp.js';
 
 type Zone = 'parcours' | 'outils' | 'quiz' | 'moi';
 
@@ -833,6 +833,8 @@ function Moi({
             Réinitialiser cet appareil
           </button>
         )}
+
+        <CarteAndroid />
 
         <p className="carte__source carte__source--credit" style={{ marginTop: 14 }}>
           Version {__VERSION__} · se met à jour automatiquement

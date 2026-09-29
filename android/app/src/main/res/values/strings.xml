@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Bruit</string>
+  <string name="asset_statements">
+    [{
+      \"relation\": [\"delegate_permission/common.handle_all_urls\"],
+      \"target\": {\"namespace\": \"web\", \"site\": \"https://frankyray21.github.io\"}
+    }]
+  </string>
+</resources>
